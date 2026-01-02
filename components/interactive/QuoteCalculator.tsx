@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronRight, Calculator, DollarSign, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sendEmail } from "@/actions/send-email";
 
 const services = [
     {
@@ -154,20 +155,42 @@ export const QuoteCalculator = () => {
                             <div className="space-y-3">
                                 <div>
                                     <label className="text-xs font-semibold uppercase text-muted-foreground mb-1 block">Full Name</label>
-                                    <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="John Doe" />
+                                    <input id="quote-name" type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="John Doe" />
                                 </div>
                                 <div>
                                     <label className="text-xs font-semibold uppercase text-muted-foreground mb-1 block">Email Address</label>
-                                    <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="john@example.com" />
+                                    <input id="quote-email" type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="john@example.com" />
                                 </div>
                                 <div>
                                     <label className="text-xs font-semibold uppercase text-muted-foreground mb-1 block">Phone (Optional)</label>
-                                    <input type="tel" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="+254..." />
+                                    <input id="quote-phone" type="tel" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="+254..." />
                                 </div>
                             </div>
 
                             <button
-                                onClick={() => setShowResult("final" as any)} // Quick hack to switch views
+                                onClick={async () => {
+                                    const name = (document.getElementById("quote-name") as HTMLInputElement).value;
+                                    const email = (document.getElementById("quote-email") as HTMLInputElement).value;
+                                    const phone = (document.getElementById("quote-phone") as HTMLInputElement).value;
+
+                                    if (name && email) {
+                                        await sendEmail({
+                                            to: "info@proinnovationtech.co.ke",
+                                            replyTo: email,
+                                            subject: `New Smart Quote Lead: ${name}`,
+                                            html: `
+                                              <h2>Start Quote Lead</h2>
+                                              <p><strong>Name:</strong> ${name}</p>
+                                              <p><strong>Email:</strong> ${email}</p>
+                                              <p><strong>Phone:</strong> ${phone}</p>
+                                              <p><strong>Service:</strong> ${currentService?.title}</p>
+                                              <p><strong>Features:</strong> ${selectedFeatures.join(", ")}</p>
+                                              <p><strong>Estimated Total:</strong> KES ${total.toLocaleString()}</p>
+                                          `
+                                        });
+                                    }
+                                    setShowResult("final" as any)
+                                }} // Quick hack to switch views
                                 className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold shadow-lg hover:brightness-110 transition-all mt-4"
                             >
                                 Reveal My Price

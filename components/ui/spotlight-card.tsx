@@ -37,7 +37,7 @@ export const SpotlightCard = ({
                 style={{
                     background: useMotionTemplate`
             radial-gradient(
-              650px circle at ${mouseX}px ${mouseY}px,
+              800px circle at ${mouseX}px ${mouseY}px,
               ${spotlightColor},
               transparent 80%
             )
@@ -51,11 +51,12 @@ export const SpotlightCard = ({
                 style={{
                     background: useMotionTemplate`
             radial-gradient(
-              650px circle at ${mouseX}px ${mouseY}px,
-              rgba(255,255,255,0.1),
+              600px circle at ${mouseX}px ${mouseY}px,
+              var(--primary),
               transparent 40%
             )
           `,
+                    opacity: 0.15,
                 }}
             />
 
