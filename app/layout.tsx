@@ -1,38 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { StructuredData } from "@/components/seo/structured-data";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Pro Innovation & Technologies | Web Design, Branding & Tenders Kenya",
-  description: "Leading tech agency in Machakos & Nairobi. Services: Web & Graphic Design, AI Automation, Professional Tender Writing, and Premium Branding/Printing.",
-  keywords: ["Web Design Kenya", "Tender Writing Services Nairobi", "Branding Machakos", "AI Automation Kenya", "Printing Services Kenya", "ProTech"],
-  openGraph: {
-    type: "website",
-    locale: "en_KE",
-    url: "https://proinnovation.tech",
-    siteName: "Pro Innovation & Technologies",
-    images: [{
-      url: '/og-image.jpg', // Ensure this lands in public folder eventually
-      width: 1200,
-      height: 630,
-      alt: 'Pro Innovation & Technologies Kenya',
-    }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Pro Innovation | Best Web Design & Tender Services Kenya',
-    description: 'We help Kenyan businesses win more tenders and get more customers online. Expert Web Design, Branding, and AI Automation.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  title: "RemotePro | Vetted Kenyan Virtual Assistants & Digital Talent",
+  description: "Stop hiring blindly. RemotePro connects you with managed, top-tier remote talent in Kenya. Virtual Assistants, Social Media Managers, and Content Creators.",
 };
+
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -40,16 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ colorScheme: 'light' }} className="light">
-      <body className={inter.className}>
+    <html lang="en">
+      <body className={`${inter.variable} ${playfair.variable} font-sans bg-slate-50 text-slate-900 antialiased`}>
         <Navbar />
-        <StructuredData />
-        <main className="min-h-screen pt-16">
-          {children}
-        </main>
+        {children}
         <Footer />
       </body>
     </html>
   );
 }
-

@@ -1,49 +1,45 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://proinnovation.tech'
+    const baseUrl = 'https://remotepro.co.ke'
+    const lastModified = new Date()
+
     return [
         {
             url: baseUrl,
-            lastModified: new Date(),
-            changeFrequency: 'yearly',
+            lastModified,
+            changeFrequency: 'monthly',
             priority: 1,
         },
         {
-            url: `${baseUrl}/services`,
-            lastModified: new Date(),
+            url: `${baseUrl}/services/va`,
+            lastModified,
             changeFrequency: 'monthly',
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/about`,
-            lastModified: new Date(),
-            changeFrequency: 'yearly',
-            priority: 0.5,
+            url: `${baseUrl}/services/social`,
+            lastModified,
+            changeFrequency: 'monthly',
+            priority: 0.8,
         },
         {
-            url: `${baseUrl}/services/web-design`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.9,
+            url: `${baseUrl}/services/content`,
+            lastModified,
+            changeFrequency: 'monthly',
+            priority: 0.8,
         },
         {
-            url: `${baseUrl}/services/tenders`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.9,
+            url: `${baseUrl}/apply`,
+            lastModified,
+            changeFrequency: 'monthly',
+            priority: 0.7,
         },
         {
-            url: `${baseUrl}/services/branding`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.9,
-        },
-        {
-            url: `${baseUrl}/services/automation`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.9,
+            url: `${baseUrl}/hire`,
+            lastModified,
+            changeFrequency: 'monthly',
+            priority: 0.7,
         },
     ]
 }

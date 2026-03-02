@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: '/admin/',
+            disallow: '/private/',
         },
-        sitemap: 'https://remotepro.co.ke/sitemap.xml',
+        sitemap: 'https://proinnovation.tech/sitemap.xml',
     }
 }
