@@ -1,11 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Brand palette */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e3a8a;
+  --color-brand-900: #1e2a78;
+  --color-brand-950: #0a1628;
+
+  /* Accent (electric cyan) */
+  --color-accent-50: #ecfeff;
+  --color-accent-100: #cffafe;
+  --color-accent-200: #a5f3fc;
+  --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
+
+  /* Success / money */
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  /* Warm / sun */
+  --color-sun-500: #f59e0b;
+
+  /* Easing for motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 @layer base {
   :root {
-    --background: 255 255 255;
-    --foreground: 15 23 42;
+    color-scheme: light;
+    --background: 250 250 252;
+    --foreground: 10 22 40;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+
+  /* Slightly tighter headings */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
   }
 }
 
@@ -14,22 +75,127 @@
     text-wrap: balance;
   }
 
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  .text-pretty {
+    text-wrap: pretty;
   }
 
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+  }
+
+  /* Glass surface */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .glass-dark {
+    background: rgba(10, 22, 40, 0.65);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Premium shadows */
   .premium-shadow {
-    box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.1);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 24px -8px rgba(15, 23, 42, 0.08),
+      0 24px 48px -12px rgba(15, 23, 42, 0.08);
   }
 
   .premium-shadow-hover {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.5s var(--ease-out-expo),
+                box-shadow 0.5s var(--ease-out-expo);
   }
 
   .premium-shadow-hover:hover {
-    box-shadow: 0 40px 80px -15px rgba(15, 23, 42, 0.15);
     transform: translateY(-4px);
+    box-shadow:
+      0 4px 8px rgba(15, 23, 42, 0.04),
+      0 24px 56px -12px rgba(15, 23, 42, 0.12),
+      0 48px 96px -24px rgba(15, 23, 42, 0.12);
   }
+
+  /* Aurora background — slow conic gradient suggestion of motion */
+  .bg-aurora {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(59, 130, 246, 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 30%, rgba(6, 182, 212, 0.18), transparent 65%),
+      radial-gradient(ellipse 70% 50% at 50% 90%, rgba(16, 185, 129, 0.10), transparent 60%),
+      linear-gradient(180deg, #fbfdff 0%, #f3f6fb 100%);
+  }
+
+  .bg-aurora-dark {
+    background:
+      radial-gradient(ellipse 70% 60% at 20% 20%, rgba(59, 130, 246, 0.35), transparent 60%),
+      radial-gradient(ellipse 50% 50% at 85% 35%, rgba(6, 182, 212, 0.30), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 50% 95%, rgba(16, 185, 129, 0.18), transparent 65%),
+      linear-gradient(180deg, #0a1628 0%, #050b18 100%);
+  }
+
+  /* Faint dot grid for dark sections */
+  .bg-grid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--color-brand-500), var(--color-accent-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(135deg, var(--color-sun-500), #ef4444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Conic rotating border (used on final CTA card) */
+  @keyframes rotate-border {
+    to { transform: rotate(360deg); }
+  }
+  .conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(from 0deg,
+      var(--color-brand-500),
+      var(--color-accent-500),
+      var(--color-success-500),
+      var(--color-brand-500));
+    z-index: -1;
+    animation: rotate-border 8s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .conic-border::before { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* Subtle pulsing dot (hero badge) */
+  @keyframes soft-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+  .animate-soft-pulse {
+    animation: soft-pulse 2s ease-in-out infinite;
+  }
+
+  /* Marquee for trust bar */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+  .animate-marquee:hover { animation-play-state: paused; }
 }

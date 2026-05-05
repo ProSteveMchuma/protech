@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "./ui/Badge";
 
 interface FaqItem {
     question: string;
@@ -12,45 +13,74 @@ interface FaqItem {
 interface FaqSectionProps {
     items: FaqItem[];
     title?: string;
+    eyebrow?: string;
 }
 
-export function FaqSection({ items, title = "Frequently Asked Questions" }: FaqSectionProps) {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
+export function FaqSection({
+    items,
+    title = "Frequently asked questions",
+    eyebrow = "FAQ",
+}: FaqSectionProps) {
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-20 bg-white">
+        <section className="py-24 bg-white">
             <div className="container mx-auto px-4 max-w-3xl">
-                <h2 className="font-serif text-3xl font-bold text-slate-900 mb-12 text-center">{title}</h2>
-                <div className="space-y-4">
-                    {items.map((item, i) => (
-                        <div key={i} className="border border-slate-200 rounded-2xl overflow-hidden transition-all hover:border-blue-200">
-                            <button
-                                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                className="w-full flex justify-between items-center p-6 text-left bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                <div className="text-center mb-12">
+                    <Badge tone="neutral" className="mb-3">{eyebrow}</Badge>
+                    <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 text-balance">
+                        {title}
+                    </h2>
+                </div>
+                <div className="space-y-3">
+                    {items.map((item, i) => {
+                        const open = openIndex === i;
+                        return (
+                            <div
+                                key={i}
+                                className={`rounded-2xl border transition-colors ${open
+                                    ? "border-brand-300 bg-brand-50/40"
+                                    : "border-slate-200 bg-white hover:border-slate-300"
+                                    }`}
                             >
-                                <span className="font-bold text-slate-900">{item.question}</span>
-                                {openIndex === i ? (
-                                    <ChevronUp className="size-5 text-blue-600" />
-                                ) : (
-                                    <ChevronDown className="size-5 text-slate-400" />
-                                )}
-                            </button>
-                            <AnimatePresence>
-                                {openIndex === i && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
+                                <button
+                                    onClick={() => setOpenIndex(open ? null : i)}
+                                    className="w-full flex justify-between items-center text-left p-5 md:p-6 group"
+                                >
+                                    <span className="font-bold text-slate-900 pr-6">
+                                        {item.question}
+                                    </span>
+                                    <span
+                                        className={`size-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${open
+                                            ? "bg-brand-600 text-white"
+                                            : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
+                                            }`}
                                     >
-                                        <div className="p-6 pt-0 text-slate-600 leading-relaxed border-t border-slate-100 bg-white">
-                                            {item.answer}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    ))}
+                                        {open ? (
+                                            <Minus className="size-4" />
+                                        ) : (
+                                            <Plus className="size-4" />
+                                        )}
+                                    </span>
+                                </button>
+                                <AnimatePresence initial={false}>
+                                    {open && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-5 md:px-6 pb-6 text-slate-600 leading-relaxed">
+                                                {item.answer}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
