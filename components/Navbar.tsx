@@ -11,10 +11,8 @@ import { Badge } from "./ui/Badge";
 
 const links: MobileNavLink[] = [
     { name: "Tender", href: "/services/tender", flagship: true },
-    { name: "Services", href: "/#services" },
-    { name: "VA", href: "/services/va" },
-    { name: "Social", href: "/services/social" },
-    { name: "Content", href: "/services/content" },
+    { name: "Virtual Assistants", href: "/services/va" },
+    { name: "Guide", href: "/guides/tender-disqualifications" },
     { name: "Apply", href: "/apply" },
 ];
 

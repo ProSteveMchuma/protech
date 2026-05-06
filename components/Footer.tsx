@@ -29,9 +29,8 @@ export function Footer() {
                         <ul className="space-y-3 text-sm">
                             <li><Link href="/services/tender" className="hover:text-white transition">Tender Management</Link></li>
                             <li><Link href="/services/va" className="hover:text-white transition">Virtual Assistants</Link></li>
-                            <li><Link href="/services/social" className="hover:text-white transition">Social Media</Link></li>
-                            <li><Link href="/services/content" className="hover:text-white transition">Content & SEO</Link></li>
-                            <li><Link href="/hire" className="hover:text-white transition">Custom Package</Link></li>
+                            <li><Link href="/guides/tender-disqualifications" className="hover:text-white transition">Free guide</Link></li>
+                            <li><Link href="/hire" className="hover:text-white transition">Custom request</Link></li>
                         </ul>
                     </div>
 

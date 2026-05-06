@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { PACKAGES, business } from "@/lib/config";
 import { Button } from "./ui/Button";
+import { fadeUp } from "@/lib/motion";
 
 type Step = "details" | "pay" | "done";
 
@@ -68,7 +69,7 @@ export function CheckoutForm() {
             setResultMessage(
                 body.duplicate
                     ? body.message
-                    : "We've received your code. Our team will verify and onboard you within 4 business hours."
+                    : "Verified within 4 business hours. Onboarding follows."
             );
             setStep("done");
         } catch {
@@ -95,11 +96,14 @@ export function CheckoutForm() {
                     <CheckCircle2 className="size-12 text-success-600" />
                 </motion.div>
                 <h3 className="font-display text-2xl font-bold text-emerald-900 mb-2">
-                    Payment submitted!
+                    Payment submitted.
                 </h3>
                 <p className="text-emerald-800 mb-2">
-                    Thanks {name}. We're verifying M-Pesa code{" "}
-                    <span className="font-mono font-bold">{code.toUpperCase()}</span>.
+                    Thanks {name}. Verifying code{" "}
+                    <span className="font-mono font-bold tabular-nums">
+                        {code.toUpperCase()}
+                    </span>
+                    .
                 </p>
                 <p className="text-sm text-emerald-700">{resultMessage}</p>
             </motion.div>
@@ -108,17 +112,23 @@ export function CheckoutForm() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-gradient-to-br from-brand-50 to-accent-50 border border-brand-100 rounded-2xl p-5">
-                <div className="text-[11px] uppercase tracking-widest text-brand-700 font-bold mb-1">
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeUp}
+                className="bg-gradient-to-br from-brand-50 to-accent-50 border border-brand-100 rounded-2xl p-4 md:p-5"
+            >
+                <div className="text-[10px] uppercase tracking-[0.2em] text-brand-700/80 font-bold mb-1">
                     You're paying for
                 </div>
-                <div className="font-display text-xl font-bold text-slate-900">
-                    {pkg.tier} <span className="text-slate-400 font-normal">— {pkg.service}</span>
+                <div className="text-sm font-medium text-slate-600 mb-2">
+                    {pkg.tier}
+                    <span className="text-slate-400"> · {pkg.service}</span>
                 </div>
-                <div className="font-mono text-3xl font-bold text-brand-600 mt-2">
+                <div className="font-mono tabular-nums text-3xl md:text-4xl font-bold text-brand-950 leading-none">
                     KES {pkg.amount.toLocaleString()}
                 </div>
-            </div>
+            </motion.div>
 
             <Stepper step={step} />
 
@@ -213,18 +223,27 @@ export function CheckoutForm() {
                                 <ol className="list-decimal list-inside space-y-1 text-xs marker:text-brand-500 marker:font-bold">
                                     <li>Open M-Pesa → Lipa Na M-Pesa → Pay Bill</li>
                                     <li>
-                                        Business number: <strong>{business.paybill}</strong>
+                                        Business number:{" "}
+                                        <strong className="font-mono tabular-nums font-bold text-slate-900">
+                                            {business.paybill}
+                                        </strong>
                                     </li>
                                     <li>
-                                        Account number: <strong>{accountRef}</strong>
+                                        Account number:{" "}
+                                        <strong className="font-mono font-bold text-slate-900">
+                                            {accountRef}
+                                        </strong>
                                     </li>
                                     <li>
-                                        Amount: <strong>{pkg.amount.toLocaleString()}</strong>
+                                        Amount:{" "}
+                                        <strong className="font-mono tabular-nums font-bold text-slate-900">
+                                            {pkg.amount.toLocaleString()}
+                                        </strong>
                                     </li>
                                     <li>Enter your M-Pesa PIN and confirm</li>
                                     <li>
                                         You'll get an SMS with a confirmation code (e.g.{" "}
-                                        <span className="font-mono">QGH1A2B3C4</span>) — enter
+                                        <span className="font-mono font-bold">QGH1A2B3C4</span>) — enter
                                         it below.
                                     </li>
                                 </ol>
@@ -363,7 +382,7 @@ function CopyRow({
         <button
             type="button"
             onClick={copy}
-            className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 hover:border-success-500 hover:shadow-md transition-all text-left group"
+            className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 hover:border-success-500 hover:ring-2 hover:ring-success-500/20 hover:shadow-md transition-all text-left group"
         >
             <div>
                 <div className="text-[11px] uppercase tracking-wide text-slate-500 font-bold">

@@ -22,6 +22,23 @@ export const scaleIn: Variants = {
     visible: { opacity: 1, scale: 1, transition: baseTransition },
 };
 
+export const slideX: Variants = {
+    enter: (direction: number) => ({
+        x: direction > 0 ? 32 : -32,
+        opacity: 0,
+    }),
+    center: {
+        x: 0,
+        opacity: 1,
+        transition: { duration: 0.4, ease: easeOutExpo },
+    },
+    exit: (direction: number) => ({
+        x: direction > 0 ? -32 : 32,
+        opacity: 0,
+        transition: { duration: 0.25, ease: easeOutExpo },
+    }),
+};
+
 export const stagger = (delayChildren = 0, staggerChildren = 0.08): Variants => ({
     hidden: {},
     visible: {
