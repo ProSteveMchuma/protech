@@ -171,12 +171,17 @@ function CostFrameContent({
     if (frame.typographic) {
         return (
             <div className="text-center max-w-4xl">
-                <h3 className="font-display text-6xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.05] tracking-tight text-balance mb-6">
-                    {frame.headline}
-                </h3>
-                <p className="font-display text-4xl md:text-5xl text-slate-500 leading-tight">
-                    {frame.sub}
-                </p>
+                <KineticLine
+                    text={frame.headline}
+                    className="font-display text-6xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.05] tracking-tight text-balance mb-6 block"
+                />
+                {frame.sub && (
+                    <KineticLine
+                        text={frame.sub}
+                        delay={0.4}
+                        className="font-display text-4xl md:text-5xl text-slate-500 leading-tight block"
+                    />
+                )}
             </div>
         );
     }
@@ -211,6 +216,70 @@ function CostFrameContent({
                 </p>
             )}
         </div>
+    );
+}
+
+/**
+ * Kinetic display line — splits the text on whitespace and staggers
+ * each word in (slide-up + fade). Used for the CostStory punchline
+ * frame and its sub-line.
+ *
+ * On `prefers-reduced-motion: reduce` the line renders flat.
+ */
+function KineticLine({
+    text,
+    className,
+    delay = 0,
+}: {
+    text: string;
+    className?: string;
+    delay?: number;
+}) {
+    const reduce = useReducedMotion();
+    if (reduce) {
+        return <span className={className}>{text}</span>;
+    }
+    const words = text.split(/(\s+)/); // keep whitespace tokens
+    return (
+        <motion.span
+            className={className}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.6 }}
+            variants={{
+                hidden: {},
+                visible: {
+                    transition: {
+                        delayChildren: delay,
+                        staggerChildren: 0.06,
+                    },
+                },
+            }}
+        >
+            {words.map((w, i) =>
+                /^\s+$/.test(w) ? (
+                    <span key={i}>{w}</span>
+                ) : (
+                    <motion.span
+                        key={i}
+                        className="inline-block will-change-transform"
+                        variants={{
+                            hidden: { opacity: 0, y: 18 },
+                            visible: {
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                    duration: 0.55,
+                                    ease: [0.16, 1, 0.3, 1],
+                                },
+                            },
+                        }}
+                    >
+                        {w}
+                    </motion.span>
+                )
+            )}
+        </motion.span>
     );
 }
 
@@ -261,6 +330,8 @@ export interface ProcessStep {
     desc: string;
     /** Mock document fragment text. */
     cue: string;
+    /** Optional richer illustration shown alongside text on md+. */
+    illustration?: React.ReactNode;
 }
 
 const HOMEPAGE_PROCESS_STEPS: ProcessStep[] = [
@@ -363,19 +434,32 @@ function ProcessStepView({
                 Step {String(index + 1).padStart(2, "0")}
             </span>
 
-            <h3 className="font-display text-3xl md:text-4xl font-bold text-brand-950 mb-3 text-balance">
-                {step.title}
-            </h3>
-            <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-5 max-w-xl">
-                {step.desc}
-            </p>
+            <div className="md:grid md:grid-cols-[1fr_140px] md:gap-8 md:items-start">
+                <div className="min-w-0">
+                    <h3 className="font-display text-3xl md:text-4xl font-bold text-brand-950 mb-3 text-balance">
+                        {step.title}
+                    </h3>
+                    <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-5 max-w-xl">
+                        {step.desc}
+                    </p>
 
-            {/* Document fragment cue */}
-            <div className="inline-flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 max-w-xl">
-                <span className="mt-1 size-1.5 rounded-full bg-success-500 shrink-0" />
-                <span className="font-mono text-xs md:text-sm text-slate-700 leading-relaxed">
-                    {step.cue}
-                </span>
+                    {/* Document fragment cue */}
+                    <div className="inline-flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 max-w-xl">
+                        <span className="mt-1 size-1.5 rounded-full bg-success-500 shrink-0" />
+                        <span className="font-mono text-xs md:text-sm text-slate-700 leading-relaxed">
+                            {step.cue}
+                        </span>
+                    </div>
+                </div>
+
+                {step.illustration && (
+                    <div
+                        className="hidden md:block size-[120px] text-brand-700 shrink-0"
+                        aria-hidden
+                    >
+                        {step.illustration}
+                    </div>
+                )}
             </div>
         </motion.li>
     );

@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { FaqSection } from "@/components/FaqSection";
 import { PricingV2 } from "@/components/PricingV2";
+import { HeroAmbient } from "@/components/HeroAmbient";
+import { MagneticButton } from "@/components/MagneticButton";
 
 import { TENDER_BUNDLE_ADDONS, TENDER_TIERS } from "@/lib/tender-tiers";
 
@@ -84,12 +86,18 @@ export default function TenderServicePage() {
             {/* ---------------------------------------------------------- */}
             <section
                 aria-label="Tender management for Kenyan SMEs"
-                className="relative bg-brand-950 bg-grid text-white overflow-hidden flex items-center min-h-[100svh] lg:min-h-[80vh] py-20"
+                className="relative bg-stamp text-white overflow-hidden flex items-center min-h-[100svh] lg:min-h-[80vh] py-20"
             >
                 <div
                     aria-hidden
                     className="absolute inset-0 bg-aurora-dark opacity-60 pointer-events-none"
                 />
+                <div
+                    aria-hidden
+                    className="absolute inset-0 bg-stars pointer-events-none opacity-50"
+                />
+                <HeroAmbient tone="dark" />
+
                 <div className="container mx-auto px-6 lg:px-8 max-w-5xl relative z-10">
                     <div className="text-center">
                         <div className="mb-10 inline-flex">
@@ -109,10 +117,12 @@ export default function TenderServicePage() {
                         </p>
 
                         <div className="flex justify-center">
-                            <ButtonLink href="#pricing" variant="primary" size="xl">
-                                See packages
-                                <ArrowRight className="size-5" />
-                            </ButtonLink>
+                            <MagneticButton>
+                                <ButtonLink href="#pricing" variant="primary" size="xl">
+                                    See packages
+                                    <ArrowRight className="size-5" />
+                                </ButtonLink>
+                            </MagneticButton>
                         </div>
 
                         <div className="mt-8">
@@ -226,10 +236,14 @@ export default function TenderServicePage() {
                 </div>
             </section>
 
-            <section className="relative bg-brand-950 bg-grid text-white py-32 md:py-40 overflow-hidden">
+            <section className="relative bg-stamp text-white py-32 md:py-40 overflow-hidden">
                 <div
                     aria-hidden
                     className="absolute inset-0 bg-aurora-dark opacity-60 pointer-events-none"
+                />
+                <div
+                    aria-hidden
+                    className="absolute inset-0 bg-stars pointer-events-none opacity-50"
                 />
                 <div className="container mx-auto px-6 lg:px-8 max-w-3xl relative z-10">
                     <div className="text-center">
@@ -238,14 +252,16 @@ export default function TenderServicePage() {
                         </h2>
 
                         <div className="flex flex-col items-center gap-6">
-                            <ButtonLink
-                                href="/hire?service=tender"
-                                variant="primary"
-                                size="xl"
-                            >
-                                Get a free proposal
-                                <ArrowRight className="size-5" />
-                            </ButtonLink>
+                            <MagneticButton>
+                                <ButtonLink
+                                    href="/hire?service=tender"
+                                    variant="primary"
+                                    size="xl"
+                                >
+                                    Get a free proposal
+                                    <ArrowRight className="size-5" />
+                                </ButtonLink>
+                            </MagneticButton>
                             <a
                                 href="#pricing"
                                 className="text-sm font-medium text-slate-300 hover:text-white transition-colors inline-flex items-center gap-1.5"

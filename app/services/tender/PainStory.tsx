@@ -26,6 +26,8 @@ import {
     type MotionValue,
 } from "framer-motion";
 
+import { PainGlyph } from "@/components/illustrations/PainGlyph";
+
 interface PainFrame {
     /** Big line — kinetic display type. */
     line: string;
@@ -33,25 +35,31 @@ interface PainFrame {
     sub: string;
     /** Climax frame uses a softer treatment. */
     climax?: boolean;
+    /** Which PainGlyph to use, if any. */
+    glyph?: 1 | 2 | 3 | 4;
 }
 
 const FRAMES: PainFrame[] = [
     {
         line: "4:58 PM.",
         sub: "Your TCC expired this morning. The deadline is in two minutes.",
+        glyph: 1,
     },
     {
         line: "Page 47, unsigned.",
         sub: "Same form, every bid, missed by everyone in the office.",
+        glyph: 2,
     },
     {
         line: "AGPO certificate. Lapsed.",
         sub: "The 30% reservation just slipped through your fingers.",
+        glyph: 3,
     },
     {
         climax: true,
         line: "This is what we fix.",
         sub: "Not bid wars. Paperwork.",
+        glyph: 4,
     },
 ];
 
@@ -138,27 +146,43 @@ function PainFrameView({
 }
 
 function PainFrameContent({ frame }: { frame: PainFrame }) {
+    const glyph = frame.glyph;
+
     if (frame.climax) {
         return (
-            <div className="text-center max-w-3xl">
-                <h3 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.05] tracking-tight text-balance mb-6">
-                    {frame.line}
-                </h3>
-                <p className="font-display text-2xl md:text-3xl text-success-600 leading-tight">
-                    {frame.sub}
-                </p>
+            <div className="grid lg:grid-cols-[1fr_auto] items-center gap-10 lg:gap-16 max-w-5xl">
+                <div className="text-center lg:text-left">
+                    <h3 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.05] tracking-tight text-balance mb-6">
+                        {frame.line}
+                    </h3>
+                    <p className="font-display text-2xl md:text-3xl text-success-600 leading-tight">
+                        {frame.sub}
+                    </p>
+                </div>
+                {glyph && (
+                    <div className="hidden lg:block w-[260px] h-[260px] mx-auto">
+                        <PainGlyph frame={glyph} />
+                    </div>
+                )}
             </div>
         );
     }
 
     return (
-        <div className="text-center max-w-3xl">
-            <h3 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.02] tracking-tight text-balance mb-8 tabular-nums">
-                {frame.line}
-            </h3>
-            <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto text-pretty leading-relaxed">
-                {frame.sub}
-            </p>
+        <div className="grid lg:grid-cols-[1fr_auto] items-center gap-10 lg:gap-16 max-w-5xl">
+            <div className="text-center lg:text-left">
+                <h3 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-brand-950 leading-[1.02] tracking-tight text-balance mb-8 tabular-nums">
+                    {frame.line}
+                </h3>
+                <p className="text-base md:text-xl text-slate-500 max-w-xl mx-auto lg:mx-0 text-pretty leading-relaxed">
+                    {frame.sub}
+                </p>
+            </div>
+            {glyph && (
+                <div className="hidden lg:block w-[260px] h-[260px] mx-auto">
+                    <PainGlyph frame={glyph} />
+                </div>
+            )}
         </div>
     );
 }

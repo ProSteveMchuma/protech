@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/Button";
+import { SuccessSparks } from "./SuccessSparks";
 import { slideX } from "@/lib/motion";
 
 const KRA_PIN = /^[A-Z]\d{9}[A-Z]$/;
@@ -191,14 +192,17 @@ export function HireForm() {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="bg-emerald-50 border border-emerald-200 rounded-3xl p-8 md:p-10 text-center"
             >
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, duration: 0.5, type: "spring", bounce: 0.4 }}
-                    className="size-16 rounded-full bg-success-500/10 flex items-center justify-center mx-auto mb-5"
-                >
-                    <CheckCircle2 className="size-9 text-success-600" />
-                </motion.div>
+                <div className="relative size-16 mx-auto mb-5">
+                    <SuccessSparks />
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.1, duration: 0.5, type: "spring", bounce: 0.4 }}
+                        className="size-16 rounded-full bg-success-500/10 flex items-center justify-center"
+                    >
+                        <CheckCircle2 className="size-9 text-success-600" />
+                    </motion.div>
+                </div>
                 <h3 className="font-display text-3xl font-bold text-emerald-900 mb-2">
                     We've got it.
                 </h3>

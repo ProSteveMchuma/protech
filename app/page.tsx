@@ -20,6 +20,10 @@ import { ArrowRight, ArrowDown } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { CostStory, ProcessStory } from "@/components/ScrollStory";
+import { HeroAmbient } from "@/components/HeroAmbient";
+import { MagneticButton } from "@/components/MagneticButton";
+import { TenderDocStack } from "@/components/illustrations/TenderDocStack";
+import { OdometerNumber } from "@/components/OdometerNumber";
 import { fadeUp, stagger } from "@/lib/motion";
 import { TENDER_TIERS } from "@/lib/tender-tiers";
 
@@ -36,7 +40,23 @@ export default function Home() {
                 aria-label="Pro Remote Tasks — tender management for Kenyan SMEs"
                 className="relative bg-aurora overflow-hidden flex items-center min-h-[100svh] lg:min-h-[80vh] py-20"
             >
-                <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+                {/* Faint topographic contour, "documents at scale" */}
+                <div
+                    aria-hidden
+                    className="absolute inset-0 bg-contours pointer-events-none"
+                />
+                {/* Cursor-following ambient orb (desktop, hover-capable, motion-allowed) */}
+                <HeroAmbient tone="light" />
+
+                {/* Anchor illustration — only on lg+ where headline doesn't need the room */}
+                <div
+                    aria-hidden
+                    className="hidden xl:block absolute right-[-2rem] top-1/2 -translate-y-1/2 w-[420px] h-[420px] opacity-90 text-brand-700 pointer-events-none"
+                >
+                    <TenderDocStack accentColor="#10B981" />
+                </div>
+
+                <div className="container mx-auto px-6 lg:px-8 max-w-5xl relative z-10">
                     <motion.div
                         initial="hidden"
                         animate="visible"
@@ -65,14 +85,16 @@ export default function Home() {
                         </motion.p>
 
                         <motion.div variants={fadeUp} className="flex justify-center">
-                            <ButtonLink
-                                href="/hire?service=tender"
-                                variant="primary"
-                                size="xl"
-                            >
-                                Get a free proposal
-                                <ArrowRight className="size-5" />
-                            </ButtonLink>
+                            <MagneticButton>
+                                <ButtonLink
+                                    href="/hire?service=tender"
+                                    variant="primary"
+                                    size="xl"
+                                >
+                                    Get a free proposal
+                                    <ArrowRight className="size-5" />
+                                </ButtonLink>
+                            </MagneticButton>
                         </motion.div>
 
                         <motion.div variants={fadeUp} className="mt-8">
@@ -133,14 +155,15 @@ export default function Home() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                        className="rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/60 premium-shadow p-10 md:p-16 text-center"
+                        className="relative rounded-3xl border border-slate-200 bg-paper premium-shadow p-10 md:p-16 text-center overflow-hidden"
                     >
                         <p className="text-xs uppercase tracking-[0.25em] font-bold text-slate-500 mb-6">
                             Starting at
                         </p>
                         <div className="flex items-baseline justify-center gap-2 mb-6">
                             <span className="font-mono tabular-nums font-bold text-5xl md:text-7xl text-brand-950 leading-none">
-                                KES {TENDER_WATCH_PRICE.toLocaleString()}
+                                <span className="text-brand-500 mr-2">KES</span>
+                                <OdometerNumber value={TENDER_WATCH_PRICE} />
                             </span>
                             <span className="font-mono text-base md:text-lg text-slate-500">
                                 /month
@@ -243,11 +266,15 @@ export default function Home() {
             {/* ---------------------------------------------------------- */}
             {/*  7 · FINAL CTA                                             */}
             {/* ---------------------------------------------------------- */}
-            <section className="relative bg-brand-950 bg-grid text-white py-32 md:py-40 overflow-hidden">
+            <section className="relative bg-stamp text-white py-32 md:py-40 overflow-hidden">
                 {/* Soft brand glow, kept subtle — no rotating border. */}
                 <div
                     aria-hidden
                     className="absolute inset-0 bg-aurora-dark opacity-60 pointer-events-none"
+                />
+                <div
+                    aria-hidden
+                    className="absolute inset-0 bg-stars pointer-events-none opacity-60"
                 />
 
                 <div className="container mx-auto px-6 lg:px-8 max-w-3xl relative z-10">
@@ -263,14 +290,16 @@ export default function Home() {
                         </h2>
 
                         <div className="flex flex-col items-center gap-6">
-                            <ButtonLink
-                                href="/hire?service=tender"
-                                variant="primary"
-                                size="xl"
-                            >
-                                Get a free proposal
-                                <ArrowRight className="size-5" />
-                            </ButtonLink>
+                            <MagneticButton>
+                                <ButtonLink
+                                    href="/hire?service=tender"
+                                    variant="primary"
+                                    size="xl"
+                                >
+                                    Get a free proposal
+                                    <ArrowRight className="size-5" />
+                                </ButtonLink>
+                            </MagneticButton>
                             <a
                                 href="/services/tender#pricing"
                                 className="text-sm font-medium text-slate-300 hover:text-white transition-colors inline-flex items-center gap-1.5"

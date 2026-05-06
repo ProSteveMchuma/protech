@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { PACKAGES, business } from "@/lib/config";
 import { Button } from "./ui/Button";
+import { SuccessSparks } from "./SuccessSparks";
 import { fadeUp } from "@/lib/motion";
 
 type Step = "details" | "pay" | "done";
@@ -87,14 +88,17 @@ export function CheckoutForm() {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center"
             >
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, duration: 0.5, type: "spring", bounce: 0.4 }}
-                    className="size-20 rounded-full bg-success-500/10 flex items-center justify-center mx-auto mb-5"
-                >
-                    <CheckCircle2 className="size-12 text-success-600" />
-                </motion.div>
+                <div className="relative size-20 mx-auto mb-5">
+                    <SuccessSparks />
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.1, duration: 0.5, type: "spring", bounce: 0.4 }}
+                        className="size-20 rounded-full bg-success-500/10 flex items-center justify-center"
+                    >
+                        <CheckCircle2 className="size-12 text-success-600" />
+                    </motion.div>
+                </div>
                 <h3 className="font-display text-2xl font-bold text-emerald-900 mb-2">
                     Payment submitted.
                 </h3>
