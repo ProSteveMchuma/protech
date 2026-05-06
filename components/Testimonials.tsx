@@ -27,6 +27,13 @@ const items = [
             "Our Instagram grew from 800 to 12,000 followers in 6 months. The team understands our local market in a way agencies abroad never did.",
         outcome: "+11.2k followers",
     },
+    {
+        name: "Kipchoge W.",
+        role: "Founder, Rift Valley Supplies & General Contractors",
+        body:
+            "We had not won a county tender in three years. Pro Remote Tasks caught two expired compliance docs in week one, then packaged a Nakuru County supply bid the way the procuring entity actually wanted it. We won.",
+        outcome: "Won KES 4.2M county supply",
+    },
 ];
 
 export function Testimonials() {

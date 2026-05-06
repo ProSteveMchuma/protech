@@ -12,6 +12,8 @@ import {
   Star,
   TrendingUp,
   Wallet,
+  Target,
+  AlarmClock,
 } from "lucide-react";
 import { StatsBand } from "@/components/StatsBand";
 import { Testimonials } from "@/components/Testimonials";
@@ -22,52 +24,77 @@ import { Badge } from "@/components/ui/Badge";
 import { Section } from "@/components/ui/Section";
 import { fadeUp, stagger, viewportOnce } from "@/lib/motion";
 import { FaqSection } from "@/components/FaqSection";
+import { TENDER_TIERS } from "@/lib/tender-tiers";
+
+const TENDER_PRO = TENDER_TIERS.find((t) => t.key === "tender-pro");
+const TENDER_PRO_PRICE = TENDER_PRO?.priceKES ?? 65000;
 
 const services = [
   {
+    title: "Tender Management",
+    description:
+      "Find, prepare, submit, and win Kenyan government and corporate tenders — without the paperwork war.",
+    price: "From KES 15,000/mo",
+    features: [
+      "Filtered tender alerts (PPIP, eGP, MyGov, county portals)",
+      "PPADA 2015 mandatory-document compliance check",
+      "WhatsApp deadline tracking — 72h, 24h, 4h pings",
+    ],
+    link: "/services/tender",
+    icon: <Target className="size-6 text-brand-600" />,
+    accent: "bg-brand-50",
+    flagship: true,
+  },
+  {
     title: "Virtual Assistants",
-    description: "Email, scheduling, admin, customer support — handled by a vetted pro.",
+    description:
+      "Email, scheduling, admin, customer support — handled by a vetted pro.",
     price: "From KES 25,000/mo",
     features: ["Up to 40 hrs/week", "Dedicated VA", "Account manager"],
     link: "/services/va",
     icon: <Users className="size-6 text-brand-600" />,
     accent: "bg-brand-50",
+    flagship: false,
   },
   {
     title: "Social Media",
-    description: "Strategy, content, daily engagement, growth — done for you.",
+    description:
+      "Strategy, content, daily engagement, growth — done for you.",
     price: "From KES 35,000/mo",
     features: ["Posts + reels", "Community mgmt", "Monthly reports"],
     link: "/services/social",
     icon: <Zap className="size-6 text-amber-500" />,
     accent: "bg-amber-50",
+    flagship: false,
   },
   {
     title: "Content & SEO",
-    description: "Articles that rank on Google and copy that converts cold traffic.",
+    description:
+      "Articles that rank on Google and copy that converts cold traffic.",
     price: "From KES 20,000/mo",
     features: ["SEO optimized", "Human writers", "Topic clusters"],
     link: "/services/content",
     icon: <Briefcase className="size-6 text-success-500" />,
     accent: "bg-emerald-50",
+    flagship: false,
   },
 ];
 
 const whyPoints = [
   {
-    icon: <Wallet className="size-5 text-success-500" />,
-    title: "Pay 67% less than hiring locally",
-    desc: "A full-time VA in Nairobi costs you ~KES 120k once you add NSSF, NHIF, leave, training and admin. Ours starts at KES 25k flat.",
+    icon: <AlarmClock className="size-5 text-brand-500" />,
+    title: "Bid more, miss less",
+    desc: "We catch the expired KRA TCC, the unsigned BOQ page, and the 4:58pm scramble before they cost you the bid. WhatsApp deadline pings 72h, 24h, and 4h before close — every time.",
   },
   {
-    icon: <ShieldCheck className="size-5 text-brand-500" />,
-    title: "Vetted, not freelance roulette",
-    desc: "Every pro passes our 4-stage screen — written, video, paid trial, reference check. No bidding wars, no surprises.",
+    icon: <ShieldCheck className="size-5 text-success-500" />,
+    title: "Managed service, not freelance roulette",
+    desc: "4-stage vetted Kenyan team, signed NDA on every bid, and zero facilitation payments. We do not touch anything that conflicts with PPADA s.66 — we win on documents, not introductions.",
   },
   {
     icon: <TrendingUp className="size-5 text-accent-500" />,
-    title: "Replace, don't fire",
-    desc: "If a match doesn't click in week 1 we swap them at no charge. You stay productive, we handle the people side.",
+    title: "The retainer pays for itself",
+    desc: "One missed compliance detail disqualifies you from every tender for 30+ days. Tender Pro pays for itself the first time we catch an expiring document before submission.",
   },
 ];
 
@@ -86,7 +113,7 @@ export default function Home() {
             >
               <motion.div variants={fadeUp} className="mb-6 inline-flex">
                 <Badge tone="brand" pulse>
-                  Vetted Kenyan Talent · Onboarded in 24h
+                  Tender Management · For Kenyan SMEs
                 </Badge>
               </motion.div>
 
@@ -94,24 +121,38 @@ export default function Home() {
                 variants={fadeUp}
                 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-brand-950 leading-[1.05] mb-6 text-balance"
               >
-                Stop hiring. <br />
-                Start <span className="text-gradient">scaling.</span>
+                Win more tenders. <br />
+                Without the paperwork{" "}
+                <span className="text-gradient">war.</span>
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
                 className="text-lg md:text-xl text-slate-600 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed text-pretty"
               >
-                Pro Remote Tasks gives you a managed virtual assistant, social media manager,
-                or content writer — vetted, ready to start, and billed at one flat monthly rate.
+                Pro Remote Tasks finds the tenders that fit you, runs the
+                PPADA-compliance check, writes the bid, and submits it on time.
+                Virtual assistants, social, and SEO content also available as
+                supporting services.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <ButtonLink href="#services" variant="primary" size="xl">
-                  See packages <ArrowRight className="size-5" />
+              <motion.div
+                variants={fadeUp}
+                className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
+              >
+                <ButtonLink
+                  href="/services/tender#pricing"
+                  variant="primary"
+                  size="xl"
+                >
+                  See tender packages <ArrowRight className="size-5" />
                 </ButtonLink>
-                <ButtonLink href="/hire" variant="secondary" size="xl">
-                  Book a free call
+                <ButtonLink
+                  href="/hire?service=tender"
+                  variant="secondary"
+                  size="xl"
+                >
+                  Talk to sales
                 </ButtonLink>
               </motion.div>
 
@@ -120,13 +161,13 @@ export default function Home() {
                 className="mt-10 flex flex-wrap gap-x-6 gap-y-3 justify-center lg:justify-start text-sm font-medium text-slate-600"
               >
                 <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-success-500" /> 100% vetted talent
+                  <ShieldCheck className="size-4 text-success-500" /> 100% PPADA-2015 compliance check
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-success-500" /> Money-back week 1
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Star className="size-4 text-amber-500 fill-amber-500" /> 4.9/5 client rating
+                  <Star className="size-4 text-amber-500 fill-amber-500" /> 150+ Kenyan pros
                 </span>
               </motion.div>
             </motion.div>
@@ -161,10 +202,10 @@ export default function Home() {
             variants={fadeUp}
             className="font-display text-4xl md:text-5xl font-bold text-slate-900 mb-4 text-balance"
           >
-            One flat fee. Zero negotiation.
+            Tender management — and the team behind it.
           </motion.h2>
           <motion.p variants={fadeUp} className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Pick a package, pay via M-Pesa, and your new team member starts within 48 hours.
+            Flagship is tenders. Supporting services keep your business running while we chase the bids.
           </motion.p>
         </motion.div>
 
@@ -173,33 +214,85 @@ export default function Home() {
           whileInView="visible"
           viewport={viewportOnce}
           variants={stagger(0, 0.1)}
-          className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto"
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
         >
-          {services.map((service, i) => (
-            <motion.div key={i} variants={fadeUp}>
-              <Link
-                href={service.link}
-                className="group block h-full p-8 rounded-3xl bg-white border border-slate-200/70 premium-shadow-hover transition-all"
+          {services.map((service, i) => {
+            const isFlagship = service.flagship;
+            return (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                className={isFlagship ? "md:col-span-2 lg:col-span-2" : ""}
               >
-                <div className={`w-14 h-14 rounded-2xl ${service.accent} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
-                  {service.icon}
-                </div>
-                <h3 className="font-display text-2xl font-bold text-slate-900 mb-2">{service.title}</h3>
-                <p className="text-slate-600 mb-5 min-h-[3rem]">{service.description}</p>
-                <div className="text-base font-bold text-brand-600 font-mono mb-5">{service.price}</div>
-                <ul className="space-y-2.5 mb-7">
-                  {service.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2.5 text-sm text-slate-700">
-                      <CheckCircle2 className="size-4 text-success-500" /> {feature}
-                    </li>
-                  ))}
-                </ul>
-                <span className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 group-hover:gap-3 transition-all">
-                  See details <ArrowRight className="size-4" />
-                </span>
-              </Link>
-            </motion.div>
-          ))}
+                <Link
+                  href={service.link}
+                  className={`group relative block h-full p-8 rounded-3xl border premium-shadow-hover transition-all ${
+                    isFlagship
+                      ? "bg-gradient-to-br from-brand-50 via-white to-accent-50/40 border-brand-200"
+                      : "bg-white border-slate-200/70"
+                  }`}
+                >
+                  {isFlagship && (
+                    <span className="absolute top-5 right-5">
+                      <Badge tone="success" pulse>
+                        Flagship
+                      </Badge>
+                    </span>
+                  )}
+                  <div
+                    className={`w-14 h-14 rounded-2xl ${service.accent} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
+                      isFlagship ? "ring-1 ring-brand-200" : ""
+                    }`}
+                  >
+                    {service.icon}
+                  </div>
+                  <h3
+                    className={`font-display font-bold text-slate-900 mb-2 ${
+                      isFlagship ? "text-3xl" : "text-2xl"
+                    }`}
+                  >
+                    {service.title}
+                  </h3>
+                  <p
+                    className={`text-slate-600 mb-5 ${
+                      isFlagship ? "text-lg" : "min-h-[3rem]"
+                    }`}
+                  >
+                    {service.description}
+                  </p>
+                  <div
+                    className={`font-bold text-brand-600 font-mono tabular-nums mb-5 ${
+                      isFlagship ? "text-lg" : "text-base"
+                    }`}
+                  >
+                    {service.price}
+                  </div>
+                  <ul
+                    className={`space-y-2.5 mb-7 ${
+                      isFlagship ? "md:grid md:grid-cols-1 md:gap-2.5 md:space-y-0" : ""
+                    }`}
+                  >
+                    {service.features.map((feature, j) => (
+                      <li
+                        key={j}
+                        className="flex items-start gap-2.5 text-sm text-slate-700"
+                      >
+                        <CheckCircle2 className="size-4 mt-0.5 text-success-500 shrink-0" /> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-sm font-bold group-hover:gap-3 transition-all ${
+                      isFlagship ? "text-brand-700" : "text-brand-600"
+                    }`}
+                  >
+                    {isFlagship ? "See tender packages" : "See details"}{" "}
+                    <ArrowRight className="size-4" />
+                  </span>
+                </Link>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </Section>
 
@@ -219,10 +312,12 @@ export default function Home() {
               variants={fadeUp}
               className="font-display text-4xl md:text-5xl font-bold text-slate-900 mb-6 text-balance"
             >
-              The economics just work.
+              Built for the firms that bid.
             </motion.h2>
             <motion.p variants={fadeUp} className="text-slate-600 mb-10 text-lg">
-              You get senior-level Kenyan talent at a fraction of the cost of hiring locally — without payroll, NSSF, NHIF, or HR headaches.
+              Most lost tenders in Kenya are not lost on price. They are lost on
+              an expired TCC, an unsigned BOQ page, or a 4:58pm scramble. We
+              close those gaps for you — month after month.
             </motion.p>
 
             <motion.div variants={stagger(0, 0.08)} className="space-y-5">
@@ -252,37 +347,42 @@ export default function Home() {
               Monthly cost comparison
             </div>
             <div className="font-display text-2xl font-bold text-slate-900 mb-8">
-              Hire locally vs. <span className="text-gradient">Pro Remote Tasks</span>
+              Bidding alone vs.{" "}
+              <span className="text-gradient">Pro Remote Tasks Tender Pro</span>
             </div>
 
             <div className="space-y-6">
               <CostBar
-                label="In-house junior VA, Nairobi"
-                amount="KES 120,000"
+                label="Bidding alone (in-house bid coordinator)"
+                amount="KES 195,000"
                 width="100%"
                 tone="local"
                 breakdown={[
-                  { k: "Salary", v: "75,000" },
-                  { k: "NSSF + NHIF + leave", v: "18,000" },
-                  { k: "Training + onboarding", v: "12,000" },
-                  { k: "Office + admin", v: "15,000" },
+                  { k: "Salary + statutory", v: "120,000" },
+                  { k: "Lost-bid debrief, none", v: "0" },
+                  { k: "Missed-deadline write-offs", v: "60,000" },
+                  { k: "BOQ rework + reprints", v: "15,000" },
                 ]}
               />
               <CostBar
-                label="Pro Remote Tasks — Growth VA"
-                amount="KES 40,000"
+                label="Pro Remote Tasks — Tender Pro"
+                amount={`KES ${TENDER_PRO_PRICE.toLocaleString()}`}
                 width="33%"
                 tone="prt"
                 breakdown={[
-                  { k: "All-in monthly fee", v: "40,000" },
-                  { k: "Replacement guarantee", v: "Free" },
-                  { k: "Account management", v: "Included" },
+                  { k: "All-in monthly retainer", v: TENDER_PRO_PRICE.toLocaleString() },
+                  { k: "Up to 4 bids/month", v: "Included" },
+                  { k: "PPADA compliance check", v: "Included" },
                 ]}
               />
             </div>
             <div className="mt-8 pt-6 border-t border-slate-200 flex items-baseline gap-3">
-              <span className="font-display text-3xl font-bold text-success-500">67%</span>
-              <span className="text-sm text-slate-600">saved every month, every year.</span>
+              <span className="font-display text-3xl font-bold text-success-500 font-mono tabular-nums">
+                67%
+              </span>
+              <span className="text-sm text-slate-600">
+                less than the cost of one missed tender deadline.
+              </span>
             </div>
           </motion.div>
         </div>
@@ -339,6 +439,11 @@ export default function Home() {
       {/* FAQ */}
       <FaqSection
         items={[
+          {
+            question: "Can you guarantee I will win a tender?",
+            answer:
+              "No, and anyone who promises that is lying — PPRA scoring is the procuring entity's job, not ours. What we guarantee is that you submit more bids, on time, with every mandatory document attached and every BOQ page signed.",
+          },
           { question: "How are your pros vetted?", answer: "Four stages: written assessment, recorded video, paid trial week, and reference checks. We accept under 3% of applicants." },
           { question: "Do I sign a long contract?", answer: "No. All packages are month-to-month. Cancel anytime with 15 days notice." },
           { question: "How do I pay?", answer: `Lipa Na M-Pesa Paybill 767363, account number = your full name. After paying, drop the M-Pesa code on /checkout. We verify and onboard within 4 business hours.` },
@@ -352,19 +457,29 @@ export default function Home() {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="relative rounded-[2rem] overflow-hidden conic-border z-0">
             <div className="relative bg-gradient-to-br from-brand-950 via-brand-900 to-slate-950 rounded-[calc(2rem-2px)] p-12 md:p-16 text-center text-white bg-grid">
-              <Badge tone="dark" className="mb-6">Get started today</Badge>
+              <Badge tone="dark" className="mb-6">Talk to a tender lead</Badge>
               <h2 className="font-display text-4xl md:text-6xl font-bold mb-5 text-balance">
-                Ready to <span className="text-gradient">reclaim your time?</span>
+                Ready to bid like the firms that{" "}
+                <span className="text-gradient">win?</span>
               </h2>
               <p className="text-slate-300 max-w-xl mx-auto mb-10 text-lg">
-                Tell us what you need. We'll match you with a vetted Kenyan pro within 24 hours. Risk-free in week 1.
+                30-minute discovery call, no pitch deck. We will look at your
+                last three lost bids and tell you what we would do differently.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <ButtonLink href="/hire" variant="primary" size="xl">
-                  Get a free proposal <ArrowRight className="size-5" />
+                <ButtonLink
+                  href="/services/tender#pricing"
+                  variant="primary"
+                  size="xl"
+                >
+                  See tender packages <ArrowRight className="size-5" />
                 </ButtonLink>
-                <ButtonLink href="/checkout?pkg=va-growth" variant="outline" size="xl">
-                  Pay & onboard now
+                <ButtonLink
+                  href="/hire?service=tender"
+                  variant="outline"
+                  size="xl"
+                >
+                  Talk to sales
                 </ButtonLink>
               </div>
             </div>
@@ -396,7 +511,7 @@ function CostBar({
     <div>
       <div className="flex justify-between items-baseline mb-2">
         <span className="text-sm font-semibold text-slate-700">{label}</span>
-        <span className="font-mono font-bold text-slate-900">{amount}</span>
+        <span className="font-mono tabular-nums font-bold text-slate-900">{amount}</span>
       </div>
       <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
         <motion.div
@@ -411,7 +526,7 @@ function CostBar({
         {breakdown.map((b) => (
           <div key={b.k} className="flex justify-between">
             <span>{b.k}</span>
-            <span className="font-mono">{b.v}</span>
+            <span className="font-mono tabular-nums">{b.v}</span>
           </div>
         ))}
       </div>

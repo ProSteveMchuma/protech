@@ -13,6 +13,8 @@ interface PricingTier {
     features: string[];
     recommended?: boolean;
     pkgKey?: string;
+    /** Optional discreet note shown directly under the price (e.g. success-fee disclosure). */
+    priceNote?: string;
 }
 
 interface Props {
@@ -52,7 +54,7 @@ export function PricingV2({ tiers, serviceName }: Props) {
                             {tier.description}
                         </p>
 
-                        <div className="font-mono text-3xl font-bold mb-6 leading-none">
+                        <div className="font-mono text-3xl font-bold leading-none">
                             {tier.price.split("/")[0]}
                             {tier.price.includes("/") && (
                                 <span className={clsx("text-sm font-medium ml-1", tier.recommended ? "text-slate-400" : "text-slate-500")}>
@@ -60,6 +62,17 @@ export function PricingV2({ tiers, serviceName }: Props) {
                                 </span>
                             )}
                         </div>
+                        {tier.priceNote ? (
+                            <p
+                                className={clsx(
+                                    "mt-2 text-xs leading-relaxed",
+                                    tier.recommended ? "text-slate-400" : "text-slate-500"
+                                )}
+                            >
+                                {tier.priceNote}
+                            </p>
+                        ) : null}
+                        <div className="mb-6" />
 
                         <ul className="space-y-3 mb-8 flex-1">
                             {tier.features.map((feature, j) => (

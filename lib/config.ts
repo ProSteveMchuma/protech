@@ -26,4 +26,7 @@ export const PACKAGES: Record<
     "content-blog": { service: "Content & SEO", tier: "SEO Blog Pack", amount: 20000 },
     "content-authority": { service: "Content & SEO", tier: "Authority Builder", amount: 45000 },
     "content-engine": { service: "Content & SEO", tier: "Content Engine", amount: 90000 },
+    "tender-watch": { service: "Tender Management", tier: "Tender Watch", amount: 15000 },
+    "tender-pro": { service: "Tender Management", tier: "Tender Pro", amount: 65000 },
+    "tender-strategist": { service: "Tender Management", tier: "Tender Strategist", amount: 180000 },
 };

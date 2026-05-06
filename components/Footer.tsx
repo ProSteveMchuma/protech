@@ -27,6 +27,7 @@ export function Footer() {
                     <div className="md:col-span-2">
                         <h4 className="text-white font-bold mb-4 text-sm">Services</h4>
                         <ul className="space-y-3 text-sm">
+                            <li><Link href="/services/tender" className="hover:text-white transition">Tender Management</Link></li>
                             <li><Link href="/services/va" className="hover:text-white transition">Virtual Assistants</Link></li>
                             <li><Link href="/services/social" className="hover:text-white transition">Social Media</Link></li>
                             <li><Link href="/services/content" className="hover:text-white transition">Content & SEO</Link></li>
