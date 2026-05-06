@@ -362,13 +362,15 @@ function LeadsTable({
                         </thead>
                         <tbody>
                             {filtered.map((l) => {
-                                const d = l.data as Record<string, string | undefined>;
-                                const summary =
-                                    d.serviceType ||
-                                    d.skills ||
-                                    d.projectDetails ||
-                                    d.experience ||
-                                    "";
+                                const d = l.data as Record<string, unknown>;
+                                const isTender = d.serviceType === "tender";
+                                const summary = isTender
+                                    ? renderTenderSummary(d)
+                                    : (d.serviceType as string) ||
+                                      (d.skills as string) ||
+                                      (d.projectDetails as string) ||
+                                      (d.experience as string) ||
+                                      "";
                                 return (
                                     <tr key={l.id} className="border-t border-slate-100 align-top">
                                         <td className="px-4 py-3">
@@ -377,16 +379,34 @@ function LeadsTable({
                                             </span>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="font-semibold text-slate-900">{d.fullName || "—"}</div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-semibold text-slate-900">
+                                                    {(d.fullName as string) || "—"}
+                                                </span>
+                                                {isTender && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wide">
+                                                        Tender
+                                                    </span>
+                                                )}
+                                            </div>
                                             <a
-                                                href={`mailto:${d.email}`}
+                                                href={`mailto:${d.email as string}`}
                                                 className="text-xs text-blue-600 hover:underline"
                                             >
-                                                {d.email}
+                                                {d.email as string}
                                             </a>
+                                            {isTender && d.companyName ? (
+                                                <div className="text-xs text-slate-500">
+                                                    {d.companyName as string}
+                                                </div>
+                                            ) : null}
                                         </td>
                                         <td className="px-4 py-3 text-slate-600 max-w-md">
-                                            <div className="line-clamp-2 text-xs">{summary || "—"}</div>
+                                            <div
+                                                className={`line-clamp-2 text-xs ${isTender ? "font-medium text-slate-800" : ""}`}
+                                            >
+                                                {summary || "—"}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
                                             {new Date(l.createdAt).toLocaleString("en-KE", {
@@ -438,6 +458,26 @@ function TabButton({
             {children}
         </button>
     );
+}
+
+function renderTenderSummary(d: Record<string, unknown>): string {
+    const revenue = d.revenueBand as string | undefined;
+    const industry = d.industry as string | undefined;
+    const target = d.targetTenderSize;
+
+    let tier = "Discovery";
+    if (revenue === "under-5m" || revenue === "5m-20m") tier = "Watch likely";
+    else if (revenue === "20m-50m") tier = "Pro likely";
+    else if (revenue === "50m-200m" || revenue === "over-200m") tier = "Strategist likely";
+
+    const targetFmt =
+        typeof target === "number"
+            ? `KES ${target.toLocaleString()} target`
+            : typeof target === "string" && target.length > 0
+              ? `KES ${Number(target).toLocaleString()} target`
+              : "no target";
+
+    return `${tier} · ${industry ?? "—"} · ${targetFmt}`;
 }
 
 function StatCard({

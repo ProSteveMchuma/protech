@@ -17,8 +17,15 @@ export async function POST(req: Request) {
         const data = { email, ...rest };
         const lead = await saveLead(type, data);
 
+        const isTenderLead =
+            type === "Client Hire Lead" && data.serviceType === "tender";
+        const industry = typeof data.industry === "string" ? data.industry : "unspecified";
+        const subject = isTenderLead
+            ? `[PRT] Tender Lead — ${industry}`
+            : `[PRT] New ${type}`;
+
         const result = await sendNotification({
-            subject: `[PRT] New ${type}`,
+            subject,
             html: leadToHtml(type, data),
             replyTo: email,
         });
