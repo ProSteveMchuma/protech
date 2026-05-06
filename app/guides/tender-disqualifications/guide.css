@@ -1,0 +1,128 @@
+/*
+ * Guide stylesheet — locked-state mask + @media print rules.
+ *
+ * Locked state: when the visitor has not unlocked yet, the body content past
+ * the hero gets a soft fade-out so it teases without giving the full piece
+ * away. The fade is purely CSS; the content is still in the DOM (good for
+ * crawlers — Google sees the full article, the user sees the gate).
+ *
+ * Print state: hide navigation, footer, the email gate, all buttons marked
+ * with [data-print-hide], and the framer-motion animations. Force black-on-white
+ * with no aurora or shadows. Page-break before each numbered reason where the
+ * browser allows it.
+ */
+
+.guide-locked .guide-reasons,
+.guide-locked .guide-section {
+    -webkit-mask-image: linear-gradient(to bottom, black 22%, rgba(0, 0, 0, 0.18) 60%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 22%, rgba(0, 0, 0, 0.18) 60%, transparent 90%);
+    pointer-events: none;
+    user-select: none;
+    filter: blur(0.5px);
+}
+
+@media print {
+    /* Hide app chrome and the gate */
+    nav,
+    footer,
+    [data-print-hide] {
+        display: none !important;
+    }
+
+    /* Strip animations, transforms, gradients, shadows */
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    /* Force a clean print canvas */
+    html,
+    body,
+    .guide-root {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    /* Hero loses the dark background and aurora — black ink on white */
+    .guide-hero {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding-top: 0 !important;
+        padding-bottom: 1.5rem !important;
+        border-bottom: 2px solid #0f172a !important;
+    }
+    .guide-hero h1 {
+        color: #0f172a !important;
+    }
+    .guide-hero p {
+        color: #334155 !important;
+    }
+    .guide-hero ul,
+    .guide-hero .badge,
+    .guide-hero [class*="bg-aurora"],
+    .guide-hero [class*="bg-grid"] {
+        background: transparent !important;
+    }
+    /* Drop the aurora overlay div */
+    .guide-hero > div.absolute {
+        display: none !important;
+    }
+
+    /* Conic border CTA card collapses to plain text in print — we do not
+     * want the dark sales card eating ink at the end of a printed PDF.
+     * The "Talk to us" CTA is web-only value; a printed PDF can end on the
+     * 10th reason. */
+    .guide-final-cta,
+    .guide-print-callout {
+        display: none !important;
+    }
+
+    /* Each reason starts on a fresh page where the browser allows it. */
+    .reason-block {
+        page-break-before: always;
+        break-before: page;
+        border-top: 0 !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+    .reason-block:first-child {
+        page-break-before: auto;
+        break-before: auto;
+    }
+    /* Keep the example card on whatever page its parent reason is on. */
+    .reason-example,
+    .reason-block ul,
+    .reason-block h2,
+    .reason-block h3 {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Numeral block reads better as a simple inked figure in print. */
+    .reason-numeral {
+        background: transparent !important;
+        color: #0f172a !important;
+        border: 1.5px solid #0f172a !important;
+    }
+
+    /* Locked mask must not survive into print — but in practice the print
+     * version will only fire when the user has unlocked (the button is hidden
+     * otherwise). Defensive reset anyway. */
+    .guide-locked .guide-reasons,
+    .guide-locked .guide-section {
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+        pointer-events: auto !important;
+        user-select: auto !important;
+    }
+
+    /* Reasonable A4 margins */
+    @page {
+        margin: 18mm 16mm;
+    }
+}

@@ -41,5 +41,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'monthly',
             priority: 0.7,
         },
+        {
+            url: `${baseUrl}/guides/tender-disqualifications`,
+            lastModified,
+            changeFrequency: 'monthly',
+            priority: 0.8,
+        },
     ]
 }

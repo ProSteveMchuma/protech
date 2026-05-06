@@ -480,6 +480,31 @@ export default function TenderServicePage() {
 
             <FaqSection items={FAQ_ITEMS} />
 
+            {/* Lead magnet CTA — links to the disqualification guide. Inline,
+             * not a full new section, so the page structure stays as-is. */}
+            <section className="pb-16 -mt-8 bg-white">
+                <div className="container mx-auto px-4 max-w-3xl">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 md:p-7 flex flex-col md:flex-row gap-4 md:items-center">
+                        <div className="flex-1">
+                            <Badge tone="sun" className="mb-2">Free guide</Badge>
+                            <h3 className="font-display text-xl md:text-2xl font-bold text-slate-900 mb-1">
+                                10 reasons Kenyan SMEs get disqualified from tenders
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                The technicalities that lose more bids than price ever does — and how to fix every one this week.
+                            </p>
+                        </div>
+                        <ButtonLink
+                            href="/guides/tender-disqualifications?utm_source=tender-page"
+                            variant="dark"
+                            size="lg"
+                        >
+                            Read the guide <ArrowRight className="size-4" />
+                        </ButtonLink>
+                    </div>
+                </div>
+            </section>
+
             {/* Final CTA */}
             <section className="py-24 bg-white">
                 <div className="container mx-auto px-4 max-w-5xl">
