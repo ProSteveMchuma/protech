@@ -13,6 +13,7 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 const links: MobileNavLink[] = [
     { name: "Tender", href: "/services/tender", flagship: true },
     { name: "Virtual Assistants", href: "/services/va" },
+    { name: "About", href: "/about" },
     { name: "Guide", href: "/guides/tender-disqualifications" },
     { name: "Apply", href: "/apply" },
 ];
