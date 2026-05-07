@@ -20,6 +20,7 @@ import { FaqSection } from "@/components/FaqSection";
 import { PricingV2 } from "@/components/PricingV2";
 import { HeroAmbient } from "@/components/HeroAmbient";
 import { MagneticButton } from "@/components/MagneticButton";
+import { RoiCalculator } from "@/components/RoiCalculator";
 
 import { TENDER_BUNDLE_ADDONS, TENDER_TIERS } from "@/lib/tender-tiers";
 
@@ -162,6 +163,10 @@ export default function TenderServicePage() {
                             Month-to-month. Cancel with 15 days notice. If we are not
                             the right fit in week one, you get a full refund.
                         </p>
+                    </div>
+
+                    <div className="mb-24">
+                        <RoiCalculator />
                     </div>
 
                     <PricingV2 tiers={PRICING_TIERS} serviceName="tender" />

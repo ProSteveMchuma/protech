@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 import { fadeUp, stagger, viewportOnce } from "@/lib/motion";
+import { TiltCard } from "./ui/TiltCard";
 
 interface PricingTier {
     name: string;
@@ -29,18 +30,19 @@ export function PricingV2({ tiers, serviceName }: Props) {
             whileInView="visible"
             viewport={viewportOnce}
             variants={stagger(0, 0.1)}
-            className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4"
+            className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 perspective-[2000px]"
         >
             {tiers.map((tier, i) => (
-                <motion.div key={i} variants={fadeUp}>
-                    <div
-                        className={clsx(
-                            "relative h-full rounded-3xl border p-8 flex flex-col transition-all duration-500",
-                            tier.recommended
-                                ? "bg-brand-950 text-white border-brand-950 shadow-2xl shadow-brand-950/30 lg:scale-[1.04] z-10"
-                                : "bg-white text-slate-900 border-slate-200 premium-shadow-hover"
-                        )}
-                    >
+                <motion.div key={i} variants={fadeUp} className="h-full">
+                    <TiltCard>
+                        <div
+                            className={clsx(
+                                "relative h-full rounded-3xl border p-8 flex flex-col transition-colors duration-500",
+                                tier.recommended
+                                    ? "bg-brand-950 text-white border-brand-950 shadow-2xl shadow-brand-950/30 lg:scale-[1.04] z-10"
+                                    : "bg-white text-slate-900 border-slate-200 premium-shadow"
+                            )}
+                        >
                         {tier.recommended && (
                             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                                 <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-accent-500 to-brand-500 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg">
@@ -117,6 +119,7 @@ export function PricingV2({ tiers, serviceName }: Props) {
                             </Link>
                         </div>
                     </div>
+                    </TiltCard>
                 </motion.div>
             ))}
         </motion.div>

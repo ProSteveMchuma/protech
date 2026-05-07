@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Menu } from "lucide-react";
 import { clsx } from "clsx";
 import { Logo } from "./Logo";
 import { MobileMenu, type MobileNavLink } from "./MobileMenu";
 import { ButtonLink } from "./ui/Button";
 import { Badge } from "./ui/Badge";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 const links: MobileNavLink[] = [
     { name: "Tender", href: "/services/tender", flagship: true },
@@ -19,19 +20,36 @@ const links: MobileNavLink[] = [
 export function Navbar() {
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [hidden, setHidden] = useState(false);
+    const { scrollY } = useScroll();
 
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 8);
-        onScroll();
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        const previous = scrollY.getPrevious() ?? 0;
+        
+        if (latest > 8) {
+            setScrolled(true);
+        } else {
+            setScrolled(false);
+        }
+        
+        if (latest > 150 && latest > previous) {
+            setHidden(true);
+        } else {
+            setHidden(false);
+        }
+    });
 
     return (
         <>
-            <nav
+            <motion.nav
+                variants={{
+                    visible: { y: 0 },
+                    hidden: { y: "-100%" }
+                }}
+                animate={hidden ? "hidden" : "visible"}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
                 className={clsx(
-                    "sticky top-0 z-50 transition-all duration-300",
+                    "fixed top-0 inset-x-0 z-50 transition-colors duration-300",
                     scrolled
                         ? "glass border-b border-slate-200/60 shadow-sm"
                         : "bg-transparent border-b border-transparent"
@@ -89,7 +107,7 @@ export function Navbar() {
                         <Menu className="size-5" />
                     </button>
                 </div>
-            </nav>
+            </motion.nav>
             <MobileMenu open={open} onClose={() => setOpen(false)} links={links} />
         </>
     );

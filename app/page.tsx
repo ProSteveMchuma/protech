@@ -24,6 +24,7 @@ import { CostStory, ProcessStory } from "@/components/ScrollStory";
 import { HeroAmbient } from "@/components/HeroAmbient";
 import { MagneticButton } from "@/components/MagneticButton";
 import { OdometerNumber } from "@/components/OdometerNumber";
+import { ComplianceQuiz } from "@/components/ComplianceQuiz";
 import { fadeUp, stagger, imageReveal } from "@/lib/motion";
 import { TENDER_TIERS } from "@/lib/tender-tiers";
 
@@ -110,6 +111,15 @@ export default function Home() {
                             </a>
                         </motion.div>
                     </motion.div>
+                </div>
+            </section>
+
+            {/* ---------------------------------------------------------- */}
+            {/*  1.5 · QUIZ                                                */}
+            {/* ---------------------------------------------------------- */}
+            <section className="relative bg-slate-50 py-20 -mt-10 mb-10 z-20">
+                <div className="container mx-auto px-6 lg:px-8">
+                    <ComplianceQuiz />
                 </div>
             </section>
 
