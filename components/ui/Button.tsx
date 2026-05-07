@@ -36,7 +36,7 @@ interface BaseProps {
 }
 
 const baseClasses =
-    "inline-flex items-center justify-center font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed select-none";
+    "inline-flex items-center justify-center font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed select-none hover:scale-[1.02] active:scale-[0.98] focus-visible:scale-[1.02]";
 
 interface ButtonProps
     extends BaseProps,

@@ -46,4 +46,14 @@ export const stagger = (delayChildren = 0, staggerChildren = 0.08): Variants => 
     },
 });
 
+export const imageReveal: Variants = {
+    hidden: { opacity: 0, scale: 1.05, filter: "blur(4px)" },
+    visible: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { duration: 0.8, ease: easeOutExpo } },
+};
+
+export const hoverScale = {
+    hover: { scale: 1.02, transition: { duration: 0.2, ease: "easeOut" } },
+    tap: { scale: 0.98, transition: { duration: 0.1, ease: "easeOut" } }
+};
+
 export const viewportOnce = { once: true, amount: 0.3 } as const;
