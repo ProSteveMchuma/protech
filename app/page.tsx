@@ -25,6 +25,10 @@ import { HeroAmbient } from "@/components/HeroAmbient";
 import { MagneticButton } from "@/components/MagneticButton";
 import { OdometerNumber } from "@/components/OdometerNumber";
 import { ComplianceQuiz } from "@/components/ComplianceQuiz";
+import { LogoStrip } from "@/components/LogoStrip";
+import { BentoGrid } from "@/components/BentoGrid";
+import { TiltCard } from "@/components/ui/TiltCard";
+import { TeamSection } from "@/components/TeamSection";
 import { fadeUp, stagger, imageReveal } from "@/lib/motion";
 import { TENDER_TIERS } from "@/lib/tender-tiers";
 
@@ -114,6 +118,8 @@ export default function Home() {
                 </div>
             </section>
 
+            <LogoStrip />
+
             {/* ---------------------------------------------------------- */}
             {/*  1.5 · QUIZ                                                */}
             {/* ---------------------------------------------------------- */}
@@ -168,42 +174,45 @@ export default function Home() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.5 }}
                         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative rounded-3xl border border-slate-200 bg-paper premium-shadow p-10 md:p-16 text-center overflow-hidden"
                     >
-                        <p className="text-xs uppercase tracking-[0.25em] font-bold text-slate-500 mb-6">
-                            Starting at
-                        </p>
-                        <div className="flex items-baseline justify-center gap-2 mb-6">
-                            <span className="font-mono tabular-nums font-bold text-5xl md:text-7xl text-brand-950 leading-none">
-                                <span className="text-brand-500 mr-2">KES</span>
-                                <OdometerNumber value={TENDER_WATCH_PRICE} />
-                            </span>
-                            <span className="font-mono text-base md:text-lg text-slate-500">
-                                /month
-                            </span>
-                        </div>
-                        <p className="text-base md:text-lg text-slate-600 max-w-md mx-auto mb-10 text-pretty">
-                            Filtered tender alerts, compliance audit, and deadline
-                            tracking. From day one.
-                        </p>
+                        <TiltCard>
+                            <div className="relative rounded-3xl border border-slate-200 bg-paper premium-shadow p-10 md:p-16 text-center overflow-hidden w-full">
+                                <p className="text-xs uppercase tracking-[0.25em] font-bold text-slate-500 mb-6">
+                                    Starting at
+                                </p>
+                                <div className="flex items-baseline justify-center gap-2 mb-6">
+                                    <span className="font-mono tabular-nums font-bold text-5xl md:text-7xl text-brand-950 leading-none">
+                                        <span className="text-brand-500 mr-2">KES</span>
+                                        <OdometerNumber value={TENDER_WATCH_PRICE} />
+                                    </span>
+                                    <span className="font-mono text-base md:text-lg text-slate-500">
+                                        /month
+                                    </span>
+                                </div>
+                                <p className="text-base md:text-lg text-slate-600 max-w-md mx-auto mb-10 text-pretty">
+                                    Filtered tender alerts, compliance audit, and deadline
+                                    tracking. From day one.
+                                </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <ButtonLink
-                                href="/services/tender#pricing"
-                                variant="primary"
-                                size="lg"
-                            >
-                                See all tiers
-                                <ArrowRight className="size-4" />
-                            </ButtonLink>
-                            <a
-                                href="/hire?service=tender"
-                                className="text-sm font-medium text-slate-600 hover:text-brand-700 transition-colors inline-flex items-center gap-1.5"
-                            >
-                                or talk to sales
-                                <ArrowRight className="size-3.5" />
-                            </a>
-                        </div>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                    <ButtonLink
+                                        href="/services/tender#pricing"
+                                        variant="primary"
+                                        size="lg"
+                                    >
+                                        See all tiers
+                                        <ArrowRight className="size-4" />
+                                    </ButtonLink>
+                                    <a
+                                        href="/hire?service=tender"
+                                        className="text-sm font-medium text-slate-600 hover:text-brand-700 transition-colors inline-flex items-center gap-1.5"
+                                    >
+                                        or talk to sales
+                                        <ArrowRight className="size-3.5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </TiltCard>
                     </motion.div>
                 </div>
             </section>
@@ -272,39 +281,14 @@ export default function Home() {
             </section>
 
             {/* ---------------------------------------------------------- */}
-            {/*  6 · ALSO AVAILABLE: VA — quiet single-line footnote       */}
+            {/*  5.5 · TEAM TEASER                                         */}
             {/* ---------------------------------------------------------- */}
-            <section className="relative bg-white py-24 md:py-32">
-                <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
-                    <div className="flex flex-col md:flex-row items-center gap-12 bg-slate-50 rounded-3xl p-8 md:p-12 premium-shadow-hover">
-                        <motion.div 
-                            className="relative w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden"
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, amount: 0.4 }}
-                            variants={imageReveal}
-                        >
-                            <Image src="/images/va_service.png" alt="Virtual Assistant Service" fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
-                        </motion.div>
-                        <div className="w-full md:w-2/3 text-center md:text-left">
-                            <p className="text-lg md:text-xl text-slate-600 leading-relaxed text-balance mb-6">
-                                Need admin help instead? We also run vetted virtual
-                                assistants from{" "}
-                                <span className="font-mono tabular-nums font-semibold text-slate-900">
-                                    KES 25,000/mo
-                                </span>
-                                .
-                            </p>
-                            <a
-                                href="/services/va"
-                                className="inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-brand-800 transition"
-                            >
-                                See VA packages <ArrowRight className="size-4" />
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <TeamSection />
+
+            {/* ---------------------------------------------------------- */}
+            {/*  6 · BENTO GRID (Secondary Features & VA)                  */}
+            {/* ---------------------------------------------------------- */}
+            <BentoGrid />
 
             {/* ---------------------------------------------------------- */}
             {/*  7 · FINAL CTA                                             */}
