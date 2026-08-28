@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     await saveLead("Lead Magnet — Tender Disqualifications", data);
 
     sendNotification({
-        subject: `[PRT] Lead magnet unlock — ${parsed.email}`,
+        subject: `[ProPrint] Legacy lead magnet unlock — ${parsed.email}`,
         html: leadToHtml("Lead Magnet — Tender Disqualifications", data),
         replyTo: parsed.email,
     }).catch((e) => console.warn("[lead-magnet] notify failed:", (e as Error).message));

@@ -86,7 +86,7 @@ export async function POST(req: Request) {
         }
 
         await sendNotification({
-            subject: `[PRT] Payment claim — ${pkg.tier} — KES ${pkg.amount.toLocaleString()}`,
+            subject: `[ProPrint] Payment claim — ${pkg.tier} — KES ${pkg.amount.toLocaleString()}`,
             html: `
         <div style="font-family:sans-serif;padding:24px;">
           <h2 style="margin:0 0 12px;color:#0f172a;">New payment to verify</h2>

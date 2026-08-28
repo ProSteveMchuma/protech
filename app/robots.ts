@@ -1,12 +1,1 @@
-import { MetadataRoute } from 'next'
-
-export default function robots(): MetadataRoute.Robots {
-    return {
-        rules: {
-            userAgent: '*',
-            allow: '/',
-            disallow: '/admin/',
-        },
-        sitemap: 'https://remotepro.co.ke/sitemap.xml',
-    }
-}
+import type{MetadataRoute}from"next";export default function robots():MetadataRoute.Robots{return{rules:{userAgent:"*",allow:"/",disallow:["/admin/","/api/","/dashboard/"]},sitemap:"https://www.proinnovationtech.co.ke/sitemap.xml"}}

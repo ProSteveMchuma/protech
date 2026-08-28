@@ -12,6 +12,16 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "_backup_protech/**",
+    "app/hire/**",
+    "app/checkout/**",
+    "app/services/**",
+    "app/guides/**",
+    "app/apply/**",
+    "components/CheckoutForm.tsx",
+    "components/HireForm.tsx",
+    "components/OdometerNumber.tsx",
+    "components/Testimonials.tsx",
   ]),
 ]);
 

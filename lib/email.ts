@@ -31,7 +31,7 @@ export async function sendNotification(opts: {
 
     try {
         await transporter.sendMail({
-            from: `"Pro Remote Tasks" <${process.env.SMTP_USER}>`,
+            from: `"ProPrint by Pro Innovation" <${process.env.SMTP_USER}>`,
             to,
             subject: opts.subject,
             html: opts.html,

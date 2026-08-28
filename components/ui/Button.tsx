@@ -44,15 +44,6 @@ interface ButtonProps
     asChild?: false;
 }
 
-interface LinkProps extends BaseProps {
-    asChild: true;
-    href: string;
-    target?: string;
-    rel?: string;
-}
-
-type Props = ButtonProps | LinkProps;
-
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     { variant = "primary", size = "md", loading, className, children, fullWidth, ...rest },
     ref

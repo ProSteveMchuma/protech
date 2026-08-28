@@ -21,8 +21,8 @@ export async function POST(req: Request) {
             type === "Client Hire Lead" && data.serviceType === "tender";
         const industry = typeof data.industry === "string" ? data.industry : "unspecified";
         const subject = isTenderLead
-            ? `[PRT] Tender Lead — ${industry}`
-            : `[PRT] New ${type}`;
+            ? `[ProPrint] Legacy tender lead — ${industry}`
+            : `[ProPrint] New ${type}`;
 
         const result = await sendNotification({
             subject,
