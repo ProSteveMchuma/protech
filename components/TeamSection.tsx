@@ -56,7 +56,7 @@ export function TeamSection() {
                     variants={stagger(0, 0.15)}
                     className="grid md:grid-cols-3 gap-8 md:gap-12"
                 >
-                    {TEAM.map((member, i) => (
+                    {TEAM.map((member) => (
                         <motion.div key={member.name} variants={fadeUp} className="h-full">
                             <TiltCard>
                                 <div className="group h-full bg-white rounded-3xl p-6 border border-slate-200 premium-shadow">

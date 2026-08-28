@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import Image from "next/image";
 import { TiltCard } from "./ui/TiltCard";
 import { fadeUp, stagger, viewportOnce, imageReveal } from "@/lib/motion";
