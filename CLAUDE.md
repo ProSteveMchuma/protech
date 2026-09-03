@@ -10,7 +10,7 @@ Shared project context for Claude Code and all agents working on this repo.
 - **Roadmap modules (not built):** ImposePro Advanced, ProofPro, JobTrack, PreflightPro.
 - **Conversion today:** founding-beta applications at `/beta`. Paid plans are listed but not charged.
 
-The site is the front door: it explains the product, lets operators try the tools in the browser, captures beta and feedback leads, and lets the founder manage submissions from `/admin`. There is no customer login yet.
+The site is the front door: it explains the product, lets operators try the tools in the browser, captures beta and feedback leads, and lets the founder manage submissions from `/admin`. Shop accounts at `/account` are optional — tools work without them.
 
 ## Tech stack
 
@@ -20,7 +20,7 @@ The site is the front door: it explains the product, lets operators try the tool
 - `react-hook-form` + `zod` for forms
 - `pdf-lib` for **client-side** PDF numbering and imposition (artwork stays in the browser)
 - `nodemailer` for SMTP (graceful no-op without env)
-- Cloud Firestore in production via Admin SDK ([lib/firebase-admin.ts](lib/firebase-admin.ts)); JSON under `/data/` in local dev ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored. Browser Firebase web config lives in [lib/firebase-client.ts](lib/firebase-client.ts) for future Auth. Setup: [docs/FIREBASE.md](docs/FIREBASE.md).
+- Cloud Firestore in production via Admin SDK ([lib/firebase-admin.ts](lib/firebase-admin.ts)); JSON under `/data/` in local dev ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored. Browser Auth + shop saves use [lib/firebase-client.ts](lib/firebase-client.ts) and [lib/firebase-browser.ts](lib/firebase-browser.ts). Setup: [docs/FIREBASE.md](docs/FIREBASE.md).
 - Manual M-Pesa Paybill flow (Paybill `767363`, account = customer name). Admin verifies codes in `/admin`. No Daraja STK Push. Checkout UI is parked until billing launches.
 
 ## Brand & design system
@@ -78,6 +78,7 @@ The site is the front door: it explains the product, lets operators try the tool
 | `/beta` | Founding-beta applications |
 | `/feedback` | Product feedback |
 | `/about` | Company / product story |
+| `/account` | Optional shop login (Firebase Auth) + cloud settings |
 | `/legal/privacy` | Privacy note (local PDF processing) |
 | `/admin` | Auth-gated lead + payment manager |
 | `/api/notify` | POST — captures and emails leads |
@@ -114,21 +115,21 @@ For multi-discipline features, the typical chain is: print-ops (specs the operat
 ## Shipped recently
 
 - **Local saved jobs** — SerialPro and QuotePro persist named setups in browser `localStorage` (settings only; artwork PDFs are never stored). See [lib/proprint/local-saves.ts](lib/proprint/local-saves.ts).
+- **Firebase Auth workspaces** — optional email/password shop accounts at `/account`. Signed-in saves go to `shops/{uid}/saves`. Signed-out saves stay in `localStorage`. Artwork is never uploaded.
 
 ## Next milestones (do not implement unless asked)
 
 Sequenced by operator value:
 
-1. **Firebase Auth workspaces** — shop accounts, cloud save, presets
-2. **ImposePro Advanced** — gang runs / signatures
-3. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
-4. **Analytics + error monitoring**
-5. **Branded invoices** from QuotePro
+1. **ImposePro Advanced** — gang runs / signatures
+2. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
+3. **Analytics + error monitoring**
+4. **Branded invoices** from QuotePro
 
 ## What to never do
 
 - Never commit `/data/*.json` (PII) or `.env.local`.
-- Never upload artwork to the server without an explicit product decision. SerialPro processes PDFs in the browser.
+- Never upload artwork to the server without an explicit product decision. SerialPro processes PDFs in the browser. Shop cloud saves store settings only.
 - Never guarantee print-job accuracy, color match, or press output as legal/print advice.
 - Never ship the hardcoded `admin123` pattern again.
 - Never add a service back to the homepage that we do not actively sell. Only SerialPro and QuotePro are live tools.
