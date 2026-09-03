@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
 import { PDFDocument } from "pdf-lib";
-import { Download, FileDown, FileText, Grid3x3, Image as ImageIcon, LoaderCircle, LockKeyhole, MousePointer2, RotateCw, Scissors, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, FileDown, FileText, Grid3x3, Image as ImageIcon, Layers2, LoaderCircle, LockKeyhole, MousePointer2, QrCode, RotateCw, Scissors, ShieldCheck, Sparkles } from "lucide-react";
 import { bestFitLayout, calculateLayout, layoutStats } from "@/lib/proprint/imposition";
 import {
     deleteSave,
@@ -10,12 +10,16 @@ import {
     type SerialProSavedSettings,
 } from "@/lib/proprint/local-saves";
 import { createBookManifest, manifestToCsv } from "@/lib/proprint/manifest";
-import { generateProductionPdf } from "@/lib/proprint/pdf";
+import { generateProductionPdf, type QrOptions } from "@/lib/proprint/pdf";
 import { formatSerial } from "@/lib/proprint/serial";
 import { writeSessionImposition } from "@/lib/proprint/session";
 import { SHEET_PRESETS, type SheetPresetKey } from "@/lib/proprint/sheet-presets";
-import type { OutputMode } from "@/lib/proprint/types";
+import { needsBatching, planBatches } from "@/lib/proprint/batch";
+import { evaluatePreflight, type PreflightFinding } from "@/lib/proprint/preflight";
+import type { ImpositionLayout, OutputMode } from "@/lib/proprint/types";
 import { track } from "@/lib/analytics";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { FeatureGate } from "@/components/FeatureGate";
 import { LocalSavesPanel } from "./LocalSavesPanel";
 import { PressSheetPreview } from "./PressSheetPreview";
 import { useCloudMirror } from "./useCloudMirror";
@@ -111,6 +115,15 @@ export function SerialProStudio() {
     const [message, setMessage] = useState("");
     const [previewTab, setPreviewTab] = useState<"artwork" | "sheet">("artwork");
     const [activePreset, setActivePreset] = useState<JobPresetKey | null>(null);
+    const [autoRotate, setAutoRotate] = useState(false);
+    const [backPage, setBackPage] = useState(0);
+    const [qrEnabled, setQrEnabled] = useState(false);
+    const [qrTemplate, setQrTemplate] = useState("{serial}");
+    const [qrSizeMm, setQrSizeMm] = useState(15);
+    const [qrX, setQrX] = useState(82);
+    const [qrY, setQrY] = useState(28);
+    const [preflight, setPreflight] = useState<PreflightFinding[]>([]);
+    const { can } = useAuth();
     const saves = useLocalSaves<SerialProSavedSettings>("serialpro");
     const { cloudActive, mirrorSave, mirrorDelete } = useCloudMirror<SerialProSavedSettings>("serialpro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
@@ -152,19 +165,24 @@ export function SerialProStudio() {
                 : null,
         [size, dims.widthMm, dims.heightMm, margin, gx, gy, records]
     );
-    const stats = useMemo(() => layoutStats(layout, records), [layout, records]);
     const impositionMode = mode === "number-only" ? null : mode;
+    const rotateActive = autoRotate && Boolean(bestFit?.improves) && impositionMode !== null;
+    const activeLayout: ImpositionLayout = rotateActive && bestFit ? bestFit.layout : layout;
+    const stats = useMemo(() => layoutStats(activeLayout, records), [activeLayout, records]);
+    const overCap = needsBatching(start, end, copies, MAX_RECORDS);
+    const canBatch = can("batchExport");
+    const batches = useMemo(() => (overCap ? planBatches(start, end, copies, MAX_RECORDS) : []), [overCap, start, end, copies]);
 
     useEffect(() => {
-        if (impositionMode && layout.piecesPerSheet > 0) {
+        if (impositionMode && activeLayout.piecesPerSheet > 0) {
             writeSessionImposition({
-                piecesPerSheet: layout.piecesPerSheet,
-                across: layout.across,
-                down: layout.down,
+                piecesPerSheet: activeLayout.piecesPerSheet,
+                across: activeLayout.across,
+                down: activeLayout.down,
                 sheetLabel: preset === "custom" ? "Custom sheet" : SHEET_PRESETS[preset].label,
             });
         }
-    }, [impositionMode, layout.piecesPerSheet, layout.across, layout.down, preset]);
+    }, [impositionMode, activeLayout.piecesPerSheet, activeLayout.across, activeLayout.down, preset]);
 
     useEffect(() => {
         track("tool_opened", { tool: "serialpro" });
@@ -173,9 +191,9 @@ export function SerialProStudio() {
     const invalid =
         end < start
             ? "End number must be equal to or higher than start."
-            : records > MAX_RECORDS
-              ? `This job creates ${records.toLocaleString()} records. Generate it in batches of ${MAX_RECORDS.toLocaleString()} or fewer.`
-              : mode !== "number-only" && size && layout.piecesPerSheet === 0
+            : overCap && !canBatch
+              ? `This job creates ${records.toLocaleString()} records. Upgrade for one-click batch export, or split the range into ${MAX_RECORDS.toLocaleString()}-record runs.`
+              : mode !== "number-only" && size && activeLayout.piecesPerSheet === 0
                 ? `Your finished artwork does not fit on ${SHEET_PRESETS[preset].label} with the current margins and gutters.`
                 : "";
 
@@ -284,6 +302,25 @@ export function SerialProStudio() {
         setMessage("Saved job deleted from this browser.");
     }
 
+    function runPreflight(pdf: PDFDocument, pageIndex: number) {
+        try {
+            const page = pdf.getPage(pageIndex);
+            const media = page.getSize();
+            let trim: { width: number; height: number } | null = null;
+            try {
+                const t = page.getTrimBox();
+                if (t && (Math.abs(t.width - media.width) > 1 || Math.abs(t.height - media.height) > 1)) {
+                    trim = { width: t.width, height: t.height };
+                }
+            } catch {
+                /* no trim box */
+            }
+            setPreflight(evaluatePreflight({ mediaBox: { width: media.width, height: media.height }, trimBox: trim, pageCount: pdf.getPageCount() }));
+        } catch {
+            setPreflight([]);
+        }
+    }
+
     async function upload(e: ChangeEvent<HTMLInputElement>) {
         const selected = e.target.files?.[0];
         setMessage("");
@@ -302,6 +339,7 @@ export function SerialProStudio() {
             setPages(pdf.getPageCount());
             setTemplatePage(1);
             setSize(pdf.getPage(0).getSize());
+            runPreflight(pdf, 0);
             track("pdf_uploaded", { tool: "serialpro", pages: pdf.getPageCount() });
         } catch {
             setMessage("This PDF could not be opened. Export a standard, non-password-protected PDF and try again.");
@@ -314,6 +352,7 @@ export function SerialProStudio() {
         setTemplatePage(safe);
         const pdf = await PDFDocument.load(await file.arrayBuffer());
         setSize(pdf.getPage(safe - 1).getSize());
+        runPreflight(pdf, safe - 1);
     }
 
     function place(e: MouseEvent<HTMLDivElement>) {
@@ -326,8 +365,19 @@ export function SerialProStudio() {
         setPositions(next);
     }
 
-    async function generate() {
+    async function generate(range?: { start: number; end: number }) {
         if (!file || invalid) return;
+        const rStart = range?.start ?? start;
+        const rEnd = range?.end ?? end;
+        const genRecords = (rEnd - rStart + 1) * copies;
+        const genLayout: ImpositionLayout = {
+            ...activeLayout,
+            sheetsRequired: activeLayout.piecesPerSheet ? Math.ceil(genRecords / activeLayout.piecesPerSheet) : 0,
+        };
+        const qr: QrOptions | undefined =
+            qrEnabled && can("qrSerials")
+                ? { enabled: true, template: qrTemplate, x: qrX, y: qrY, sizeMm: qrSizeMm, ecc: "M" }
+                : undefined;
         setBusy(true);
         setMessage("");
         setProgress(1);
@@ -336,8 +386,8 @@ export function SerialProStudio() {
                 {
                     source: await file.arrayBuffer(),
                     templatePage,
-                    start,
-                    end,
+                    start: rStart,
+                    end: rEnd,
                     prefix,
                     suffix,
                     padding,
@@ -346,18 +396,21 @@ export function SerialProStudio() {
                     bold,
                     positions: second ? positions : [positions[0]],
                     mode,
-                    layout,
+                    layout: genLayout,
                     marginMm: margin,
                     horizontalGutterMm: gx,
                     verticalGutterMm: gy,
                     cropMarks,
+                    rotate: rotateActive,
+                    qr,
+                    backPage: mode === "number-only" && backPage >= 1 ? backPage : undefined,
                 },
                 setProgress
             );
-            save(new Blob([bytes.slice().buffer], { type: "application/pdf" }), `serialpro-${start}-${end}.pdf`);
+            save(new Blob([bytes.slice().buffer], { type: "application/pdf" }), `serialpro-${rStart}-${rEnd}.pdf`);
             setProgress(100);
-            track("output_downloaded", { tool: "serialpro", mode, records });
-            setMessage("Production PDF generated and downloaded.");
+            track("output_downloaded", { tool: "serialpro", mode, records: genRecords, batch: Boolean(range) });
+            setMessage(range ? `Batch ${rStart}–${rEnd} generated and downloaded.` : "Production PDF generated and downloaded.");
         } catch (error) {
             setMessage(`SerialPro could not generate this job: ${error instanceof Error ? error.message : "Unknown PDF error"}`);
         } finally {
@@ -558,14 +611,33 @@ export function SerialProStudio() {
                                     Rotating the artwork 90° fits{" "}
                                     <b className="font-mono">{bestFit.rotatedPiecesPerSheet}-up</b> instead of{" "}
                                     <b className="font-mono">{bestFit.piecesPerSheet}-up</b> on this sheet — fewer press sheets and less waste.
+                                    <label className="mt-2 flex items-center gap-2 font-bold text-amber-50">
+                                        <input type="checkbox" checked={autoRotate} onChange={(e) => setAutoRotate(e.target.checked)} />
+                                        Auto-rotate artwork for best fit
+                                    </label>
                                 </span>
+                            </div>
+                        )}
+                        {preflight.length > 0 && (
+                            <div className="mt-3 rounded-lg border border-white/10 bg-press/60 p-3">
+                                <p className="flex items-center gap-1.5 font-mono text-[.6rem] font-extrabold uppercase tracking-[.1em] text-slate-400">
+                                    <ShieldCheck className="size-3 text-cyan-300" aria-hidden="true" /> Preflight
+                                </p>
+                                <ul className="mt-2 space-y-1">
+                                    {preflight.map((f) => (
+                                        <li key={f.id} className={`flex items-start gap-1.5 text-[11px] ${f.level === "fail" ? "text-rose-300" : f.level === "warn" ? "text-amber-200" : "text-slate-300"}`}>
+                                            {f.level === "pass" ? <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-emerald-400" aria-hidden="true" /> : <AlertTriangle className="mt-0.5 size-3 shrink-0" aria-hidden="true" />}
+                                            {f.message}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         )}
                         {impositionMode && previewTab === "sheet" && size ? (
                             <PressSheetPreview
-                                layout={layout}
-                                itemWidthPt={size.width}
-                                itemHeightPt={size.height}
+                                layout={activeLayout}
+                                itemWidthPt={rotateActive ? size.height : size.width}
+                                itemHeightPt={rotateActive ? size.width : size.height}
                                 marginMm={margin}
                                 horizontalGutterMm={gx}
                                 verticalGutterMm={gy}
@@ -688,6 +760,47 @@ export function SerialProStudio() {
                                 </label>
                             </>
                         )}
+                        {mode === "number-only" && pages > 1 && (
+                            <Field label="Back artwork page (duplex)">
+                                <select value={backPage} onChange={(e) => setBackPage(+e.target.value)}>
+                                    <option value={0}>Single-sided (no back)</option>
+                                    {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+                                        <option key={n} value={n}>
+                                            Print page {n} on the back
+                                        </option>
+                                    ))}
+                                </select>
+                            </Field>
+                        )}
+                        <div className="mt-4">
+                            <p className="mb-2 flex items-center gap-1.5 font-mono text-[.6rem] font-extrabold uppercase tracking-[.1em] text-slate-400">
+                                <QrCode className="size-3 text-cyan-300" aria-hidden="true" /> QR / barcode serials
+                            </p>
+                            <FeatureGate feature="qrSerials" compact>
+                                <label className="check !mt-0">
+                                    <input type="checkbox" checked={qrEnabled} onChange={(e) => setQrEnabled(e.target.checked)} />
+                                    Add a QR code to every piece
+                                </label>
+                                {qrEnabled && (
+                                    <>
+                                        <Field label="QR content (use {serial})">
+                                            <input value={qrTemplate} onChange={(e) => setQrTemplate(e.target.value)} placeholder="{serial} or https://verify.me/{serial}" />
+                                        </Field>
+                                        <div className="three">
+                                            <Field label="Size mm">
+                                                <input type="number" min="6" max="60" value={qrSizeMm} onChange={(e) => setQrSizeMm(+e.target.value)} />
+                                            </Field>
+                                            <Field label="X %">
+                                                <input type="number" min="0" max="100" value={qrX} onChange={(e) => setQrX(+e.target.value)} />
+                                            </Field>
+                                            <Field label="Y %">
+                                                <input type="number" min="0" max="100" value={qrY} onChange={(e) => setQrY(+e.target.value)} />
+                                            </Field>
+                                        </div>
+                                    </>
+                                )}
+                            </FeatureGate>
+                        </div>
                         <div className="production-summary">
                             <h3>Production summary</h3>
                             <dl>
@@ -714,18 +827,18 @@ export function SerialProStudio() {
                                 {mode !== "number-only" && (
                                     <>
                                         <div>
-                                            <dt>Layout</dt>
+                                            <dt>Layout {rotateActive ? "(rotated)" : ""}</dt>
                                             <dd>
-                                                {layout.across} × {layout.down}
+                                                {activeLayout.across} × {activeLayout.down}
                                             </dd>
                                         </div>
                                         <div>
                                             <dt>Pieces / sheet</dt>
-                                            <dd>{layout.piecesPerSheet}</dd>
+                                            <dd>{activeLayout.piecesPerSheet}</dd>
                                         </div>
                                         <div>
                                             <dt>Press sheets</dt>
-                                            <dd>{layout.sheetsRequired.toLocaleString()}</dd>
+                                            <dd>{activeLayout.sheetsRequired.toLocaleString()}</dd>
                                         </div>
                                         <div>
                                             <dt>Sheet utilization</dt>
@@ -738,20 +851,62 @@ export function SerialProStudio() {
                                     </>
                                 )}
                             </dl>
-                        </div>
-                        <button className="primary-button" disabled={!file || !!invalid || busy} onClick={() => void generate()}>
-                            {busy ? (
-                                <>
-                                    <LoaderCircle className="animate-spin" />
-                                    Generating {progress}%
-                                </>
-                            ) : (
-                                <>
-                                    <Download />
-                                    Generate production PDF
-                                </>
+                            {copies > 1 && mode === "cut-stack" && (
+                                <p className="mt-3 flex items-start gap-1.5 rounded-lg border border-white/10 bg-press/60 p-2.5 text-[11px] text-slate-300">
+                                    <Layers2 className="mt-0.5 size-3 shrink-0 text-cyan-300" aria-hidden="true" />
+                                    NCR set: interleave copy 1 (white) then copy 2 (canary){copies > 2 ? ", copy 3 (pink)" : ""} in cut-and-stack order before binding. Serial order holds across every ply.
+                                </p>
                             )}
-                        </button>
+                        </div>
+                        {overCap && canBatch ? (
+                            <div className="mt-4 rounded-xl border border-cyan-300/30 bg-cyan-300/5 p-3">
+                                <p className="flex items-center gap-1.5 text-xs font-bold text-cyan-100">
+                                    <Layers2 className="size-3.5" aria-hidden="true" /> Batch export · {batches.length} files
+                                </p>
+                                <p className="mt-1 text-[11px] text-slate-300">
+                                    This run exceeds {MAX_RECORDS.toLocaleString()} records. Serials join perfectly across batches — download each in order.
+                                </p>
+                                <ul className="mt-3 space-y-1.5">
+                                    {batches.map((b) => (
+                                        <li key={b.index} className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-press/60 px-2.5 py-2">
+                                            <span className="font-mono text-[11px] text-slate-200">
+                                                {formatSerial(b.start, prefix, suffix, padding)}–{formatSerial(b.end, prefix, suffix, padding)}
+                                                <span className="ml-2 text-slate-500">{b.records.toLocaleString()} pcs</span>
+                                            </span>
+                                            <button
+                                                type="button"
+                                                disabled={!file || busy}
+                                                onClick={() => void generate({ start: b.start, end: b.end })}
+                                                className="inline-flex items-center gap-1 rounded-md bg-cyan-300 px-2.5 py-1 text-[11px] font-black text-slate-950 disabled:opacity-40"
+                                            >
+                                                <Download className="size-3" aria-hidden="true" /> Batch {b.index + 1}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <button className="primary-button" disabled={!file || !!invalid || busy} onClick={() => void generate()}>
+                                {busy ? (
+                                    <>
+                                        <LoaderCircle className="animate-spin" />
+                                        Generating {progress}%
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download />
+                                        Generate production PDF
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {overCap && !canBatch && (
+                            <div className="mt-4">
+                                <FeatureGate feature="batchExport">
+                                    <span />
+                                </FeatureGate>
+                            </div>
+                        )}
                         {busy && (
                             <div className="press-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
                                 <span style={{ width: `${progress}%` }} />
