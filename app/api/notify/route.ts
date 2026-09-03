@@ -1,20 +1,31 @@
 import { NextResponse } from "next/server";
 import { saveLead } from "@/lib/leads";
 import { sendNotification, leadToHtml } from "@/lib/email";
+import { z } from "zod";
+
+const submissionSchema = z.object({
+    type: z.string().trim().min(1).max(80).default("Inquiry"),
+    email: z.string().trim().email().max(200),
+    website: z.string().max(200).optional(),
+}).passthrough();
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
-        const { type = "Inquiry", email, ...rest } = body ?? {};
-
-        if (!email || typeof email !== "string") {
+        const raw = await req.json();
+        if (JSON.stringify(raw).length > 20_000) {
+            return NextResponse.json({ success: false, error: "Submission is too large" }, { status: 413 });
+        }
+        const parsed = submissionSchema.safeParse(raw);
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: "Email is required" },
+                { success: false, error: "Enter a valid submission" },
                 { status: 400 }
             );
         }
+        const { type, email, website, ...rest } = parsed.data;
+        if (website) return NextResponse.json({ success: true });
 
-        const data = { email, ...rest };
+        const data: Record<string, unknown> = { email, ...rest };
         const lead = await saveLead(type, data);
 
         const isTenderLead =

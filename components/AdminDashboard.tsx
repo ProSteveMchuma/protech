@@ -111,7 +111,7 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
             <nav className="bg-brand-950 text-white h-16 flex items-center px-6 justify-between">
                 <div className="flex items-center gap-3">
                     <Logo variant="mark" size={32} />
-                    <span className="font-display font-bold text-lg">PRT Admin</span>
+                    <span className="font-display font-bold text-lg">ProPrint Admin</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <button
@@ -346,7 +346,7 @@ function LeadsTable({
             {filtered.length === 0 ? (
                 <div className="p-16 text-center text-slate-500">
                     <p className="font-semibold mb-1">No leads yet.</p>
-                    <p className="text-sm">Leads from /hire and /apply will show up here in real time.</p>
+                    <p className="text-sm">Beta applications and product feedback will show up here.</p>
                 </div>
             ) : (
                 <div className="overflow-x-auto">

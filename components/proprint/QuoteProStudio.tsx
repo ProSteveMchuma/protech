@@ -57,7 +57,7 @@ export function QuoteProStudio() {
         <div className="mx-auto max-w-[1500px] px-4 sm:px-6">
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4 print:hidden">
                 <div><p className="font-mono text-xs uppercase tracking-[.22em] text-cyan-300">Production beta / estimator 01</p><h1 className="mt-2 text-4xl font-black">QuotePro</h1><p className="mt-2 text-sm text-slate-400">Cost the job, protect your margin and quote with confidence.</p></div>
-                <div className="flex flex-wrap gap-2 text-xs"><span className="status-chip"><ShieldCheck />Data stays local</span><span className="status-chip"><Calculator />Live calculation</span></div>
+                <div className="flex flex-wrap items-center gap-2 text-xs"><a href="/feedback?product=quotepro" className="rounded-full border border-cyan-300/30 px-3 py-2 font-bold text-cyan-200 hover:bg-cyan-300/10">Send feedback</a><span className="status-chip"><ShieldCheck />Data stays local</span><span className="status-chip"><Calculator />Live calculation</span></div>
             </header>
 
             <div className="grid gap-4 xl:grid-cols-[360px_360px_minmax(420px,1fr)]">

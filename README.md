@@ -1,93 +1,66 @@
-# Pro Remote Tasks
+# ProPrint
 
-> World-class talent. Kenyan rates. Zero hassle.
+> Software that makes printing faster.
 
-Productized agency that connects Kenyan SMEs and global founders with vetted Kenyan virtual assistants, social media managers, and content writers.
+ProPrint is a browser-based production toolkit for print businesses. SerialPro handles PDF numbering and imposition; QuotePro calculates production costs and selling prices.
 
 ## Stack
 
-- **Next.js 16** (App Router, React 19, TypeScript)
-- **Tailwind CSS v4** with custom brand tokens (`@theme` in [app/globals.css](app/globals.css))
-- **framer-motion** for motion
-- **react-hook-form + zod** for forms
-- **nodemailer** for SMTP notifications
-- File-based JSON storage in `/data` (swap for Postgres/Supabase when you outgrow it)
+- Next.js 16, React 19, and TypeScript
+- Tailwind CSS v4
+- Firebase Admin SDK and Cloud Firestore
+- `pdf-lib` for local PDF processing
+- React Hook Form and Zod
+- Nodemailer for operational email
 
-## Quick start
+## Local development
 
 ```bash
 npm install
-cp .env.example .env.local        # fill in your values
+cp .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open `http://localhost:3000`. Without Firebase credentials, local development stores leads and payment claims in `/data/*.json`. Without SMTP credentials, submissions persist but notification emails are skipped.
 
-The site degrades gracefully: with no SMTP set, leads/payments still save to disk — they just don't email you.
+## Firestore setup
 
-## How payments work (manual M-Pesa Paybill)
+Production requires Cloud Firestore so submissions are never written to an ephemeral deployment filesystem.
 
-1. Customer picks a package on a service page → clicks **Pay with M-Pesa** → lands on `/checkout?pkg=…`.
-2. Customer enters name, email, phone.
-3. Site shows the Paybill, Account number (= customer's full name), and amount — all click-to-copy.
-4. Customer pays from their phone. Safaricom SMS gives them a confirmation code (e.g. `QGH1A2B3C4`).
-5. Customer pastes the code into the form. The submission is saved as a `pending` payment and you get an email.
-6. You log into `/admin` → **Payments** tab → cross-check against your real M-Pesa statement → click **Verify** or **Reject**.
+1. Create a Firebase project and enable Cloud Firestore in Native mode.
+2. On Firebase App Hosting or Cloud Run, use the platform-provided Application Default Credentials.
+3. On another host, create a server service account and set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in the deployment environment.
+4. Never commit a service-account JSON file or private key.
 
-The default Paybill is `767363`; override with `MPESA_PAYBILL=…` in `.env.local`.
+The Firebase Admin SDK is server-only. The browser never receives administrator credentials. Leads are stored in the `leads` collection and payment claims in `payments`.
 
-## Setup
+## Operational setup
 
-### Email (Gmail SMTP — free)
-1. Turn on 2-step verification on your Gmail account.
-2. Create an [App Password](https://myaccount.google.com/apppasswords) for "Mail".
-3. Put the 16-char password in `SMTP_PASS`. Set `SMTP_USER` to your Gmail address.
-4. (Optional) Set `NOTIFY_EMAIL` to deliver alerts to a different inbox.
+Set `ADMIN_PASSWORD` and a random 32+ character `ADMIN_SESSION_SECRET` before opening `/admin`. Configure the SMTP variables to receive beta, feedback, and payment notifications. Optional business configuration includes `MPESA_PAYBILL`, `WHATSAPP_NUMBER`, and `SUPPORT_EMAIL`.
 
-### Admin dashboard
-1. Set `ADMIN_PASSWORD` to a strong password.
-2. Generate a session secret:
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   ```
-   Put it in `ADMIN_SESSION_SECRET`.
-3. Visit `/admin`, log in.
+## Primary routes
 
-## Brand
+| Route | Purpose |
+| --- | --- |
+| `/` | Product landing page |
+| `/tools/serialpro` | PDF numbering and imposition |
+| `/tools/quotepro` | Print quotation calculator |
+| `/beta` | Founding-beta applications |
+| `/feedback` | Product feedback |
+| `/admin` | Lead and payment operations |
 
-- **Name**: Pro Remote Tasks
-- **Short**: PRT
-- **Tagline**: World-class talent. Kenyan rates. Zero hassle.
-- **Logo component**: [components/Logo.tsx](components/Logo.tsx) (`<Logo variant="mark" />` and `<Logo variant="lockup" />`)
-- **Favicon**: [app/icon.svg](app/icon.svg)
-- **Color tokens**: defined in [app/globals.css](app/globals.css) — `brand-{50..950}`, `accent-{50..900}`, `success-500`, `sun-500`.
-- **Fonts**: Inter (body), Fraunces (display), JetBrains Mono (mono).
+## Validation
 
-## Routes
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-| Path                            | Purpose                                  |
-| ------------------------------- | ---------------------------------------- |
-| `/`                             | Landing                                  |
-| `/services/{va,social,content}` | Service detail + pricing                 |
-| `/hire?service=&tier=`          | Lead form                                |
-| `/checkout?pkg=va-growth`       | M-Pesa Paybill checkout                  |
-| `/apply`                        | Talent application                       |
-| `/admin`                        | Auth-gated lead + payment manager        |
-| `/api/notify`                   | POST — captures and emails leads         |
-| `/api/payment/submit`           | POST — customer submits M-Pesa code      |
-| `/api/admin/{login,logout}`     | Admin auth                               |
-| `/api/admin/leads`              | GET / PATCH — manage leads               |
-| `/api/admin/payments`           | GET / PATCH — verify/reject payments     |
+## Next milestones
 
-## Deploying
-
-- **Render / Railway / Fly / a KE VPS**: Works out of the box — JSON file storage persists.
-- **Vercel**: Filesystem is read-only at runtime, so leads and payments will not persist. Migrate `lib/leads.ts` and `lib/payments.ts` to Supabase or Neon Postgres before deploying there.
-
-## Roadmap
-
-1. Migrate JSON storage → Supabase/Postgres once you cross ~50 paying clients.
-2. Auto-verify payments via Daraja webhooks (or M-Pesa email/SMS parsing).
-3. Add a blog under `/blog` for SEO ("virtual assistant Kenya", "social media management Nairobi").
-4. Google Analytics + Meta Pixel for ad-funnel tracking.
-5. Issue branded PDF invoices automatically when admin verifies a payment.
+1. Firebase Authentication and customer workspaces
+2. Saved SerialPro jobs, QuotePro quotes, and shop presets
+3. Paid-plan enforcement and M-Pesa verification
+4. Product analytics and error monitoring
+5. Branded invoices and receipts

@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { getFirestoreDatabase } from "./firebase-admin";
 
 export type PaymentStatus = "pending" | "verified" | "rejected";
 
@@ -59,6 +60,19 @@ async function writeAll(items: Payment[]) {
 export async function submitPayment(
     init: Omit<Payment, "id" | "createdAt" | "updatedAt" | "status" | "verifiedAt">
 ): Promise<{ payment: Payment; duplicate: boolean }> {
+    const db = getFirestoreDatabase();
+    if (db) {
+        const code = init.mpesaCode.trim().toUpperCase();
+        const ref = db.collection("payments").doc(code);
+        return db.runTransaction(async (transaction) => {
+            const existing = await transaction.get(ref);
+            if (existing.exists) return { payment: existing.data() as Payment, duplicate: true };
+            const now = new Date().toISOString();
+            const payment: Payment = { id: crypto.randomUUID(), createdAt: now, updatedAt: now, status: "pending", ...init, mpesaCode: code };
+            transaction.create(ref, payment);
+            return { payment, duplicate: false };
+        });
+    }
     const items = await readAll();
 
     const code = init.mpesaCode.trim().toUpperCase();
@@ -82,6 +96,11 @@ export async function submitPayment(
 }
 
 export async function listPayments(): Promise<Payment[]> {
+    const db = getFirestoreDatabase();
+    if (db) {
+        const snapshot = await db.collection("payments").orderBy("createdAt", "desc").get();
+        return snapshot.docs.map((doc) => doc.data() as Payment);
+    }
     return readAll();
 }
 
@@ -90,6 +109,16 @@ export async function setPaymentStatus(
     status: PaymentStatus,
     note?: string
 ): Promise<Payment | null> {
+    const db = getFirestoreDatabase();
+    if (db) {
+        const query = await db.collection("payments").where("id", "==", id).limit(1).get();
+        if (query.empty) return null;
+        const ref = query.docs[0].ref;
+        const current = query.docs[0].data() as Payment;
+        const updated: Payment = { ...current, status, verifiedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(note !== undefined || current.note !== undefined ? { note: note ?? current.note } : {}) };
+        await ref.set(updated);
+        return updated;
+    }
     const items = await readAll();
     const idx = items.findIndex((p) => p.id === id);
     if (idx === -1) return null;

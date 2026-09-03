@@ -62,7 +62,8 @@ function row(key: string, value: unknown, highlight = false) {
         key === "targetTenderSize" && typeof value === "number"
             ? `KES ${value.toLocaleString()}`
             : String(value ?? "—");
-    return `<tr style="${bg}"><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#64748b;font-size:13px;text-transform:capitalize;">${key}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#0f172a;font-size:14px;">${valFmt}</td></tr>`;
+    const escapeHtml = (input: string) => input.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
+    return `<tr style="${bg}"><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#64748b;font-size:13px;text-transform:capitalize;">${escapeHtml(key)}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#0f172a;font-size:14px;">${escapeHtml(valFmt)}</td></tr>`;
 }
 
 export function leadToHtml(type: string, data: Record<string, unknown>) {
