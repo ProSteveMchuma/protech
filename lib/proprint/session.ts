@@ -30,11 +30,9 @@ export function writeSessionImposition(value: Omit<SessionImposition, "updatedAt
     }
 }
 
-export function readSessionImposition(): SessionImposition | null {
-    if (!canUseStorage()) return null;
+function parse(raw: string | null): SessionImposition | null {
+    if (!raw) return null;
     try {
-        const raw = window.localStorage.getItem(IMPOSITION_KEY);
-        if (!raw) return null;
         const parsed = JSON.parse(raw) as Partial<SessionImposition>;
         if (typeof parsed.piecesPerSheet !== "number" || parsed.piecesPerSheet < 1) return null;
         return {
@@ -47,4 +45,33 @@ export function readSessionImposition(): SessionImposition | null {
     } catch {
         return null;
     }
+}
+
+export function readSessionImposition(): SessionImposition | null {
+    if (!canUseStorage()) return null;
+    return parse(window.localStorage.getItem(IMPOSITION_KEY));
+}
+
+// Cached snapshot so useSyncExternalStore gets a stable reference between renders.
+let snapshotRaw: string | null = null;
+let snapshotValue: SessionImposition | null = null;
+
+export function getSessionImpositionSnapshot(): SessionImposition | null {
+    if (!canUseStorage()) return null;
+    const raw = window.localStorage.getItem(IMPOSITION_KEY);
+    if (raw !== snapshotRaw) {
+        snapshotRaw = raw;
+        snapshotValue = parse(raw);
+    }
+    return snapshotValue;
+}
+
+export function getServerSessionImposition(): SessionImposition | null {
+    return null;
+}
+
+export function subscribeSessionImposition(callback: () => void) {
+    if (!canUseStorage()) return () => {};
+    window.addEventListener("storage", callback);
+    return () => window.removeEventListener("storage", callback);
 }

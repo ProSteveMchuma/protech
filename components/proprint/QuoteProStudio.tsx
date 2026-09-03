@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { AlertTriangle, Calculator, Check, Clipboard, Layers, Printer, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import {
     deleteSave,
@@ -8,7 +8,7 @@ import {
     type QuoteProSavedSettings,
 } from "@/lib/proprint/local-saves";
 import { calculateQuote, type QuoteInput } from "@/lib/proprint/quote";
-import { readSessionImposition } from "@/lib/proprint/session";
+import { getServerSessionImposition, getSessionImpositionSnapshot, subscribeSessionImposition } from "@/lib/proprint/session";
 import { LocalSavesPanel } from "./LocalSavesPanel";
 import { useLocalSaves } from "./useLocalSaves";
 
@@ -122,12 +122,7 @@ export function QuoteProStudio() {
     const valid = input.quantity > 0 && input.itemsPerSheet > 0;
     const [activePreset, setActivePreset] = useState<QuotePresetKey | null>(null);
     const [showVolumes, setShowVolumes] = useState(false);
-    const [sessionUp, setSessionUp] = useState<{ piecesPerSheet: number; sheetLabel: string } | null>(null);
-
-    useEffect(() => {
-        const imposition = readSessionImposition();
-        if (imposition) setSessionUp({ piecesPerSheet: imposition.piecesPerSheet, sheetLabel: imposition.sheetLabel });
-    }, []);
+    const sessionUp = useSyncExternalStore(subscribeSessionImposition, getSessionImpositionSnapshot, getServerSessionImposition);
 
     // Gross margin on the ex-tax selling price — what actually protects the shop.
     const marginPct = result.subtotal > 0 ? (result.markupAmount / result.subtotal) * 100 : 0;
