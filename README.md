@@ -21,18 +21,21 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. Without Firebase credentials, local development stores leads and payment claims in `/data/*.json`. Without SMTP credentials, submissions persist but notification emails are skipped.
+Open `http://localhost:3000`. Without Firebase Admin credentials, local development stores leads and payment claims in `/data/*.json`. Without SMTP credentials, submissions persist but notification emails are skipped.
 
-## Firestore setup
+## Firebase setup
 
-Production requires Cloud Firestore so submissions are never written to an ephemeral deployment filesystem.
+Project id: **tenderpro-480721**. Full walkthrough: [docs/FIREBASE.md](docs/FIREBASE.md).
 
-1. Create a Firebase project and enable Cloud Firestore in Native mode.
-2. On Firebase App Hosting or Cloud Run, use the platform-provided Application Default Credentials.
-3. On another host, create a server service account and set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in the deployment environment.
-4. Never commit a service-account JSON file or private key.
+Short version:
 
-The Firebase Admin SDK is server-only. The browser never receives administrator credentials. Leads are stored in the `leads` collection and payment claims in `payments`.
+1. Enable **Cloud Firestore** (Native mode) in the Firebase console.
+2. Create a service account and copy `project_id`, `client_email`, and `private_key` into `.env.local` as `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`.
+3. Keep the `NEXT_PUBLIC_FIREBASE_*` web config from `.env.example` (browser SDK for future Auth).
+4. Check wiring: `curl -s http://localhost:3000/api/firebase/status`
+5. Never commit `serviceAccountKey.json` or `.env.local`.
+
+The Admin SDK is server-only. Leads go to the `leads` collection; payment claims go to `payments`.
 
 ## Operational setup
 
