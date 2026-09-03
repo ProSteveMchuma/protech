@@ -47,7 +47,7 @@ export function ScrollProgress() {
             style={{
                 scaleX: reduce ? scrollYProgress : x,
                 background:
-                    "linear-gradient(90deg, var(--color-brand-500), var(--color-accent-500), var(--color-success-500))",
+                    "linear-gradient(90deg, var(--color-accent-400), var(--color-accent-300), var(--color-success-500))",
             }}
         />
     );

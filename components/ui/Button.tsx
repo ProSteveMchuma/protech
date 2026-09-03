@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { forwardRef } from "react";
@@ -8,10 +9,10 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
     primary:
-        "bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30",
+        "bg-cyan-300 text-press hover:bg-cyan-200 shadow-none font-black",
     secondary:
         "bg-white text-slate-900 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm",
-    ghost: "bg-transparent text-slate-700 hover:bg-slate-100",
+    ghost: "bg-transparent text-slate-300 hover:bg-white/10",
     success:
         "bg-success-500 text-white hover:bg-success-600 shadow-lg shadow-emerald-500/20",
     outline:
@@ -38,6 +39,10 @@ interface BaseProps {
 const baseClasses =
     "inline-flex items-center justify-center font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed select-none hover:scale-[1.02] active:scale-[0.98] focus-visible:scale-[1.02]";
 
+function cn(...inputs: Parameters<typeof clsx>) {
+    return twMerge(clsx(inputs));
+}
+
 interface ButtonProps
     extends BaseProps,
     Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseProps> {
@@ -51,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     return (
         <button
             ref={ref}
-            className={clsx(
+            className={cn(
                 baseClasses,
                 VARIANTS[variant],
                 SIZES[size],
@@ -87,7 +92,7 @@ export function ButtonLink({
     ...rest
 }: ButtonLinkProps) {
     const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:");
-    const cls = clsx(
+    const cls = cn(
         baseClasses,
         VARIANTS[variant],
         SIZES[size],

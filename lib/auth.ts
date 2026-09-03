@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
-const COOKIE_NAME = "rp_admin";
+const COOKIE_NAME = "proprint_admin";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 
 function getSecret(): string {

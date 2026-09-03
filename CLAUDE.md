@@ -4,70 +4,64 @@ Shared project context for Claude Code and all agents working on this repo.
 
 ## What this is
 
-**Pro Remote Tasks (PRT)** — a Kenyan B2B services company.
+**ProPrint** — print automation software by **Pro Innovation & Technologies** (`proinnovationtech.co.ke`). Built in Nairobi for Kenyan print shops, usable worldwide.
 
-- **Flagship service**: **Tender / bid management for Kenyan companies**. Help SMEs find, prepare, submit, and win government and corporate tenders.
-- **Supporting service**: managed virtual assistants — kept because tender ops needs admin support and it cross-sells well.
+- **Flagship tools (production beta):** **SerialPro** (PDF numbering + imposition) and **QuotePro** (print costing and selling price).
+- **Roadmap modules (not built):** ImposePro Advanced, ProofPro, JobTrack, PreflightPro.
+- **Conversion today:** founding-beta applications at `/beta`. Paid plans are listed but not charged.
 
-The site is the front door: it generates leads, takes M-Pesa payments, and lets the founder manage both from `/admin`. There is no separate CRM yet.
+The site is the front door: it explains the product, lets operators try the tools in the browser, captures beta and feedback leads, and lets the founder manage submissions from `/admin`. There is no customer login yet.
 
 ## Tech stack
 
 - Next.js 16 App Router, React 19, TypeScript strict
 - Tailwind CSS v4 — tokens defined as `@theme` in [app/globals.css](app/globals.css), no `tailwind.config.ts`
-- `framer-motion` for animation. Shared variants in [lib/motion.ts](lib/motion.ts).
+- `framer-motion` for route/page motion. Shared variants in [lib/motion.ts](lib/motion.ts).
 - `react-hook-form` + `zod` for forms
+- `pdf-lib` for **client-side** PDF numbering and imposition (artwork stays in the browser)
 - `nodemailer` for SMTP (graceful no-op without env)
-- File-based JSON storage in `/data/` ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored
-- Manual M-Pesa Paybill flow (Paybill `767363`, account = customer name). Customer submits M-Pesa code; admin verifies in `/admin`. No Daraja STK Push.
+- Cloud Firestore in production ([lib/firebase-admin.ts](lib/firebase-admin.ts)); JSON under `/data/` in local dev ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored
+- Manual M-Pesa Paybill flow (Paybill `767363`, account = customer name). Admin verifies codes in `/admin`. No Daraja STK Push. Checkout UI is parked until billing launches.
 
 ## Brand & design system
 
-- Name: **Pro Remote Tasks** · Short: **PRT** · Tagline: *"World-class talent. Kenyan rates. Zero hassle."*
+- Name: **ProPrint** · Company: **Pro Innovation & Technologies** · Tagline: *"Software that makes printing faster."*
 - Logo: [components/Logo.tsx](components/Logo.tsx) — `mark` and `lockup` variants
-- Fonts: Inter (body), Fraunces (display), JetBrains Mono (numbers/codes)
-- Color tokens: `brand-{50..950}`, `accent-{50..900}`, `success-500`, `sun-500`
-- Background utilities: `bg-aurora`, `bg-aurora-dark`, `bg-grid`
-- UI primitives: [components/ui/](components/ui/) — `Button`, `ButtonLink`, `Card`, `Badge`, `Section`, `Container`. Always reuse; don't recreate.
-- Always: `font-mono tabular-nums` for KES amounts, M-Pesa codes, paybills, percentages
+- Fonts: Inter (body and headlines), JetBrains Mono (labels, numbers, codes). Fraunces is loaded as `--font-display` but live pages use Inter `font-black`.
+- Color tokens: `press` (`#071019`), `press-panel` (`#0c1822`), `press-deep` (`#050b11`), `accent-{50..900}` cyan, `success-500`, `sun-500`. Prefer these over hardcoded hex.
+- Studio utilities in [app/globals.css](app/globals.css): `bg-press`, `imposition-grid`, `press-window`, `kicker`, plus SerialPro/QuotePro panel classes.
+- UI primitive in active use: [components/ui/Button.tsx](components/ui/Button.tsx) (`Button`, `ButtonLink`). Reuse it for admin and form actions; marketing pages may use raw Tailwind CTAs that already match the press shell.
+- Always: `font-mono tabular-nums` for KES amounts, M-Pesa codes, paybills, sheet counts, serials, percentages
 
-## Design philosophy: Stripe-clean × Apple-storytelling
+## Design philosophy
 
-The site is being redesigned (2026-05-06) around two tensions held in balance:
+**Press-dark utility, not brochure chrome.**
 
-**Stripe / Linear utility-clean — the baseline 90% of the time:**
-- One primary action per screen. Secondary actions are quieter or hidden behind progressive disclosure.
-- Generous whitespace. Air around headlines. Sections that breathe.
-- Typography-first: let the words and numbers do the work. No decorative chrome.
-- Mobile-first means a 5-inch viewport feels intentional, not crowded.
-- Conversion path is unmistakable: a stranger should know what to click within 3 seconds.
-
-**Apple-style scroll storytelling — the 10% where it earns the screen:**
-- One or two scroll moments per page that demonstrate the product, not decorate it.
-- Big numbers, kinetic typography, scroll-pinned reveals — used sparingly so they land.
-- Each theatrical moment must answer a buyer question ("how big is the problem?", "how does this work?").
-- If you can remove a motion moment without weakening the message, remove it.
-- Respect `prefers-reduced-motion` — every theatrical moment must degrade gracefully.
+- One primary action per screen. On marketing pages that action is **Join the founding beta**.
+- Generous whitespace. Typography and production numbers do the work.
+- Mobile-first: a 375px viewport must feel intentional.
+- Conversion path is unmistakable within 3 seconds.
+- One or two product demonstrations per page (press-window mock, live tool). If you can remove a motion moment without weakening the message, remove it.
+- Respect `prefers-reduced-motion`.
 
 **Anti-patterns to avoid:**
-- Multiple CTAs competing in the same hero or section.
-- Decorative motion ("hover lift on every card", "fade-up on every section header").
-- Long forms — use multi-step or progressive disclosure.
-- Stat-card grids that say nothing (e.g. floating KPIs as visual chrome).
-- Three-tier pricing matrices when one anchor price + "see all tiers" works.
-- Density mistaken for richness. Confidence is quieter than chrome.
+- Multiple CTAs competing in the same hero
+- Decorative motion on every card or header
+- Long forms — ≤4 visible fields per step
+- Inventing a third visual language for a new page
+- Density mistaken for richness
 
 **Practical rules:**
-- Hero: one headline (display font, huge), one sub-line, one primary CTA, optional one tertiary text link. Nothing else above the fold.
-- Pricing: lead with the floor price + outcome. Detailed tier matrix lives behind a "Compare tiers" disclosure or on `/services/*` pages.
-- Forms: ≤4 visible fields per step. Conditional reveals smoothly animated.
-- Service pages: each page tells one story start to finish. Reading top-to-bottom should feel like a Keynote, not a brochure.
+- Hero: one headline (huge, black weight), one sub-line, one primary CTA, optional one tertiary text link
+- Pricing: beta is free and is the only charged-now CTA; paid tiers are waitlist until billing launches
+- Forms: dark press panels, cyan focus rings, mono field labels
+- Tool pages: console/preview panels, not marketing cards
 
 ## Repo conventions
 
 - Server Components by default. `"use client"` only when needed.
 - Validate at the API boundary with zod; trust within.
-- Email subjects start with `[PRT]`.
+- Email subjects start with `[ProPrint]`.
 - Phone numbers normalized to `254XXXXXXXXX` at the boundary.
 - Money is integer KES (no floats).
 - Use `@/` import alias.
@@ -78,44 +72,61 @@ The site is being redesigned (2026-05-06) around two tensions held in balance:
 
 | Path | Purpose |
 | --- | --- |
-| `/` | Landing — leads on tender |
-| `/services/tender` | Flagship service page |
-| `/services/va` | Supporting VA service page |
-| `/hire?service=&tier=&industry=&agpoCategory=` | Lead form |
-| `/checkout?pkg=…` | Manual M-Pesa Paybill checkout |
-| `/apply` | Talent application |
-| `/guides/tender-disqualifications` | Email-gated lead magnet |
+| `/` | Product landing |
+| `/tools/serialpro` | PDF numbering and imposition |
+| `/tools/quotepro` | Print quotation calculator |
+| `/beta` | Founding-beta applications |
+| `/feedback` | Product feedback |
+| `/about` | Company / product story |
+| `/legal/privacy` | Privacy note (local PDF processing) |
 | `/admin` | Auth-gated lead + payment manager |
 | `/api/notify` | POST — captures and emails leads |
-| `/api/payment/submit` | POST — customer submits M-Pesa code |
-| `/api/lead-magnet/unlock` | POST — captures email, sets unlock cookie |
+| `/api/payment/submit` | POST — customer submits M-Pesa code (billing not live) |
 | `/api/admin/{login,logout,leads,payments}` | Admin auth + management |
+
+Legacy PRT URLs (`/services/*`, `/hire`, `/apply`, `/guides/*`, `/checkout`) stay redirected in [next.config.ts](next.config.ts). Do not revive them.
+
+## Env vars
+
+See [.env.example](.env.example): `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (≥16, docs say 32+), SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAIL`), `MPESA_PAYBILL`, `WHATSAPP_NUMBER`, `SUPPORT_EMAIL`, Firestore (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) or ADC.
 
 ## Verification gates (before declaring work done)
 
 1. `npm run build` passes (0 type errors, 0 warnings)
-2. Touched routes return 200 (curl or browser)
-3. If touching forms: try valid + invalid submit
-4. If touching auth/payments: regression-test the smoke flow in [README.md](README.md)
-5. `Grep "RemotePro"` returns zero matches (legacy brand check)
-6. Mobile sweep at 375px viewport — every page readable and tappable with one thumb
+2. `npm test` and `npm run lint` pass
+3. Touched routes return 200 (curl or browser)
+4. If touching forms: try valid + invalid submit
+5. If touching auth/payments: exercise `/admin` login and lead/payment list
+6. `Grep` in live source returns zero matches for `RemotePro`, `Pro Remote Tasks`, `tender-watch`, `va-growth`, `AGPO`, `PPADA`
+7. Mobile sweep at 375px — home, one tool, beta form readable and tappable with one thumb
 
 ## Agent team
 
 Specialized agents live in `.claude/agents/`. Pick the one that matches your task:
 
-- **tender-strategist** — Kenyan procurement expert. Use for any tender-domain copy, feature design, or compliance question.
-- **product-designer** — UI/UX, motion, accessibility. Use for visual decisions and component design. Owns the Stripe-clean × Apple-storytelling philosophy above.
-- **fullstack-engineer** — End-to-end implementation. Use for features spanning page + API + storage, refactors, integrations.
-- **growth-marketer** — Conversion, copy, funnel. Use for landing-page copy, CTAs, ads, lead magnets.
+- **print-ops** — Kenyan print-shop / prepress expert. Use for numbering, imposition, quoting, sheet sizes, and whether a feature solves a real operator pain.
+- **product-designer** — UI/UX, motion, accessibility. Owns the press-dark shell.
+- **fullstack-engineer** — End-to-end implementation (page + API + storage, pdf-lib, Firestore, M-Pesa).
+- **growth-marketer** — Conversion, copy, funnel. Owns landing copy, CTAs, and the beta funnel.
 
-For multi-discipline features, the typical chain is: tender-strategist (specs the value prop) → growth-marketer (drafts the copy) → product-designer (lays out the page) → fullstack-engineer (implements + ships).
+For multi-discipline features, the typical chain is: print-ops (specs the operator value) → growth-marketer (drafts the copy) → product-designer (lays out the page) → fullstack-engineer (implements + ships).
+
+## Next milestones (do not implement unless asked)
+
+Sequenced by operator value:
+
+1. **Local saved jobs** — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
+2. **Firebase Auth workspaces** — shop accounts, cloud save, presets
+3. **ImposePro Advanced** — gang runs / signatures
+4. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
+5. **Analytics + error monitoring**
+6. **Branded invoices** from QuotePro
 
 ## What to never do
 
-- Never commit `/data/*.json` (PII).
-- Never commit `.env.local`.
-- Never invent regulatory facts (PPRA, KRA, AGPO) — defer to tender-strategist + WebSearch.
-- Never guarantee tender wins in marketing copy.
+- Never commit `/data/*.json` (PII) or `.env.local`.
+- Never upload artwork to the server without an explicit product decision. SerialPro processes PDFs in the browser.
+- Never guarantee print-job accuracy, color match, or press output as legal/print advice.
 - Never ship the hardcoded `admin123` pattern again.
-- Never add a service back to the homepage that we don't actively sell. Only Tender (flagship) and VA (supporting) right now.
+- Never add a service back to the homepage that we do not actively sell. Only SerialPro and QuotePro are live tools.
+- Never revive tender / VA / hire / apply / lead-magnet pages.
