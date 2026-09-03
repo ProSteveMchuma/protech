@@ -10,6 +10,11 @@ export type QuoteInput = {
     otherCost: number;
     markupPercent: number;
     taxPercent: number;
+    /** Optional finishing breakdown — all additive, all default to 0. */
+    cuttingPerSheet?: number;
+    laminatePerPiece?: number;
+    bindingPerBook?: number;
+    books?: number;
 };
 
 export type QuoteResult = {
@@ -27,7 +32,7 @@ export type QuoteResult = {
     unitPrice: number;
 };
 
-const finiteNonNegative = (value: number) => Number.isFinite(value) && value >= 0 ? value : 0;
+const finiteNonNegative = (value: number | undefined) => (typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0);
 
 export function calculateQuote(input: QuoteInput): QuoteResult {
     const quantity = Math.floor(finiteNonNegative(input.quantity));
@@ -38,7 +43,11 @@ export function calculateQuote(input: QuoteInput): QuoteResult {
     const productionSheets = baseSheets + spoilageSheets;
     const paperCost = productionSheets * finiteNonNegative(input.sheetCost);
     const printCost = productionSheets * sides * finiteNonNegative(input.printCostPerSheet);
-    const finishingCost = quantity * finiteNonNegative(input.finishingPerPiece);
+    const finishingCost =
+        quantity * finiteNonNegative(input.finishingPerPiece) +
+        quantity * finiteNonNegative(input.laminatePerPiece) +
+        productionSheets * finiteNonNegative(input.cuttingPerSheet) +
+        finiteNonNegative(input.books) * finiteNonNegative(input.bindingPerBook);
     const directCost = paperCost + printCost + finiteNonNegative(input.setupCost) + finishingCost + finiteNonNegative(input.otherCost);
     const markupAmount = directCost * finiteNonNegative(input.markupPercent) / 100;
     const subtotal = directCost + markupAmount;
