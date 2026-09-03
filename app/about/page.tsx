@@ -15,8 +15,8 @@ const principles = [
 
 const timeline = [
     ["Now", "SerialPro", "Numbering, book ranges and production imposition."],
-    ["Next", "QuotePro", "Faster print estimating and consistent quotations."],
-    ["Then", "Production suite", "Proofing, job tracking and connected shop-floor tools."],
+    ["Now", "QuotePro", "Faster print estimating and consistent quotations."],
+    ["Next", "Production suite", "Proofing, job tracking and connected shop-floor tools."],
 ];
 
 export default function AboutPage() {
