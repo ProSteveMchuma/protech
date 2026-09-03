@@ -14,3 +14,17 @@ export interface ImpositionLayout {
   sheetWidthPt: number;
   sheetHeightPt: number;
 }
+
+export interface LayoutStats {
+  capacity: number;
+  wastedSlots: number;
+  utilization: number;
+}
+
+export interface BestFitLayout {
+  layout: ImpositionLayout;
+  rotated: boolean;
+  piecesPerSheet: number;
+  rotatedPiecesPerSheet: number;
+  improves: boolean;
+}
