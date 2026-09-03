@@ -20,7 +20,7 @@ The site is the front door: it explains the product, lets operators try the tool
 - `react-hook-form` + `zod` for forms
 - `pdf-lib` for **client-side** PDF numbering and imposition (artwork stays in the browser)
 - `nodemailer` for SMTP (graceful no-op without env)
-- Cloud Firestore in production ([lib/firebase-admin.ts](lib/firebase-admin.ts)); JSON under `/data/` in local dev ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored
+- Cloud Firestore in production via Admin SDK ([lib/firebase-admin.ts](lib/firebase-admin.ts)); JSON under `/data/` in local dev ([lib/leads.ts](lib/leads.ts), [lib/payments.ts](lib/payments.ts)) — gitignored. Browser Firebase web config lives in [lib/firebase-client.ts](lib/firebase-client.ts) for future Auth. Setup: [docs/FIREBASE.md](docs/FIREBASE.md).
 - Manual M-Pesa Paybill flow (Paybill `767363`, account = customer name). Admin verifies codes in `/admin`. No Daraja STK Push. Checkout UI is parked until billing launches.
 
 ## Brand & design system
@@ -88,7 +88,7 @@ Legacy PRT URLs (`/services/*`, `/hire`, `/apply`, `/guides/*`, `/checkout`) sta
 
 ## Env vars
 
-See [.env.example](.env.example): `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (≥16, docs say 32+), SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAIL`), `MPESA_PAYBILL`, `WHATSAPP_NUMBER`, `SUPPORT_EMAIL`, Firestore (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) or ADC.
+See [.env.example](.env.example) and [docs/FIREBASE.md](docs/FIREBASE.md): `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (≥16, docs say 32+), SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_EMAIL`), `MPESA_PAYBILL`, `WHATSAPP_NUMBER`, `SUPPORT_EMAIL`, Admin Firestore (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) or ADC, and web SDK (`NEXT_PUBLIC_FIREBASE_*`).
 
 ## Verification gates (before declaring work done)
 

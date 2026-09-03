@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Firebase service-account keys (never commit)
+*serviceAccount*.json
+**/serviceAccountKey.json
+
 # local lead storage (contains PII)
 /data
 
