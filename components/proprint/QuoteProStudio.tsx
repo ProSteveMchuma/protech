@@ -2,14 +2,10 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { Calculator, Check, Clipboard, Printer, ReceiptText, RotateCcw, ShieldCheck } from "lucide-react";
-import {
-    deleteSave,
-    saveRecord,
-    type QuoteProSavedSettings,
-} from "@/lib/proprint/local-saves";
+import { type QuoteProSavedSettings } from "@/lib/proprint/local-saves";
 import { calculateQuote, type QuoteInput } from "@/lib/proprint/quote";
 import { LocalSavesPanel } from "./LocalSavesPanel";
-import { useLocalSaves } from "./useLocalSaves";
+import { useShopSaves } from "./useShopSaves";
 
 const initialInput: QuoteInput = {
     quantity: 1000,
@@ -80,7 +76,15 @@ export function QuoteProStudio() {
     const [reference, setReference] = useState("QP-DRAFT");
     const [copied, setCopied] = useState(false);
     const [message, setMessage] = useState("");
-    const saves = useLocalSaves<QuoteProSavedSettings>("quotepro");
+    const {
+        records: saves,
+        source,
+        ready: savesReady,
+        signedIn,
+        error: savesError,
+        save: saveSetup,
+        remove,
+    } = useShopSaves<QuoteProSavedSettings>("quotepro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
     const saveName = customSaveName ?? (jobName.trim() || "Untitled quote");
@@ -88,15 +92,23 @@ export function QuoteProStudio() {
     const update = (key: keyof QuoteInput, value: number) => setInput((current) => ({ ...current, [key]: value }));
     const valid = input.quantity > 0 && input.itemsPerSheet > 0;
 
-    function handleSave() {
-        const record = saveRecord<QuoteProSavedSettings>("quotepro", {
-            id: activeSaveId ?? undefined,
-            name: saveName,
-            settings: { jobName, clientName, reference, input },
-        });
-        setActiveSaveId(record.id);
-        setCustomSaveName(record.name);
-        setMessage(`Saved “${record.name}” on this browser.`);
+    async function handleSave() {
+        try {
+            const record = await saveSetup({
+                id: activeSaveId ?? undefined,
+                name: saveName,
+                settings: { jobName, clientName, reference, input },
+            });
+            setActiveSaveId(record.id);
+            setCustomSaveName(record.name);
+            setMessage(
+                source === "cloud"
+                    ? `Saved “${record.name}” to your shop.`
+                    : `Saved “${record.name}” on this browser.`
+            );
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : "Could not save this quote.");
+        }
     }
 
     function handleLoad(id: string) {
@@ -111,13 +123,17 @@ export function QuoteProStudio() {
         setMessage(`Loaded “${record.name}”.`);
     }
 
-    function handleDelete(id: string) {
-        deleteSave("quotepro", id);
-        if (activeSaveId === id) {
-            setActiveSaveId(null);
-            setCustomSaveName(null);
+    async function handleDelete(id: string) {
+        try {
+            await remove(id);
+            if (activeSaveId === id) {
+                setActiveSaveId(null);
+                setCustomSaveName(null);
+            }
+            setMessage(source === "cloud" ? "Saved quote deleted from your shop." : "Saved quote deleted from this browser.");
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : "Could not delete this quote.");
         }
-        setMessage("Saved quote deleted from this browser.");
     }
 
     async function copySummary() {
@@ -152,7 +168,7 @@ export function QuoteProStudio() {
                         </a>
                         <span className="status-chip">
                             <ShieldCheck />
-                            Data stays local
+                            {signedIn ? "Quotes sync to your shop" : "Saves stay on this browser"}
                         </span>
                         <span className="status-chip">
                             <Calculator />
@@ -162,7 +178,14 @@ export function QuoteProStudio() {
                 </header>
 
                 {message && (
-                    <div role="status" className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 print:hidden">
+                    <div
+                        role="status"
+                        className={`mb-4 rounded-xl border px-4 py-3 text-sm print:hidden ${
+                            message.startsWith("Could not")
+                                ? "border-rose-400/30 bg-rose-400/10 text-rose-200"
+                                : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+                        }`}
+                    >
                         {message}
                     </div>
                 )}
@@ -205,7 +228,15 @@ export function QuoteProStudio() {
                                 onSave={handleSave}
                                 onLoad={handleLoad}
                                 onDelete={handleDelete}
-                                hint="Quotes are stored only in this browser. Clearing site data removes them."
+                                source={source}
+                                signedIn={signedIn}
+                                ready={savesReady}
+                                error={savesError}
+                                hint={
+                                    source === "cloud"
+                                        ? "Quotes sync to your shop account. Clearing this browser does not remove them."
+                                        : "Quotes are stored only in this browser. Clearing site data removes them."
+                                }
                             />
                         </Panel>
                         <button type="button" className="secondary-button" onClick={() => setInput(initialInput)}>

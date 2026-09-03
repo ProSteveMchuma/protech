@@ -4,22 +4,18 @@ import { useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
 import { PDFDocument } from "pdf-lib";
 import { Download, FileDown, FileText, LoaderCircle, LockKeyhole, MousePointer2, Scissors, ShieldCheck } from "lucide-react";
 import { calculateLayout } from "@/lib/proprint/imposition";
-import {
-    deleteSave,
-    saveRecord,
-    type SerialProSavedSettings,
-} from "@/lib/proprint/local-saves";
+import { type SerialProSavedSettings } from "@/lib/proprint/local-saves";
 import { createBookManifest, manifestToCsv } from "@/lib/proprint/manifest";
 import { generateProductionPdf } from "@/lib/proprint/pdf";
 import { formatSerial } from "@/lib/proprint/serial";
 import { SHEET_PRESETS, type SheetPresetKey } from "@/lib/proprint/sheet-presets";
 import type { OutputMode } from "@/lib/proprint/types";
 import { LocalSavesPanel } from "./LocalSavesPanel";
-import { useLocalSaves } from "./useLocalSaves";
+import { useShopSaves } from "./useShopSaves";
 
 const MAX_RECORDS = 5000;
 
-function save(blob: Blob, name: string) {
+function downloadBlob(blob: Blob, name: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -75,7 +71,15 @@ export function SerialProStudio() {
     const [busy, setBusy] = useState(false);
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState("");
-    const saves = useLocalSaves<SerialProSavedSettings>("serialpro");
+    const {
+        records: saves,
+        source,
+        ready: savesReady,
+        signedIn,
+        error: savesError,
+        save: saveSetup,
+        remove,
+    } = useShopSaves<SerialProSavedSettings>("serialpro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
     const saveName = customSaveName ?? defaultName(prefix, start, end);
@@ -160,19 +164,24 @@ export function SerialProStudio() {
         setActive(0);
     }
 
-    function handleSave() {
-        const record = saveRecord<SerialProSavedSettings>("serialpro", {
-            id: activeSaveId ?? undefined,
-            name: saveName,
-            settings: currentSettings(),
-        });
-        setActiveSaveId(record.id);
-        setCustomSaveName(record.name);
-        setMessage(
-            file
-                ? `Saved “${record.name}”. Artwork stays in this browser session only — re-upload the PDF when you return.`
-                : `Saved “${record.name}”. Upload the PDF when you are ready to generate.`
-        );
+    async function handleSave() {
+        try {
+            const record = await saveSetup({
+                id: activeSaveId ?? undefined,
+                name: saveName,
+                settings: currentSettings(),
+            });
+            setActiveSaveId(record.id);
+            setCustomSaveName(record.name);
+            const where = source === "cloud" ? " to your shop" : " on this browser";
+            setMessage(
+                file
+                    ? `Saved “${record.name}”${where}. Artwork stays in this browser session only — re-upload the PDF when you return.`
+                    : `Saved “${record.name}”${where}. Upload the PDF when you are ready to generate.`
+            );
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : "Could not save this job.");
+        }
     }
 
     function handleLoad(id: string) {
@@ -187,13 +196,17 @@ export function SerialProStudio() {
         setMessage(`Loaded “${record.name}”.${file ? "" : reminder}`);
     }
 
-    function handleDelete(id: string) {
-        deleteSave("serialpro", id);
-        if (activeSaveId === id) {
-            setActiveSaveId(null);
-            setCustomSaveName(null);
+    async function handleDelete(id: string) {
+        try {
+            await remove(id);
+            if (activeSaveId === id) {
+                setActiveSaveId(null);
+                setCustomSaveName(null);
+            }
+            setMessage(source === "cloud" ? "Saved job deleted from your shop." : "Saved job deleted from this browser.");
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : "Could not delete this job.");
         }
-        setMessage("Saved job deleted from this browser.");
     }
 
     async function upload(e: ChangeEvent<HTMLInputElement>) {
@@ -265,7 +278,7 @@ export function SerialProStudio() {
                 },
                 setProgress
             );
-            save(new Blob([bytes.slice().buffer], { type: "application/pdf" }), `serialpro-${start}-${end}.pdf`);
+            downloadBlob(new Blob([bytes.slice().buffer], { type: "application/pdf" }), `serialpro-${start}-${end}.pdf`);
             setProgress(100);
             setMessage("Production PDF generated and downloaded.");
         } catch (error) {
@@ -277,7 +290,7 @@ export function SerialProStudio() {
 
     function manifest() {
         const csv = manifestToCsv(createBookManifest({ start, end, setsPerBook, prefix, suffix, padding }));
-        save(new Blob([csv], { type: "text/csv;charset=utf-8" }), `serialpro-books-${start}-${end}.csv`);
+        downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `serialpro-books-${start}-${end}.csv`);
     }
 
     const shown = formatSerial(start, prefix, suffix, padding);
@@ -301,7 +314,7 @@ export function SerialProStudio() {
                         </span>
                         <span className="status-chip">
                             <ShieldCheck />
-                            No account required
+                            {signedIn ? "Shop account connected" : "No account required"}
                         </span>
                     </div>
                 </header>
@@ -309,7 +322,7 @@ export function SerialProStudio() {
                     <div
                         role="status"
                         className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
-                            invalid || message.startsWith("SerialPro could") || message.startsWith("This PDF") || message.startsWith("Use a PDF")
+                            invalid || message.startsWith("SerialPro could") || message.startsWith("This PDF") || message.startsWith("Use a PDF") || message.startsWith("Could not")
                                 ? "border-rose-400/30 bg-rose-400/10 text-rose-200"
                                 : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
                         }`}
@@ -383,7 +396,11 @@ export function SerialProStudio() {
                             onSave={handleSave}
                             onLoad={handleLoad}
                             onDelete={handleDelete}
-                            hint="Saves numbering and sheet setup on this device. Artwork is never stored."
+                            source={source}
+                            signedIn={signedIn}
+                            ready={savesReady}
+                            error={savesError}
+                            hint="Saves numbering and sheet setup. Artwork is never stored."
                         />
                     </aside>
                     <main className="preview-panel">

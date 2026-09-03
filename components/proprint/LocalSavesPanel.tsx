@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { FolderOpen, Save, Trash2 } from "lucide-react";
 import { formatSavedWhen, type SavedRecord } from "@/lib/proprint/local-saves";
+import type { SaveSource } from "./useShopSaves";
 
 type Props<T> = {
     label: string;
@@ -9,10 +12,14 @@ type Props<T> = {
     activeId: string | null;
     draftName: string;
     onDraftNameChange: (value: string) => void;
-    onSave: () => void;
+    onSave: () => void | Promise<void>;
     onLoad: (id: string) => void;
-    onDelete: (id: string) => void;
+    onDelete: (id: string) => void | Promise<void>;
     hint?: string;
+    source?: SaveSource;
+    signedIn?: boolean;
+    ready?: boolean;
+    error?: string | null;
 };
 
 export function LocalSavesPanel<T>({
@@ -25,14 +32,30 @@ export function LocalSavesPanel<T>({
     onLoad,
     onDelete,
     hint,
+    source = "local",
+    signedIn = false,
+    ready = true,
+    error,
 }: Props<T>) {
+    const [pending, setPending] = useState<"save" | "delete" | null>(null);
+
+    async function run(action: "save" | "delete", work: () => void | Promise<void>) {
+        if (pending || !ready) return;
+        setPending(action);
+        try {
+            await work();
+        } finally {
+            setPending(null);
+        }
+    }
+
     return (
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[.03] p-3">
             <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">
-                    {label}
-                </p>
-                <span className="font-mono text-[10px] text-slate-600">{records.length} saved</span>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">{label}</p>
+                <span className="font-mono text-[10px] text-slate-600">
+                    {source === "cloud" ? "Shop" : "This browser"} · {records.length} saved
+                </span>
             </div>
             <div className="mt-3 flex gap-2">
                 <input
@@ -43,36 +66,46 @@ export function LocalSavesPanel<T>({
                 />
                 <button
                     type="button"
-                    onClick={onSave}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-press hover:bg-cyan-200"
+                    disabled={Boolean(pending) || !ready}
+                    onClick={() => void run("save", onSave)}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-press hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60"
                 >
                     <Save className="size-3.5" />
-                    Save
+                    {pending === "save" ? "Saving" : "Save"}
                 </button>
             </div>
             {hint && <p className="mt-2 text-[11px] leading-4 text-slate-500">{hint}</p>}
+            {error && (
+                <p role="alert" className="mt-2 text-[11px] leading-4 text-rose-300">
+                    {error}
+                </p>
+            )}
+            {!signedIn && (
+                <p className="mt-2 text-[11px] leading-4 text-slate-500">
+                    <Link href="/account" className="font-semibold text-slate-300 underline-offset-4 hover:text-white hover:underline">
+                        Sign in
+                    </Link>{" "}
+                    to keep these setups on other computers.
+                </p>
+            )}
             {records.length === 0 ? (
-                <p className="mt-3 text-[11px] text-slate-500">No saved setups yet. Save the current job to reuse it later on this browser.</p>
+                <p className="mt-3 text-[11px] text-slate-500">
+                    {source === "cloud"
+                        ? "No saved setups in this shop yet. Save the current job to reuse it on any signed-in computer."
+                        : "No saved setups yet. Save the current job to reuse it later on this browser."}
+                </p>
             ) : (
                 <ul className="mt-3 max-h-44 space-y-1.5 overflow-y-auto">
                     {records.map((record) => (
                         <li
                             key={record.id}
                             className={`rounded-lg border px-2.5 py-2 ${
-                                activeId === record.id
-                                    ? "border-cyan-300/40 bg-cyan-300/10"
-                                    : "border-white/8 bg-press/60"
+                                activeId === record.id ? "border-cyan-300/40 bg-cyan-300/10" : "border-white/8 bg-press/60"
                             }`}
                         >
                             <div className="flex items-start justify-between gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => onLoad(record.id)}
-                                    className="min-w-0 flex-1 text-left"
-                                >
-                                    <span className="block truncate text-xs font-bold text-slate-100">
-                                        {record.name}
-                                    </span>
+                                <button type="button" onClick={() => onLoad(record.id)} className="min-w-0 flex-1 text-left">
+                                    <span className="block truncate text-xs font-bold text-slate-100">{record.name}</span>
                                     <span className="mt-0.5 block font-mono text-[10px] text-slate-500">
                                         {formatSavedWhen(record.updatedAt)}
                                     </span>
@@ -89,8 +122,9 @@ export function LocalSavesPanel<T>({
                                     <button
                                         type="button"
                                         aria-label={`Delete ${record.name}`}
-                                        onClick={() => onDelete(record.id)}
-                                        className="grid size-8 place-items-center rounded-md border border-white/10 text-rose-200 hover:bg-rose-400/10"
+                                        disabled={Boolean(pending) || !ready}
+                                        onClick={() => void run("delete", () => onDelete(record.id))}
+                                        className="grid size-8 place-items-center rounded-md border border-white/10 text-rose-200 hover:bg-rose-400/10 disabled:opacity-50"
                                     >
                                         <Trash2 className="size-3.5" />
                                     </button>

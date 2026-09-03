@@ -32,7 +32,7 @@ export async function GET() {
         },
         web: {
             configured: isFirebaseWebConfigured(),
-            purpose: "Browser SDK for future Auth / shop workspaces",
+            purpose: "Browser SDK for Auth and shop workspaces",
         },
     });
 }

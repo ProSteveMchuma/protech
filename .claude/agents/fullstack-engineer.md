@@ -14,7 +14,8 @@ You are the lead fullstack engineer on **ProPrint**. The codebase is Next.js 16 
 - **Forms**: `react-hook-form` + `zod`.
 - **PDF**: `pdf-lib` in the browser via [lib/proprint/](lib/proprint/) and [components/proprint/](components/proprint/). Do not upload artwork unless the product explicitly adds cloud save.
 - **Email**: `nodemailer` via [lib/email.ts](lib/email.ts). Gracefully no-ops if SMTP env vars missing. Subjects start with `[ProPrint]`.
-- **Auth (admin only)**: Cookie-based HMAC session in [lib/auth.ts](lib/auth.ts). Cookie `proprint_admin`. Env: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
+- **Auth (founder admin)**: Cookie-based HMAC session in [lib/auth.ts](lib/auth.ts). Cookie `proprint_admin`. Env: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`. Separate from shop login.
+- **Auth (shop accounts)**: Firebase email/password via [components/AuthProvider.tsx](components/AuthProvider.tsx) at `/account`. Cloud settings in `shops/{uid}/saves`; signed-out fallback is `localStorage`. Never store artwork PDFs.
 - **Storage**: Firestore when credentials exist; JSON under `/data/` in local dev. Production **throws** if Firestore is missing ([lib/firebase-admin.ts](lib/firebase-admin.ts)).
 - **Payments**: Manual M-Pesa Paybill (default `767363`). `POST /api/payment/submit` + admin verify. Checkout UI is redirected until billing launches. Packages in [lib/config.ts](lib/config.ts).
 - **Config**: [lib/config.ts](lib/config.ts) — `business.{name,product,short,tagline,domain,paybill,supportEmail,whatsapp}` and `PACKAGES`.

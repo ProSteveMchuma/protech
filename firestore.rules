@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function validSave() {
+      return request.resource.data.keys().hasAll(['kind', 'name', 'settings', 'createdAt', 'updatedAt'])
+        && request.resource.data.kind in ['serialpro', 'quotepro']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() < 120
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string;
+    }
+
+    match /leads/{id} {
+      allow read, write: if false;
+    }
+
+    match /payments/{id} {
+      allow read, write: if false;
+    }
+
+    match /shops/{uid} {
+      allow read, create, update: if isOwner(uid);
+      allow delete: if false;
+
+      match /saves/{saveId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validSave();
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
