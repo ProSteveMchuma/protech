@@ -122,8 +122,10 @@ export function getSaveSnapshot<T>(kind: SavedKind): SavedRecord<T>[] {
     return next;
 }
 
+const EMPTY_SNAPSHOT: SavedRecord<unknown>[] = [];
+
 export function getServerSaveSnapshot<T>(): SavedRecord<T>[] {
-    return [];
+    return EMPTY_SNAPSHOT as SavedRecord<T>[];
 }
 
 export function getSave<T>(kind: SavedKind, id: string): SavedRecord<T> | null {
