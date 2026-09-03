@@ -12,7 +12,14 @@ import {
     type User,
 } from "firebase/auth";
 import { getFirebaseApp, isFirebaseWebConfigured } from "@/lib/firebase-client";
-import { hasEntitlement, type Feature, type PlanId } from "@/lib/entitlements";
+import { hasEntitlement, planFeatures, type Feature, type PlanId } from "@/lib/entitlements";
+
+// Dev/demo only: preview paid UI locally without a live subscription.
+// Never applied in production builds.
+const PREVIEW_PLAN: PlanId | null =
+    process.env.NODE_ENV !== "production" && ["tool-pro", "prepress", "shop"].includes(process.env.NEXT_PUBLIC_PROPRINT_PREVIEW_PLAN ?? "")
+        ? (process.env.NEXT_PUBLIC_PROPRINT_PREVIEW_PLAN as PlanId)
+        : null;
 
 interface AuthUser {
     uid: string;
@@ -44,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const configured = isFirebaseWebConfigured();
     const [loading, setLoading] = useState(configured);
     const [user, setUser] = useState<AuthUser | null>(null);
-    const [plan, setPlan] = useState<PlanId>("free");
-    const [entitlements, setEntitlements] = useState<Feature[]>([]);
+    const [plan, setPlan] = useState<PlanId>(PREVIEW_PLAN ?? "free");
+    const [entitlements, setEntitlements] = useState<Feature[]>(PREVIEW_PLAN ? planFeatures(PREVIEW_PLAN) : []);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     const getToken = useCallback(async () => {
@@ -58,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loadEntitlements = useCallback(async (account: User | null) => {
         if (!account) {
-            setPlan("free");
-            setEntitlements([]);
+            setPlan(PREVIEW_PLAN ?? "free");
+            setEntitlements(PREVIEW_PLAN ? planFeatures(PREVIEW_PLAN) : []);
             return;
         }
         try {
@@ -115,8 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = useCallback(async () => {
         const app = getFirebaseApp();
         if (app) await signOut(getAuth(app));
-        setPlan("free");
-        setEntitlements([]);
+        setPlan(PREVIEW_PLAN ?? "free");
+        setEntitlements(PREVIEW_PLAN ? planFeatures(PREVIEW_PLAN) : []);
     }, []);
 
     const value = useMemo<AuthState>(
