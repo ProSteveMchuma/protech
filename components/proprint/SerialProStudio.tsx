@@ -738,7 +738,12 @@ export function SerialProStudio() {
                                 </>
                             )}
                         </button>
-                        <p className="mt-3 text-center text-[11px] text-slate-500">Test a small range before releasing a production run.</p>
+                        {busy && (
+                            <div className="press-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+                                <span style={{ width: `${progress}%` }} />
+                            </div>
+                        )}
+                        <p className="mt-3 text-center text-[11px] text-slate-400">Test a small range before releasing a production run.</p>
                     </aside>
                 </div>
             </div>
