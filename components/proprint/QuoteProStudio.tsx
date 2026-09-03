@@ -53,7 +53,7 @@ export function QuoteProStudio() {
         window.setTimeout(() => setCopied(false), 1800);
     }
 
-    return <div className="quote-workspace min-h-screen bg-[#071019] pb-16 pt-24 text-slate-100">
+    return <div className="quote-workspace min-h-screen bg-press pb-16 pt-24 text-slate-100">
         <div className="mx-auto max-w-[1500px] px-4 sm:px-6">
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4 print:hidden">
                 <div><p className="font-mono text-xs uppercase tracking-[.22em] text-cyan-300">Production beta / estimator 01</p><h1 className="mt-2 text-4xl font-black">QuotePro</h1><p className="mt-2 text-sm text-slate-400">Cost the job, protect your margin and quote with confidence.</p></div>

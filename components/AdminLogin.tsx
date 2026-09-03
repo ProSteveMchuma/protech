@@ -34,22 +34,22 @@ export function AdminLogin() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-brand-950 bg-grid relative overflow-hidden">
-            <div className="absolute inset-0 bg-aurora-dark opacity-60 pointer-events-none" />
-            <div className="bg-white p-8 rounded-3xl premium-shadow w-full max-w-md mx-4 relative">
-                <div className="flex flex-col items-center mb-8">
-                    <div className="text-brand-950 mb-4">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-press">
+            <div className="imposition-grid pointer-events-none absolute inset-0 opacity-30" />
+            <div className="relative mx-4 w-full max-w-md rounded-2xl border border-white/10 bg-press-panel p-8">
+                <div className="mb-8 flex flex-col items-center">
+                    <div className="mb-4 text-white">
                         <Logo variant="mark" size={56} />
                     </div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Admin access</h1>
-                    <p className="text-sm text-slate-500 mt-1">Authorized staff only.</p>
+                    <h1 className="text-2xl font-black text-white">Admin access</h1>
+                    <p className="mt-1 text-sm text-slate-400">Authorized staff only.</p>
                 </div>
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="relative">
-                        <Lock className="size-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <Lock className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-slate-500" />
                         <input
                             type="password"
-                            className="w-full pl-10 pr-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 outline-none transition"
+                            className="w-full rounded-xl border border-white/12 bg-press py-3.5 pr-4 pl-10 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -58,11 +58,11 @@ export function AdminLogin() {
                         />
                     </div>
                     {error && (
-                        <p className="text-red-600 text-sm font-medium" role="alert">
+                        <p className="text-sm font-medium text-rose-300" role="alert">
                             {error}
                         </p>
                     )}
-                    <Button type="submit" loading={loading} variant="dark" size="lg" fullWidth>
+                    <Button type="submit" loading={loading} size="lg" fullWidth>
                         Unlock dashboard
                     </Button>
                 </form>

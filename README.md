@@ -47,7 +47,11 @@ Set `ADMIN_PASSWORD` and a random 32+ character `ADMIN_SESSION_SECRET` before op
 | `/tools/quotepro` | Print quotation calculator |
 | `/beta` | Founding-beta applications |
 | `/feedback` | Product feedback |
+| `/about` | Company / product story |
+| `/legal/privacy` | Privacy note |
 | `/admin` | Lead and payment operations |
+
+Legacy service, hire, apply, guide, and checkout URLs redirect to the ProPrint landing page.
 
 ## Validation
 
@@ -59,8 +63,11 @@ npm run build
 
 ## Next milestones
 
-1. Firebase Authentication and customer workspaces
-2. Saved SerialPro jobs, QuotePro quotes, and shop presets
-3. Paid-plan enforcement and M-Pesa verification
-4. Product analytics and error monitoring
-5. Branded invoices and receipts
+Sequenced by operator value. Not in this codebase yet.
+
+1. Local saved jobs — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
+2. Firebase Authentication and customer workspaces — shop accounts, cloud save, presets
+3. ImposePro Advanced — gang runs / signatures
+4. Paid-plan enforcement — wire checkout to `PACKAGES`, admin-verified M-Pesa, feature gates
+5. Product analytics and error monitoring
+6. Branded invoices and receipts from QuotePro
