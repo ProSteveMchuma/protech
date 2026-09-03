@@ -53,12 +53,9 @@ const settings: SerialProSavedSettings = {
 
 test("local saves create, update, list and delete records", () => {
     const storage = new MemoryStorage();
-    (globalThis as { window?: { localStorage: MemoryStorage } }).window = { localStorage: storage };
-    (globalThis as { crypto?: { randomUUID: () => string } }).crypto = {
-        randomUUID: () => "save-1",
-    };
+    (globalThis as unknown as { window: { localStorage: MemoryStorage } }).window = { localStorage: storage };
 
-    const created = saveRecord("serialpro", { name: "  Receipt books  ", settings });
+    const created = saveRecord("serialpro", { id: "save-1", name: "  Receipt books  ", settings });
     assert.equal(created.id, "save-1");
     assert.equal(created.name, "Receipt books");
     assert.equal(listSaves("serialpro").length, 1);

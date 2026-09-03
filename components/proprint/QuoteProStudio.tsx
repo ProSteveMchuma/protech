@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Calculator, Check, Clipboard, Printer, ReceiptText, RotateCcw, ShieldCheck } from "lucide-react";
 import {
     deleteSave,
-    listSaves,
     saveRecord,
     type QuoteProSavedSettings,
-    type SavedRecord,
 } from "@/lib/proprint/local-saves";
 import { calculateQuote, type QuoteInput } from "@/lib/proprint/quote";
 import { LocalSavesPanel } from "./LocalSavesPanel";
+import { useLocalSaves } from "./useLocalSaves";
 
 const initialInput: QuoteInput = {
     quantity: 1000,
@@ -81,25 +80,13 @@ export function QuoteProStudio() {
     const [reference, setReference] = useState("QP-DRAFT");
     const [copied, setCopied] = useState(false);
     const [message, setMessage] = useState("");
-    const [saves, setSaves] = useState<Array<SavedRecord<QuoteProSavedSettings>>>([]);
+    const saves = useLocalSaves<QuoteProSavedSettings>("quotepro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
-    const [saveName, setSaveName] = useState("A5 promotional flyers");
+    const [customSaveName, setCustomSaveName] = useState<string | null>(null);
+    const saveName = customSaveName ?? (jobName.trim() || "Untitled quote");
     const result = useMemo(() => calculateQuote(input), [input]);
     const update = (key: keyof QuoteInput, value: number) => setInput((current) => ({ ...current, [key]: value }));
     const valid = input.quantity > 0 && input.itemsPerSheet > 0;
-
-    useEffect(() => {
-        setSaves(listSaves<QuoteProSavedSettings>("quotepro"));
-    }, []);
-
-    useEffect(() => {
-        if (activeSaveId) return;
-        setSaveName(jobName.trim() || "Untitled quote");
-    }, [jobName, activeSaveId]);
-
-    function refreshSaves() {
-        setSaves(listSaves<QuoteProSavedSettings>("quotepro"));
-    }
 
     function handleSave() {
         const record = saveRecord<QuoteProSavedSettings>("quotepro", {
@@ -108,8 +95,7 @@ export function QuoteProStudio() {
             settings: { jobName, clientName, reference, input },
         });
         setActiveSaveId(record.id);
-        setSaveName(record.name);
-        refreshSaves();
+        setCustomSaveName(record.name);
         setMessage(`Saved “${record.name}” on this browser.`);
     }
 
@@ -121,14 +107,16 @@ export function QuoteProStudio() {
         setReference(record.settings.reference);
         setInput(record.settings.input);
         setActiveSaveId(record.id);
-        setSaveName(record.name);
+        setCustomSaveName(record.name);
         setMessage(`Loaded “${record.name}”.`);
     }
 
     function handleDelete(id: string) {
         deleteSave("quotepro", id);
-        if (activeSaveId === id) setActiveSaveId(null);
-        refreshSaves();
+        if (activeSaveId === id) {
+            setActiveSaveId(null);
+            setCustomSaveName(null);
+        }
         setMessage("Saved quote deleted from this browser.");
     }
 
@@ -184,7 +172,13 @@ export function QuoteProStudio() {
                         <Panel number="01" title="Job details">
                             <label className="quote-field">
                                 <span>Job name</span>
-                                <input value={jobName} onChange={(event) => setJobName(event.target.value)} />
+                                <input
+                                    value={jobName}
+                                    onChange={(event) => {
+                                        setJobName(event.target.value);
+                                        if (!activeSaveId) setCustomSaveName(null);
+                                    }}
+                                />
                             </label>
                             <label className="quote-field">
                                 <span>Client</span>
@@ -207,7 +201,7 @@ export function QuoteProStudio() {
                                 records={saves}
                                 activeId={activeSaveId}
                                 draftName={saveName}
-                                onDraftNameChange={setSaveName}
+                                onDraftNameChange={setCustomSaveName}
                                 onSave={handleSave}
                                 onLoad={handleLoad}
                                 onDelete={handleDelete}

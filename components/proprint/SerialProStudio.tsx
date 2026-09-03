@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
 import { PDFDocument } from "pdf-lib";
 import { Download, FileDown, FileText, LoaderCircle, LockKeyhole, MousePointer2, Scissors, ShieldCheck } from "lucide-react";
 import { calculateLayout } from "@/lib/proprint/imposition";
 import {
     deleteSave,
-    listSaves,
     saveRecord,
-    type SavedRecord,
     type SerialProSavedSettings,
 } from "@/lib/proprint/local-saves";
 import { createBookManifest, manifestToCsv } from "@/lib/proprint/manifest";
@@ -17,6 +15,7 @@ import { formatSerial } from "@/lib/proprint/serial";
 import { SHEET_PRESETS, type SheetPresetKey } from "@/lib/proprint/sheet-presets";
 import type { OutputMode } from "@/lib/proprint/types";
 import { LocalSavesPanel } from "./LocalSavesPanel";
+import { useLocalSaves } from "./useLocalSaves";
 
 const MAX_RECORDS = 5000;
 
@@ -76,9 +75,10 @@ export function SerialProStudio() {
     const [busy, setBusy] = useState(false);
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState("");
-    const [saves, setSaves] = useState<Array<SavedRecord<SerialProSavedSettings>>>([]);
+    const saves = useLocalSaves<SerialProSavedSettings>("serialpro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
-    const [saveName, setSaveName] = useState("RCT- 1-100");
+    const [customSaveName, setCustomSaveName] = useState<string | null>(null);
+    const saveName = customSaveName ?? defaultName(prefix, start, end);
 
     const unique = Math.max(0, end - start + 1);
     const records = unique * copies;
@@ -107,19 +107,6 @@ export function SerialProStudio() {
               : mode !== "number-only" && size && layout.piecesPerSheet === 0
                 ? `Your finished artwork does not fit on ${SHEET_PRESETS[preset].label} with the current margins and gutters.`
                 : "";
-
-    useEffect(() => {
-        setSaves(listSaves<SerialProSavedSettings>("serialpro"));
-    }, []);
-
-    useEffect(() => {
-        if (activeSaveId) return;
-        setSaveName(defaultName(prefix, start, end));
-    }, [prefix, start, end, activeSaveId]);
-
-    function refreshSaves() {
-        setSaves(listSaves<SerialProSavedSettings>("serialpro"));
-    }
 
     function currentSettings(): SerialProSavedSettings {
         return {
@@ -180,8 +167,7 @@ export function SerialProStudio() {
             settings: currentSettings(),
         });
         setActiveSaveId(record.id);
-        setSaveName(record.name);
-        refreshSaves();
+        setCustomSaveName(record.name);
         setMessage(
             file
                 ? `Saved “${record.name}”. Artwork stays in this browser session only — re-upload the PDF when you return.`
@@ -194,7 +180,7 @@ export function SerialProStudio() {
         if (!record) return;
         applySettings(record.settings);
         setActiveSaveId(record.id);
-        setSaveName(record.name);
+        setCustomSaveName(record.name);
         const reminder = record.settings.sourceFileName
             ? ` Re-upload ${record.settings.sourceFileName} to generate.`
             : " Re-upload the artwork PDF to generate.";
@@ -203,8 +189,10 @@ export function SerialProStudio() {
 
     function handleDelete(id: string) {
         deleteSave("serialpro", id);
-        if (activeSaveId === id) setActiveSaveId(null);
-        refreshSaves();
+        if (activeSaveId === id) {
+            setActiveSaveId(null);
+            setCustomSaveName(null);
+        }
         setMessage("Saved job deleted from this browser.");
     }
 
@@ -391,7 +379,7 @@ export function SerialProStudio() {
                             records={saves}
                             activeId={activeSaveId}
                             draftName={saveName}
-                            onDraftNameChange={setSaveName}
+                            onDraftNameChange={setCustomSaveName}
                             onSave={handleSave}
                             onLoad={handleLoad}
                             onDelete={handleDelete}

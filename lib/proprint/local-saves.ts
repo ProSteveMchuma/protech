@@ -55,6 +55,8 @@ export type SavedRecord<T> = {
 
 const STORAGE_PREFIX = "proprint.saves.";
 const MAX_SAVES = 25;
+const listeners = new Set<() => void>();
+const snapshotCache = new Map<SavedKind, SavedRecord<unknown>[]>();
 
 function storageKey(kind: SavedKind) {
     return `${STORAGE_PREFIX}${kind}`;
@@ -62,6 +64,11 @@ function storageKey(kind: SavedKind) {
 
 function canUseStorage() {
     return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+function emitChange() {
+    snapshotCache.clear();
+    for (const listener of listeners) listener();
 }
 
 function readAll<T>(kind: SavedKind): SavedRecord<T>[] {
@@ -93,10 +100,30 @@ function isSavedRecord(value: unknown): value is SavedRecord<unknown> {
 function writeAll<T>(kind: SavedKind, records: SavedRecord<T>[]) {
     if (!canUseStorage()) return;
     window.localStorage.setItem(storageKey(kind), JSON.stringify(records));
+    emitChange();
+}
+
+export function subscribeSaves(listener: () => void) {
+    listeners.add(listener);
+    return () => {
+        listeners.delete(listener);
+    };
 }
 
 export function listSaves<T>(kind: SavedKind): SavedRecord<T>[] {
     return readAll<T>(kind).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export function getSaveSnapshot<T>(kind: SavedKind): SavedRecord<T>[] {
+    const cached = snapshotCache.get(kind);
+    if (cached) return cached as SavedRecord<T>[];
+    const next = listSaves<T>(kind);
+    snapshotCache.set(kind, next as SavedRecord<unknown>[]);
+    return next;
+}
+
+export function getServerSaveSnapshot<T>(): SavedRecord<T>[] {
+    return [];
 }
 
 export function getSave<T>(kind: SavedKind, id: string): SavedRecord<T> | null {
