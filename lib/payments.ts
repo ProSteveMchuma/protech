@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { getFirestoreDatabase } from "./firebase-admin";
+import { activateSubscription } from "./subscriptions";
 
 export type PaymentStatus = "pending" | "verified" | "rejected";
 
@@ -21,6 +22,8 @@ export interface Payment {
     service: string;
     tier: string;
     pkgKey: string;
+    /** Firebase uid when a signed-in shop paid — used to activate their plan on verify. */
+    uid?: string;
     /** Set when admin verifies/rejects. */
     verifiedAt?: string;
     note?: string;
@@ -117,6 +120,7 @@ export async function setPaymentStatus(
         const current = query.docs[0].data() as Payment;
         const updated: Payment = { ...current, status, verifiedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(note !== undefined || current.note !== undefined ? { note: note ?? current.note } : {}) };
         await ref.set(updated);
+        await maybeActivate(updated);
         return updated;
     }
     const items = await readAll();
@@ -130,5 +134,16 @@ export async function setPaymentStatus(
         note: note ?? items[idx].note,
     };
     await writeAll(items);
+    await maybeActivate(items[idx]);
     return items[idx];
+}
+
+/** When a payment is verified for a signed-in shop, turn on their plan. */
+async function maybeActivate(payment: Payment) {
+    if (payment.status !== "verified" || !payment.uid || !payment.pkgKey) return;
+    try {
+        await activateSubscription(payment.uid, payment.pkgKey);
+    } catch (err) {
+        console.warn("[payments] subscription activation failed:", (err as Error).message);
+    }
 }

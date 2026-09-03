@@ -214,6 +214,39 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="border-t border-white/10 py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <Reveal>
+            <p className="kicker text-cyan-300">A real job, before and after</p>
+            <h2 className="mt-4 max-w-3xl text-4xl font-black tracking-[-.04em] sm:text-5xl">500 NCR receipt books, on the same afternoon.</h2>
+          </Reveal>
+          <Reveal className="mt-10 grid gap-4 lg:grid-cols-2" stagger>
+            <div className="h-full rounded-2xl border border-white/10 bg-white/[.02] p-7">
+              <p className="font-mono text-xs uppercase tracking-wider text-slate-400">By hand</p>
+              <ul className="mt-5 space-y-3 text-sm text-slate-300">
+                <li>Type or stamp each number, book by book.</li>
+                <li>Work out cut-and-stack order on paper.</li>
+                <li>Re-check for skipped or repeated numbers.</li>
+                <li className="font-bold text-slate-100">~90 minutes, and one slip means a reprint.</li>
+              </ul>
+            </div>
+            <div className="h-full rounded-2xl border border-cyan-300/30 bg-cyan-300/[.06] p-7">
+              <p className="font-mono text-xs uppercase tracking-wider text-cyan-200">With ProPrint</p>
+              <ul className="mt-5 space-y-3 text-sm text-slate-200">
+                <li>Load the receipt preset, upload the PDF.</li>
+                <li>See the press sheet and serial order live.</li>
+                <li>Generate a numbered, imposed PDF — sequence guaranteed.</li>
+                <li className="font-bold text-white">Under 5 minutes, press-ready.</li>
+              </ul>
+              <Link href="/learn/receipt-numbering" className="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-cyan-300 hover:text-cyan-200">
+                Read the numbering guide <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </Reveal>
+          <p className="mt-4 text-xs text-slate-400">Illustrative workflow with typical times; actual times vary by artwork, press and finishing.</p>
+        </div>
+      </section>
+
       <section id="pricing" className="py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <p className="kicker text-cyan-300">Founding access</p>

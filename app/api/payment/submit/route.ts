@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { submitPayment } from "@/lib/payments";
 import { sendNotification } from "@/lib/email";
 import { PACKAGES, business } from "@/lib/config";
+import { verifyRequestUser } from "@/lib/firebase-admin-auth";
 
 const MPESA_CODE_RE = /^[A-Z0-9]{8,12}$/;
 
@@ -63,6 +64,8 @@ export async function POST(req: Request) {
         }
 
         const accountRef = customerName.trim();
+        // If the shop is signed in, link the payment so we can activate their plan on verify.
+        const account = await verifyRequestUser(req);
         const { payment, duplicate } = await submitPayment({
             amount: pkg.amount,
             mpesaCode: code,
@@ -73,6 +76,7 @@ export async function POST(req: Request) {
             service: pkg.service,
             tier: pkg.tier,
             pkgKey,
+            ...(account ? { uid: account.uid } : {}),
         });
 
         if (duplicate) {

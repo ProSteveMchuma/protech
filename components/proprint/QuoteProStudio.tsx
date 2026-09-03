@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
-import { AlertTriangle, Calculator, Check, Clipboard, Layers, Printer, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { AlertTriangle, Calculator, Check, Clipboard, Cpu, FileText, Layers, Plus, Printer, ReceiptText, RotateCcw, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import {
     deleteSave,
     saveRecord,
@@ -9,8 +9,23 @@ import {
 } from "@/lib/proprint/local-saves";
 import { calculateQuote, type QuoteInput } from "@/lib/proprint/quote";
 import { getServerSessionImposition, getSessionImpositionSnapshot, subscribeSessionImposition } from "@/lib/proprint/session";
+import { cheapestMachine } from "@/lib/proprint/machines";
+import { useMachines, useStocks } from "@/lib/proprint/catalog";
+import { buildQuotePdf } from "@/lib/proprint/quote-pdf";
+import { track } from "@/lib/analytics";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { FeatureGate } from "@/components/FeatureGate";
 import { LocalSavesPanel } from "./LocalSavesPanel";
+import { useCloudMirror } from "./useCloudMirror";
 import { useLocalSaves } from "./useLocalSaves";
+
+interface QuoteLine {
+    id: string;
+    label: string;
+    total: number;
+    unitPrice: number;
+    quantity: number;
+}
 
 const initialInput: QuoteInput = {
     quantity: 1000,
@@ -114,6 +129,7 @@ export function QuoteProStudio() {
     const [copied, setCopied] = useState(false);
     const [message, setMessage] = useState("");
     const saves = useLocalSaves<QuoteProSavedSettings>("quotepro");
+    const { cloudActive, mirrorSave, mirrorDelete } = useCloudMirror<QuoteProSavedSettings>("quotepro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
     const saveName = customSaveName ?? (jobName.trim() || "Untitled quote");
@@ -123,6 +139,38 @@ export function QuoteProStudio() {
     const [activePreset, setActivePreset] = useState<QuotePresetKey | null>(null);
     const [showVolumes, setShowVolumes] = useState(false);
     const sessionUp = useSyncExternalStore(subscribeSessionImposition, getSessionImpositionSnapshot, getServerSessionImposition);
+    const { user } = useAuth();
+    const stocks = useStocks();
+    const machines = useMachines();
+    const [lines, setLines] = useState<QuoteLine[]>([]);
+    const [machineHint, setMachineHint] = useState("");
+
+    function applyStock(id: string) {
+        const stock = stocks.find((s) => s.id === id);
+        if (stock) update("sheetCost", stock.sheetCost);
+    }
+
+    function proposeMachine() {
+        const choice = cheapestMachine(machines, result.productionSheets, input.sides);
+        if (!choice) return;
+        setInput((current) => ({ ...current, setupCost: Math.round(choice.estimate.setup), printCostPerSheet: choice.estimate.perSheetPerSide }));
+        setMachineHint(`${choice.profile.name}: KES ${Math.round(choice.estimate.total).toLocaleString()} for ${result.productionSheets.toLocaleString()} sheets`);
+    }
+
+    const grandTotal = useMemo(() => lines.reduce((sum, l) => sum + l.total, 0) + (valid ? result.total : 0), [lines, result, valid]);
+
+    function addLine() {
+        if (!valid) return;
+        setLines((prev) => [
+            ...prev,
+            { id: `line-${Date.now()}`, label: jobName.trim() || "Line item", total: result.total, unitPrice: result.unitPrice, quantity: Math.floor(input.quantity) },
+        ]);
+        setMessage(`Added “${jobName.trim() || "line item"}” to the quote.`);
+    }
+
+    function removeLine(id: string) {
+        setLines((prev) => prev.filter((l) => l.id !== id));
+    }
 
     // Gross margin on the ex-tax selling price — what actually protects the shop.
     const marginPct = result.subtotal > 0 ? (result.markupAmount / result.subtotal) * 100 : 0;
@@ -152,8 +200,13 @@ export function QuoteProStudio() {
         setJobName(preset.jobName);
         if (!activeSaveId) setCustomSaveName(null);
         setActivePreset(key);
+        track("preset_applied", { tool: "quotepro", preset: key });
         setMessage(`Loaded the ${preset.label.toLowerCase()} preset. Fine-tune any cost to match your shop.`);
     }
+
+    useEffect(() => {
+        track("tool_opened", { tool: "quotepro" });
+    }, []);
 
     function useSerialLayout() {
         if (sessionUp) {
@@ -163,11 +216,13 @@ export function QuoteProStudio() {
     }
 
     function handleSave() {
+        const settings = { jobName, clientName, reference, input };
         const record = saveRecord<QuoteProSavedSettings>("quotepro", {
             id: activeSaveId ?? undefined,
             name: saveName,
-            settings: { jobName, clientName, reference, input },
+            settings,
         });
+        mirrorSave({ id: record.id, name: record.name, settings });
         setActiveSaveId(record.id);
         setCustomSaveName(record.name);
         setMessage(`Saved “${record.name}” on this browser.`);
@@ -187,6 +242,7 @@ export function QuoteProStudio() {
 
     function handleDelete(id: string) {
         deleteSave("quotepro", id);
+        mirrorDelete(id);
         if (activeSaveId === id) {
             setActiveSaveId(null);
             setCustomSaveName(null);
@@ -207,8 +263,42 @@ export function QuoteProStudio() {
             .filter(Boolean)
             .join("\n");
         await navigator.clipboard.writeText(summary);
+        track("quote_copied", { total: result.total });
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1800);
+    }
+
+    async function downloadPdf() {
+        const lineItems = lines.length
+            ? [
+                  ...lines.map((l) => ({ label: `${l.label} (${l.quantity.toLocaleString()})`, amount: money.format(l.total) })),
+                  { label: `${jobName.trim() || "Current line"} (${Math.floor(input.quantity).toLocaleString()})`, amount: money.format(result.total) },
+              ]
+            : [
+                  { label: "Production sheets", amount: result.productionSheets.toLocaleString() },
+                  { label: "Paper", amount: money.format(result.paperCost) },
+                  { label: "Printing", amount: money.format(result.printCost) },
+                  { label: "Setup + other", amount: money.format(Math.max(0, input.setupCost) + Math.max(0, input.otherCost)) },
+                  { label: "Finishing", amount: money.format(result.finishingCost) },
+              ];
+        const bytes = await buildQuotePdf({
+            shopName: user?.displayName || "ProPrint",
+            jobName: lines.length ? "Multi-line quotation" : jobName,
+            clientName,
+            reference: reference || "QP-DRAFT",
+            quantity: lines.length ? `${lines.length + 1} lines` : Math.floor(input.quantity).toLocaleString(),
+            lines: lineItems,
+            total: money.format(grandTotal),
+            unit: money.format(result.unitPrice),
+        });
+        const blob = new Blob([bytes.slice().buffer], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `quote-${(reference || "draft").replace(/\W+/g, "-")}.pdf`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        track("quote_printed", { total: grandTotal, branded: true });
     }
 
     return (
@@ -311,7 +401,8 @@ export function QuoteProStudio() {
                                 onSave={handleSave}
                                 onLoad={handleLoad}
                                 onDelete={handleDelete}
-                                hint="Quotes are stored only in this browser. Clearing site data removes them."
+                                cloud={cloudActive}
+                                hint={cloudActive ? "Synced to your ProPrint account." : "Quotes are stored only in this browser. Clearing site data removes them."}
                             />
                         </Panel>
                         <button type="button" className="secondary-button" onClick={() => setInput(initialInput)}>
@@ -320,14 +411,42 @@ export function QuoteProStudio() {
                         </button>
                     </div>
 
-                    <div className="print:hidden">
+                    <div className="space-y-4 print:hidden">
                         <Panel number="02" title="Production costs">
+                            <div className="mb-1">
+                                <p className="mb-2 flex items-center gap-1.5 font-mono text-[.6rem] font-extrabold uppercase tracking-[.1em] text-slate-400">
+                                    <Cpu className="size-3 text-cyan-300" aria-hidden="true" /> Machine & stock catalog
+                                </p>
+                                <FeatureGate feature="machineCatalog" compact>
+                                    <label className="quote-field !mt-0">
+                                        <span>Paper stock</span>
+                                        <select onChange={(e) => applyStock(e.target.value)} defaultValue="">
+                                            <option value="" disabled>Choose stock to set sheet cost…</option>
+                                            {stocks.map((s) => (
+                                                <option key={s.id} value={s.id}>{s.name} — KES {s.sheetCost}/sheet</option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <button type="button" onClick={proposeMachine} className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-cyan-300/40 bg-cyan-300/10 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-300/15">
+                                        <Sparkles className="size-3.5" aria-hidden="true" /> Propose cheapest machine
+                                    </button>
+                                    {machineHint && <p className="mt-2 text-[11px] text-emerald-300">{machineHint}</p>}
+                                </FeatureGate>
+                            </div>
                             <div className="quote-grid">
                                 <NumberField label="Sheet cost" hint="Cost per parent sheet" value={input.sheetCost} step={0.01} onChange={(value) => update("sheetCost", value)} />
                                 <NumberField label="Print / sheet / side" value={input.printCostPerSheet} step={0.01} onChange={(value) => update("printCostPerSheet", value)} />
                             </div>
                             <NumberField label="Setup cost" hint="Plates, make-ready or minimum machine charge" value={input.setupCost} step={0.01} onChange={(value) => update("setupCost", value)} />
-                            <NumberField label="Finishing / piece" hint="Cutting, folding, binding or packing" value={input.finishingPerPiece} step={0.01} onChange={(value) => update("finishingPerPiece", value)} />
+                            <NumberField label="Finishing / piece" hint="Base per-piece finishing" value={input.finishingPerPiece} step={0.01} onChange={(value) => update("finishingPerPiece", value)} />
+                            <div className="quote-grid">
+                                <NumberField label="Cutting / sheet" value={input.cuttingPerSheet ?? 0} step={0.01} onChange={(value) => update("cuttingPerSheet", value)} />
+                                <NumberField label="Laminate / piece" value={input.laminatePerPiece ?? 0} step={0.01} onChange={(value) => update("laminatePerPiece", value)} />
+                            </div>
+                            <div className="quote-grid">
+                                <NumberField label="Binding / book" value={input.bindingPerBook ?? 0} step={0.01} onChange={(value) => update("bindingPerBook", value)} />
+                                <NumberField label="Books" value={input.books ?? 0} onChange={(value) => update("books", value)} />
+                            </div>
                             <NumberField label="Other costs" hint="Design, delivery or outsourced work" value={input.otherCost} step={0.01} onChange={(value) => update("otherCost", value)} />
                             <div className="quote-grid">
                                 <NumberField label="Markup %" value={input.markupPercent} step={0.5} onChange={(value) => update("markupPercent", value)} />
@@ -474,16 +593,63 @@ export function QuoteProStudio() {
                                 )}
                             </div>
                         )}
+                        <div className="quote-volumes print:hidden">
+                            <FeatureGate feature="multiLineQuotes" compact>
+                                <button type="button" className="quote-volumes-toggle" onClick={addLine} disabled={!valid}>
+                                    <Plus className="size-3.5" aria-hidden="true" /> Add this line to the quote
+                                </button>
+                                {lines.length > 0 && (
+                                    <div className="mt-3">
+                                        <table className="quote-volumes-table">
+                                            <thead>
+                                                <tr><th>Line</th><th>Qty</th><th>Total</th><th /></tr>
+                                            </thead>
+                                            <tbody>
+                                                {lines.map((l) => (
+                                                    <tr key={l.id}>
+                                                        <td>{l.label}</td>
+                                                        <td>{l.quantity.toLocaleString()}</td>
+                                                        <td>{money.format(l.total)}</td>
+                                                        <td>
+                                                            <button type="button" aria-label={`Remove ${l.label}`} onClick={() => removeLine(l.id)} className="text-rose-500 hover:text-rose-600">
+                                                                <Trash2 className="size-3.5" aria-hidden="true" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                <tr className="is-current">
+                                                    <td>{jobName.trim() || "Current line"}</td>
+                                                    <td>{Math.floor(input.quantity).toLocaleString()}</td>
+                                                    <td>{money.format(result.total)}</td>
+                                                    <td />
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div className="mt-2 flex items-center justify-between rounded-lg bg-press px-3 py-2 text-white">
+                                            <span className="font-mono text-[.62rem] uppercase tracking-wider text-cyan-300">Quote total ({lines.length + 1} lines)</span>
+                                            <strong className="font-mono text-lg">{money.format(grandTotal)}</strong>
+                                        </div>
+                                    </div>
+                                )}
+                            </FeatureGate>
+                        </div>
                         <p className="quote-note">Internal estimate. Confirm stock, production method and applicable tax before issuing a customer quotation.</p>
                         <div className="quote-actions print:hidden">
                             <button type="button" onClick={() => void copySummary()}>
                                 {copied ? <Check /> : <Clipboard />}
                                 {copied ? "Copied" : "Copy summary"}
                             </button>
-                            <button type="button" className="quote-print" onClick={() => window.print()}>
+                            <button type="button" className="quote-print" onClick={() => { track("quote_printed", { total: result.total }); window.print(); }}>
                                 <Printer />
                                 Print quote
                             </button>
+                        </div>
+                        <div className="print:hidden">
+                            <FeatureGate feature="brandedPdf" compact>
+                                <button type="button" onClick={() => void downloadPdf()} className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-cyan-700 bg-cyan-700 px-3 py-2.5 text-sm font-black text-white hover:bg-cyan-800">
+                                    <FileText className="size-4" aria-hidden="true" /> Download branded PDF
+                                </button>
+                            </FeatureGate>
                         </div>
                     </section>
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, Save, Trash2 } from "lucide-react";
+import { Cloud, FolderOpen, HardDrive, Save, Trash2 } from "lucide-react";
 import { formatSavedWhen, type SavedRecord } from "@/lib/proprint/local-saves";
 
 type Props<T> = {
@@ -13,6 +13,7 @@ type Props<T> = {
     onLoad: (id: string) => void;
     onDelete: (id: string) => void;
     hint?: string;
+    cloud?: boolean;
 };
 
 export function LocalSavesPanel<T>({
@@ -25,14 +26,22 @@ export function LocalSavesPanel<T>({
     onLoad,
     onDelete,
     hint,
+    cloud = false,
 }: Props<T>) {
     return (
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[.03] p-3">
             <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">
+                <p className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">
                     {label}
+                    <span
+                        title={cloud ? "Synced to your ProPrint account" : "Saved in this browser"}
+                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] ${cloud ? "bg-emerald-400/15 text-emerald-300" : "bg-white/5 text-slate-400"}`}
+                    >
+                        {cloud ? <Cloud className="size-2.5" aria-hidden="true" /> : <HardDrive className="size-2.5" aria-hidden="true" />}
+                        {cloud ? "Cloud" : "Local"}
+                    </span>
                 </p>
-                <span className="font-mono text-[10px] text-slate-600">{records.length} saved</span>
+                <span className="font-mono text-[10px] text-slate-500">{records.length} saved</span>
             </div>
             <div className="mt-3 flex gap-2">
                 <input
