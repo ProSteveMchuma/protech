@@ -15,8 +15,10 @@ import { formatSerial } from "@/lib/proprint/serial";
 import { writeSessionImposition } from "@/lib/proprint/session";
 import { SHEET_PRESETS, type SheetPresetKey } from "@/lib/proprint/sheet-presets";
 import type { OutputMode } from "@/lib/proprint/types";
+import { track } from "@/lib/analytics";
 import { LocalSavesPanel } from "./LocalSavesPanel";
 import { PressSheetPreview } from "./PressSheetPreview";
+import { useCloudMirror } from "./useCloudMirror";
 import { useLocalSaves } from "./useLocalSaves";
 
 const MAX_RECORDS = 5000;
@@ -110,6 +112,7 @@ export function SerialProStudio() {
     const [previewTab, setPreviewTab] = useState<"artwork" | "sheet">("artwork");
     const [activePreset, setActivePreset] = useState<JobPresetKey | null>(null);
     const saves = useLocalSaves<SerialProSavedSettings>("serialpro");
+    const { cloudActive, mirrorSave, mirrorDelete } = useCloudMirror<SerialProSavedSettings>("serialpro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
     const saveName = customSaveName ?? defaultName(prefix, start, end);
@@ -162,6 +165,10 @@ export function SerialProStudio() {
             });
         }
     }, [impositionMode, layout.piecesPerSheet, layout.across, layout.down, preset]);
+
+    useEffect(() => {
+        track("tool_opened", { tool: "serialpro" });
+    }, []);
 
     const invalid =
         end < start
@@ -234,15 +241,18 @@ export function SerialProStudio() {
         if (s.mode !== undefined) setMode(s.mode);
         if (s.copies !== undefined) setCopies(s.copies);
         setActivePreset(key);
+        track("preset_applied", { tool: "serialpro", preset: key });
         setMessage(`Loaded the ${preset.label.toLowerCase()} preset. Adjust any field to fine-tune.`);
     }
 
     function handleSave() {
+        const settings = currentSettings();
         const record = saveRecord<SerialProSavedSettings>("serialpro", {
             id: activeSaveId ?? undefined,
             name: saveName,
-            settings: currentSettings(),
+            settings,
         });
+        mirrorSave({ id: record.id, name: record.name, settings });
         setActiveSaveId(record.id);
         setCustomSaveName(record.name);
         setMessage(
@@ -266,6 +276,7 @@ export function SerialProStudio() {
 
     function handleDelete(id: string) {
         deleteSave("serialpro", id);
+        mirrorDelete(id);
         if (activeSaveId === id) {
             setActiveSaveId(null);
             setCustomSaveName(null);
@@ -291,6 +302,7 @@ export function SerialProStudio() {
             setPages(pdf.getPageCount());
             setTemplatePage(1);
             setSize(pdf.getPage(0).getSize());
+            track("pdf_uploaded", { tool: "serialpro", pages: pdf.getPageCount() });
         } catch {
             setMessage("This PDF could not be opened. Export a standard, non-password-protected PDF and try again.");
         }
@@ -344,6 +356,7 @@ export function SerialProStudio() {
             );
             save(new Blob([bytes.slice().buffer], { type: "application/pdf" }), `serialpro-${start}-${end}.pdf`);
             setProgress(100);
+            track("output_downloaded", { tool: "serialpro", mode, records });
             setMessage("Production PDF generated and downloaded.");
         } catch (error) {
             setMessage(`SerialPro could not generate this job: ${error instanceof Error ? error.message : "Unknown PDF error"}`);
@@ -483,7 +496,8 @@ export function SerialProStudio() {
                             onSave={handleSave}
                             onLoad={handleLoad}
                             onDelete={handleDelete}
-                            hint="Saves numbering and sheet setup on this device. Artwork is never stored."
+                            cloud={cloudActive}
+                            hint={cloudActive ? "Synced to your ProPrint account. Artwork is never stored." : "Saves numbering and sheet setup on this device. Artwork is never stored."}
                         />
                     </aside>
                     <main className="preview-panel">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { AlertTriangle, Calculator, Check, Clipboard, Layers, Printer, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import {
     deleteSave,
@@ -9,7 +9,9 @@ import {
 } from "@/lib/proprint/local-saves";
 import { calculateQuote, type QuoteInput } from "@/lib/proprint/quote";
 import { getServerSessionImposition, getSessionImpositionSnapshot, subscribeSessionImposition } from "@/lib/proprint/session";
+import { track } from "@/lib/analytics";
 import { LocalSavesPanel } from "./LocalSavesPanel";
+import { useCloudMirror } from "./useCloudMirror";
 import { useLocalSaves } from "./useLocalSaves";
 
 const initialInput: QuoteInput = {
@@ -114,6 +116,7 @@ export function QuoteProStudio() {
     const [copied, setCopied] = useState(false);
     const [message, setMessage] = useState("");
     const saves = useLocalSaves<QuoteProSavedSettings>("quotepro");
+    const { cloudActive, mirrorSave, mirrorDelete } = useCloudMirror<QuoteProSavedSettings>("quotepro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
     const saveName = customSaveName ?? (jobName.trim() || "Untitled quote");
@@ -152,8 +155,13 @@ export function QuoteProStudio() {
         setJobName(preset.jobName);
         if (!activeSaveId) setCustomSaveName(null);
         setActivePreset(key);
+        track("preset_applied", { tool: "quotepro", preset: key });
         setMessage(`Loaded the ${preset.label.toLowerCase()} preset. Fine-tune any cost to match your shop.`);
     }
+
+    useEffect(() => {
+        track("tool_opened", { tool: "quotepro" });
+    }, []);
 
     function useSerialLayout() {
         if (sessionUp) {
@@ -163,11 +171,13 @@ export function QuoteProStudio() {
     }
 
     function handleSave() {
+        const settings = { jobName, clientName, reference, input };
         const record = saveRecord<QuoteProSavedSettings>("quotepro", {
             id: activeSaveId ?? undefined,
             name: saveName,
-            settings: { jobName, clientName, reference, input },
+            settings,
         });
+        mirrorSave({ id: record.id, name: record.name, settings });
         setActiveSaveId(record.id);
         setCustomSaveName(record.name);
         setMessage(`Saved “${record.name}” on this browser.`);
@@ -187,6 +197,7 @@ export function QuoteProStudio() {
 
     function handleDelete(id: string) {
         deleteSave("quotepro", id);
+        mirrorDelete(id);
         if (activeSaveId === id) {
             setActiveSaveId(null);
             setCustomSaveName(null);
@@ -207,6 +218,7 @@ export function QuoteProStudio() {
             .filter(Boolean)
             .join("\n");
         await navigator.clipboard.writeText(summary);
+        track("quote_copied", { total: result.total });
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1800);
     }
@@ -311,7 +323,8 @@ export function QuoteProStudio() {
                                 onSave={handleSave}
                                 onLoad={handleLoad}
                                 onDelete={handleDelete}
-                                hint="Quotes are stored only in this browser. Clearing site data removes them."
+                                cloud={cloudActive}
+                                hint={cloudActive ? "Synced to your ProPrint account." : "Quotes are stored only in this browser. Clearing site data removes them."}
                             />
                         </Panel>
                         <button type="button" className="secondary-button" onClick={() => setInput(initialInput)}>
@@ -480,7 +493,7 @@ export function QuoteProStudio() {
                                 {copied ? <Check /> : <Clipboard />}
                                 {copied ? "Copied" : "Copy summary"}
                             </button>
-                            <button type="button" className="quote-print" onClick={() => window.print()}>
+                            <button type="button" className="quote-print" onClick={() => { track("quote_printed", { total: result.total }); window.print(); }}>
                                 <Printer />
                                 Print quote
                             </button>
