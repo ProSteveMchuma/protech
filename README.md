@@ -61,13 +61,14 @@ npm test
 npm run build
 ```
 
+## Shipped recently
+
+- Local saved jobs — SerialPro and QuotePro named setups in browser `localStorage` (settings only; artwork never stored)
+
 ## Next milestones
 
-Sequenced by operator value. Not in this codebase yet.
-
-1. Local saved jobs — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
-2. Firebase Authentication and customer workspaces — shop accounts, cloud save, presets
-3. ImposePro Advanced — gang runs / signatures
-4. Paid-plan enforcement — wire checkout to `PACKAGES`, admin-verified M-Pesa, feature gates
-5. Product analytics and error monitoring
-6. Branded invoices and receipts from QuotePro
+1. Firebase Authentication and customer workspaces — shop accounts, cloud save, presets
+2. ImposePro Advanced — gang runs / signatures
+3. Paid-plan enforcement — wire checkout to `PACKAGES`, admin-verified M-Pesa, feature gates
+4. Product analytics and error monitoring
+5. Branded invoices and receipts from QuotePro

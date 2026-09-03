@@ -111,16 +111,19 @@ Specialized agents live in `.claude/agents/`. Pick the one that matches your tas
 
 For multi-discipline features, the typical chain is: print-ops (specs the operator value) → growth-marketer (drafts the copy) → product-designer (lays out the page) → fullstack-engineer (implements + ships).
 
+## Shipped recently
+
+- **Local saved jobs** — SerialPro and QuotePro persist named setups in browser `localStorage` (settings only; artwork PDFs are never stored). See [lib/proprint/local-saves.ts](lib/proprint/local-saves.ts).
+
 ## Next milestones (do not implement unless asked)
 
 Sequenced by operator value:
 
-1. **Local saved jobs** — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
-2. **Firebase Auth workspaces** — shop accounts, cloud save, presets
-3. **ImposePro Advanced** — gang runs / signatures
-4. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
-5. **Analytics + error monitoring**
-6. **Branded invoices** from QuotePro
+1. **Firebase Auth workspaces** — shop accounts, cloud save, presets
+2. **ImposePro Advanced** — gang runs / signatures
+3. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
+4. **Analytics + error monitoring**
+5. **Branded invoices** from QuotePro
 
 ## What to never do
 
