@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from "react";
 import { PDFDocument } from "pdf-lib";
-import { Download, FileDown, FileText, LoaderCircle, LockKeyhole, MousePointer2, Scissors, ShieldCheck } from "lucide-react";
-import { calculateLayout } from "@/lib/proprint/imposition";
+import { Download, FileDown, FileText, Grid3x3, Image as ImageIcon, LoaderCircle, LockKeyhole, MousePointer2, RotateCw, Scissors, ShieldCheck, Sparkles } from "lucide-react";
+import { bestFitLayout, calculateLayout, layoutStats } from "@/lib/proprint/imposition";
 import {
     deleteSave,
     saveRecord,
@@ -12,12 +12,44 @@ import {
 import { createBookManifest, manifestToCsv } from "@/lib/proprint/manifest";
 import { generateProductionPdf } from "@/lib/proprint/pdf";
 import { formatSerial } from "@/lib/proprint/serial";
+import { writeSessionImposition } from "@/lib/proprint/session";
 import { SHEET_PRESETS, type SheetPresetKey } from "@/lib/proprint/sheet-presets";
 import type { OutputMode } from "@/lib/proprint/types";
 import { LocalSavesPanel } from "./LocalSavesPanel";
+import { PressSheetPreview } from "./PressSheetPreview";
 import { useLocalSaves } from "./useLocalSaves";
 
 const MAX_RECORDS = 5000;
+
+type JobPresetKey = "receipt" | "invoice" | "ticket" | "certificate" | "label";
+
+const JOB_PRESETS: Record<JobPresetKey, { label: string; hint: string; apply: Partial<SerialProSavedSettings> }> = {
+    receipt: {
+        label: "Receipt book",
+        hint: "RCT- · 6 digits · 50 sets/book · cut-and-stack",
+        apply: { prefix: "RCT-", suffix: "", padding: 6, setsPerBook: 50, mode: "cut-stack", copies: 1 },
+    },
+    invoice: {
+        label: "Invoice",
+        hint: "INV- · 5 digits · numbered pages",
+        apply: { prefix: "INV-", suffix: "", padding: 5, setsPerBook: 50, mode: "number-only", copies: 1 },
+    },
+    ticket: {
+        label: "Raffle / event ticket",
+        hint: "TCK- · 5 digits · step-and-repeat",
+        apply: { prefix: "TCK-", suffix: "", padding: 5, setsPerBook: 100, mode: "step-repeat", copies: 1 },
+    },
+    certificate: {
+        label: "Certificate",
+        hint: "CERT- · 4 digits · numbered pages",
+        apply: { prefix: "CERT-", suffix: "", padding: 4, setsPerBook: 0, mode: "number-only", copies: 1 },
+    },
+    label: {
+        label: "Serial label",
+        hint: "SN- · 6 digits · step-and-repeat",
+        apply: { prefix: "SN-", suffix: "", padding: 6, setsPerBook: 0, mode: "step-repeat", copies: 1 },
+    },
+};
 
 function save(blob: Blob, name: string) {
     const url = URL.createObjectURL(blob);
@@ -75,6 +107,8 @@ export function SerialProStudio() {
     const [busy, setBusy] = useState(false);
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState("");
+    const [previewTab, setPreviewTab] = useState<"artwork" | "sheet">("artwork");
+    const [activePreset, setActivePreset] = useState<JobPresetKey | null>(null);
     const saves = useLocalSaves<SerialProSavedSettings>("serialpro");
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customSaveName, setCustomSaveName] = useState<string | null>(null);
@@ -99,6 +133,36 @@ export function SerialProStudio() {
             }),
         [size, dims.widthMm, dims.heightMm, margin, gx, gy, records]
     );
+    const bestFit = useMemo(
+        () =>
+            size
+                ? bestFitLayout({
+                      itemWidthPt: size.width,
+                      itemHeightPt: size.height,
+                      sheetWidthMm: dims.widthMm,
+                      sheetHeightMm: dims.heightMm,
+                      marginMm: margin,
+                      horizontalGutterMm: gx,
+                      verticalGutterMm: gy,
+                      records,
+                  })
+                : null,
+        [size, dims.widthMm, dims.heightMm, margin, gx, gy, records]
+    );
+    const stats = useMemo(() => layoutStats(layout, records), [layout, records]);
+    const impositionMode = mode === "number-only" ? null : mode;
+
+    useEffect(() => {
+        if (impositionMode && layout.piecesPerSheet > 0) {
+            writeSessionImposition({
+                piecesPerSheet: layout.piecesPerSheet,
+                across: layout.across,
+                down: layout.down,
+                sheetLabel: preset === "custom" ? "Custom sheet" : SHEET_PRESETS[preset].label,
+            });
+        }
+    }, [impositionMode, layout.piecesPerSheet, layout.across, layout.down, preset]);
+
     const invalid =
         end < start
             ? "End number must be equal to or higher than start."
@@ -158,6 +222,19 @@ export function SerialProStudio() {
         setCropMarks(settings.cropMarks);
         setTemplatePage(settings.templatePage);
         setActive(0);
+    }
+
+    function applyPreset(key: JobPresetKey) {
+        const preset = JOB_PRESETS[key];
+        const s = preset.apply;
+        if (s.prefix !== undefined) setPrefix(s.prefix);
+        if (s.suffix !== undefined) setSuffix(s.suffix);
+        if (s.padding !== undefined) setPadding(s.padding);
+        if (s.setsPerBook !== undefined) setSetsPerBook(s.setsPerBook);
+        if (s.mode !== undefined) setMode(s.mode);
+        if (s.copies !== undefined) setCopies(s.copies);
+        setActivePreset(key);
+        setMessage(`Loaded the ${preset.label.toLowerCase()} preset. Adjust any field to fine-tune.`);
     }
 
     function handleSave() {
@@ -320,6 +397,29 @@ export function SerialProStudio() {
                 <div className="grid gap-4 xl:grid-cols-[360px_minmax(420px,1fr)_360px]">
                     <aside className="console-panel">
                         <h2>01 / Job setup</h2>
+                        <div className="mt-3">
+                            <p className="mb-2 flex items-center gap-1.5 font-mono text-[.62rem] font-extrabold uppercase tracking-[.1em] text-slate-400">
+                                <Sparkles className="size-3 text-cyan-300" aria-hidden="true" />
+                                Quick start
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {(Object.keys(JOB_PRESETS) as JobPresetKey[]).map((key) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        title={JOB_PRESETS[key].hint}
+                                        onClick={() => applyPreset(key)}
+                                        className={`rounded-full border px-2.5 py-1 text-[.68rem] font-bold transition ${
+                                            activePreset === key
+                                                ? "border-cyan-300 bg-cyan-300/15 text-cyan-100"
+                                                : "border-white/10 text-slate-300 hover:border-cyan-300/40 hover:text-cyan-200"
+                                        }`}
+                                    >
+                                        {JOB_PRESETS[key].label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                         <label className="upload">
                             <FileText />
                             <b>Choose print-ready PDF</b>
@@ -387,22 +487,92 @@ export function SerialProStudio() {
                         />
                     </aside>
                     <main className="preview-panel">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                                <h2>02 / Placement preview</h2>
-                                <p>Click the artwork to place the active marker.</p>
+                                <h2>02 / {previewTab === "sheet" ? "Press-sheet preview" : "Placement preview"}</h2>
+                                <p>
+                                    {previewTab === "sheet"
+                                        ? "How pieces tile on the press sheet, with live serial order."
+                                        : "Click the artwork to place the active marker."}
+                                </p>
                             </div>
                             <div className="flex gap-2">
-                                <button className={active === 0 ? "marker-active" : "marker-button"} onClick={() => setActive(0)}>
-                                    Position 1
-                                </button>
-                                {second && (
-                                    <button className={active === 1 ? "marker-active" : "marker-button"} onClick={() => setActive(1)}>
-                                        Position 2
-                                    </button>
-                                )}
+                                {previewTab === "artwork" ? (
+                                    <>
+                                        <button className={active === 0 ? "marker-active" : "marker-button"} onClick={() => setActive(0)}>
+                                            Position 1
+                                        </button>
+                                        {second && (
+                                            <button className={active === 1 ? "marker-active" : "marker-button"} onClick={() => setActive(1)}>
+                                                Position 2
+                                            </button>
+                                        )}
+                                    </>
+                                ) : null}
                             </div>
                         </div>
+                        {impositionMode && (
+                            <div className="mt-3 inline-flex rounded-lg border border-white/10 bg-press p-0.5" role="tablist" aria-label="Preview mode">
+                                <button
+                                    role="tab"
+                                    aria-selected={previewTab === "artwork"}
+                                    onClick={() => setPreviewTab("artwork")}
+                                    className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition ${
+                                        previewTab === "artwork" ? "bg-cyan-300 text-slate-950" : "text-slate-300 hover:text-white"
+                                    }`}
+                                >
+                                    <ImageIcon className="size-3.5" aria-hidden="true" />
+                                    Artwork
+                                </button>
+                                <button
+                                    role="tab"
+                                    aria-selected={previewTab === "sheet"}
+                                    onClick={() => setPreviewTab("sheet")}
+                                    className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition ${
+                                        previewTab === "sheet" ? "bg-cyan-300 text-slate-950" : "text-slate-300 hover:text-white"
+                                    }`}
+                                >
+                                    <Grid3x3 className="size-3.5" aria-hidden="true" />
+                                    Press sheet
+                                </button>
+                            </div>
+                        )}
+                        {impositionMode && bestFit?.improves && size && (
+                            <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
+                                <RotateCw className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                                <span>
+                                    Rotating the artwork 90° fits{" "}
+                                    <b className="font-mono">{bestFit.rotatedPiecesPerSheet}-up</b> instead of{" "}
+                                    <b className="font-mono">{bestFit.piecesPerSheet}-up</b> on this sheet — fewer press sheets and less waste.
+                                </span>
+                            </div>
+                        )}
+                        {impositionMode && previewTab === "sheet" && size ? (
+                            <PressSheetPreview
+                                layout={layout}
+                                itemWidthPt={size.width}
+                                itemHeightPt={size.height}
+                                marginMm={margin}
+                                horizontalGutterMm={gx}
+                                verticalGutterMm={gy}
+                                mode={impositionMode}
+                                start={start}
+                                prefix={prefix}
+                                suffix={suffix}
+                                padding={padding}
+                                copies={copies}
+                                records={records}
+                                cropMarks={cropMarks}
+                            />
+                        ) : impositionMode && previewTab === "sheet" && !size ? (
+                            <div className="mt-4 grid min-h-[560px] place-items-center rounded-xl border border-white/10 bg-slate-950 text-center text-slate-500">
+                                <div>
+                                    <Grid3x3 className="mx-auto size-10" aria-hidden="true" />
+                                    <b className="mt-4 block text-slate-300">Upload artwork to see the press sheet</b>
+                                    <span className="mt-2 block text-sm">The imposition updates live as you change the sheet and margins.</span>
+                                </div>
+                            </div>
+                        ) : (
                         <div className="relative mt-4 min-h-[560px] overflow-hidden rounded-xl bg-slate-950">
                             {preview ? (
                                 <>
@@ -428,13 +598,14 @@ export function SerialProStudio() {
                             ) : (
                                 <div className="grid min-h-[560px] place-items-center text-center text-slate-500">
                                     <div>
-                                        <MousePointer2 className="mx-auto size-10" />
+                                        <MousePointer2 className="mx-auto size-10" aria-hidden="true" />
                                         <b className="mt-4 block text-slate-300">Upload artwork to begin</b>
                                         <span className="mt-2 block text-sm">The source PDF never leaves this browser.</span>
                                     </div>
                                 </div>
                             )}
                         </div>
+                        )}
                     </main>
                     <aside className="console-panel">
                         <h2>03 / Production setup</h2>
@@ -456,7 +627,7 @@ export function SerialProStudio() {
                         <div className="mode-grid">
                             {(["number-only", "step-repeat", "cut-stack"] as OutputMode[]).map((value) => (
                                 <button key={value} onClick={() => setMode(value)} className={mode === value ? "selected" : ""}>
-                                    {value === "cut-stack" && <Scissors />}
+                                    {value === "cut-stack" && <Scissors aria-hidden="true" />}
                                     {value.replace("-", " ")}
                                 </button>
                             ))}
@@ -542,6 +713,14 @@ export function SerialProStudio() {
                                             <dt>Press sheets</dt>
                                             <dd>{layout.sheetsRequired.toLocaleString()}</dd>
                                         </div>
+                                        <div>
+                                            <dt>Sheet utilization</dt>
+                                            <dd>{Math.round(stats.utilization * 100)}%</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Blank slots (last sheet)</dt>
+                                            <dd>{stats.wastedSlots.toLocaleString()}</dd>
+                                        </div>
                                     </>
                                 )}
                             </dl>
@@ -559,7 +738,12 @@ export function SerialProStudio() {
                                 </>
                             )}
                         </button>
-                        <p className="mt-3 text-center text-[11px] text-slate-500">Test a small range before releasing a production run.</p>
+                        {busy && (
+                            <div className="press-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+                                <span style={{ width: `${progress}%` }} />
+                            </div>
+                        )}
+                        <p className="mt-3 text-center text-[11px] text-slate-400">Test a small range before releasing a production run.</p>
                     </aside>
                 </div>
             </div>

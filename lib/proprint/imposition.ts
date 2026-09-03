@@ -1,10 +1,12 @@
 import { MM_TO_PT } from "./sheet-presets.ts";
-import type { ImpositionLayout } from "./types.ts";
+import type { BestFitLayout, ImpositionLayout, LayoutStats } from "./types.ts";
 
-export function calculateLayout(input: {
+export interface LayoutInput {
   itemWidthPt: number; itemHeightPt: number; sheetWidthMm: number; sheetHeightMm: number;
   marginMm: number; horizontalGutterMm: number; verticalGutterMm: number; records: number;
-}): ImpositionLayout {
+}
+
+export function calculateLayout(input: LayoutInput): ImpositionLayout {
   const sheetWidthPt = input.sheetWidthMm * MM_TO_PT;
   const sheetHeightPt = input.sheetHeightMm * MM_TO_PT;
   const margin = Math.max(0, input.marginMm) * MM_TO_PT;
@@ -16,6 +18,33 @@ export function calculateLayout(input: {
   const down = input.itemHeightPt > 0 ? Math.max(0, Math.floor((usableHeight + verticalGutter) / (input.itemHeightPt + verticalGutter))) : 0;
   const piecesPerSheet = across * down;
   return { across, down, piecesPerSheet, sheetsRequired: piecesPerSheet ? Math.ceil(input.records / piecesPerSheet) : 0, sheetWidthPt, sheetHeightPt };
+}
+
+/**
+ * Compare the artwork imposed as-supplied against a 90° rotation and return the
+ * orientation that fits more pieces per sheet. Rotating small items (receipts,
+ * cards) frequently lifts an SRA3 sheet from 6-up to 8-up with no extra cost.
+ */
+export function bestFitLayout(input: LayoutInput): BestFitLayout {
+  const normal = calculateLayout(input);
+  const rotatedInput: LayoutInput = { ...input, itemWidthPt: input.itemHeightPt, itemHeightPt: input.itemWidthPt };
+  const rotated = calculateLayout(rotatedInput);
+  const improves = rotated.piecesPerSheet > normal.piecesPerSheet;
+  return {
+    layout: improves ? rotated : normal,
+    rotated: improves,
+    piecesPerSheet: normal.piecesPerSheet,
+    rotatedPiecesPerSheet: rotated.piecesPerSheet,
+    improves,
+  };
+}
+
+/** Impressions produced beyond the records needed — the waste on the final partial sheet. */
+export function layoutStats(layout: ImpositionLayout, records: number): LayoutStats {
+  const capacity = layout.piecesPerSheet * layout.sheetsRequired;
+  const wastedSlots = Math.max(0, capacity - Math.max(0, records));
+  const utilization = capacity > 0 ? Math.max(0, records) / capacity : 0;
+  return { capacity, wastedSlots, utilization };
 }
 
 export function recordIndexForSlot(mode: "step-repeat" | "cut-stack", sheet: number, slot: number, sheetsRequired: number, piecesPerSheet: number) {
