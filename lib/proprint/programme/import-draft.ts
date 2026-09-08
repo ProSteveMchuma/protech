@@ -112,20 +112,34 @@ function extractName(intro: string): { first: string; surname: string } | null {
 }
 
 function extractDates(text: string): { sunrise?: string; sunset?: string } {
-    const sunriseMatch =
-        text.match(/sunrise\s*[:\-]?\s*([A-Za-z0-9 ,\/\-]+)/i) ||
-        text.match(/born\s*[:\-]?\s*([A-Za-z0-9 ,\/\-]+)/i) ||
-        text.match(/\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\s*[-–—]\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b/);
-    const sunsetMatch =
-        text.match(/sunset\s*[:\-]?\s*([A-Za-z0-9 ,\/\-]+)/i) ||
-        text.match(/(?:died|demise|passed(?:\s+away)?)\s*[:\-]?\s*([A-Za-z0-9 ,\/\-]+)/i);
-
-    if (sunriseMatch && sunriseMatch[2]) {
-        return { sunrise: sunriseMatch[1].trim(), sunset: sunriseMatch[2].trim() };
+    const labeledSunrise = text.match(/sunrise\s*[:|.]?\s*([A-Za-z0-9 ,\/\-]+?)(?:\s*[|•]\s*|\s*$|\n)/i);
+    const labeledSunset = text.match(/sunset\s*[:|.]?\s*([A-Za-z0-9 ,\/\-]+?)(?:\s*[|•]\s*|\s*$|\n)/i);
+    if (labeledSunrise || labeledSunset) {
+        return {
+            sunrise: labeledSunrise?.[1]?.trim(),
+            sunset: labeledSunset?.[1]?.trim(),
+        };
     }
+
+    const fullRange = text.match(
+        /\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\s*[-–—]\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b/
+    );
+    if (fullRange) {
+        return { sunrise: fullRange[1].trim(), sunset: fullRange[2].trim() };
+    }
+
+    const yearRange = text.match(/\b((?:19|20)\d{2})\s*[-–—]\s*((?:19|20)\d{2})\b/);
+    if (yearRange) {
+        return { sunrise: yearRange[1], sunset: yearRange[2] };
+    }
+
+    const bornDate = text.match(/\bborn\s+(?:on\s+)?(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b/i);
+    const diedDate = text.match(
+        /(?:died|demise|passed(?:\s+away)?(?:\s+on)?)\s+(?:on\s+)?(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b/i
+    );
     return {
-        sunrise: sunriseMatch?.[1]?.trim(),
-        sunset: sunsetMatch?.[1]?.trim(),
+        sunrise: bornDate?.[1]?.trim(),
+        sunset: diedDate?.[1]?.trim(),
     };
 }
 
@@ -144,53 +158,125 @@ function extractDedication(text: string): string | undefined {
 
 function parseServiceRows(block: string): Array<{ time: string; activity: string }> {
     const rows: Array<{ time: string; activity: string }> = [];
+    let inSpeakerList = false;
     for (const line of block.split("\n")) {
         const trimmed = line.trim();
         if (!trimmed) continue;
-        const match = trimmed.match(/^(\d{1,2}[:.]?\d{0,2}\s*(?:hrs?|am|pm)?)\s*[-–—:]?\s*(.+)$/i);
-        if (match) {
-            rows.push({ time: match[1].replace(/\s+/g, " ").trim(), activity: match[2].trim() });
+
+        const timed = trimmed.match(/^(\d{1,2}[:.]?\d{0,2}\s*(?:hrs?|am|pm)?)\s*[-–—:]?\s*(.+)$/i);
+        if (timed && /(?:hrs?|am|pm|:)/i.test(timed[1])) {
+            const activity = timed[2].trim();
+            inSpeakerList = /\btributes?\b/i.test(activity);
+            if (!inSpeakerList) {
+                rows.push({ time: timed[1].replace(/\s+/g, " ").trim(), activity });
+            } else {
+                rows.push({ time: timed[1].replace(/\s+/g, " ").trim(), activity });
+            }
             continue;
         }
+
+        if (inSpeakerList) {
+            if (/^\d+[.)]\s+/.test(trimmed) || /^[-•]\s+/.test(trimmed)) continue;
+            inSpeakerList = false;
+        }
+
+        if (/^tributes?\b/i.test(trimmed) && trimmed.length < 40) {
+            inSpeakerList = true;
+            continue;
+        }
+
         const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
-        if (numbered && rows.length === 0) continue;
+        if (numbered && !inSpeakerList) {
+            rows.push({ time: "", activity: numbered[1].trim() });
+        }
     }
     return rows.slice(0, 40);
 }
 
 function parseSpeakers(block: string): Array<{ label: string }> {
     const speakers: Array<{ label: string }> = [];
+    let capturing = false;
     for (const line of block.split("\n")) {
         const trimmed = line.trim();
-        const match = trimmed.match(/^\d+[.)]\s+(.+)$/);
+        if (!trimmed) continue;
+
+        const timed = trimmed.match(/^(\d{1,2}[:.]?\d{0,2}\s*(?:hrs?|am|pm)?)\s*[-–—:]?\s*(.+)$/i);
+        if (timed && /(?:hrs?|am|pm|:)/i.test(timed[1])) {
+            capturing = /\btributes?\b/i.test(timed[2]);
+            continue;
+        }
+
+        if (/^tributes?\b/i.test(trimmed) && trimmed.length < 40) {
+            capturing = true;
+            continue;
+        }
+        if (!capturing) continue;
+
+        const match = trimmed.match(/^\d+[.)]\s+(.+)$/) || trimmed.match(/^[-•]\s+(.+)$/);
         if (match) speakers.push({ label: match[1].trim() });
+        else if (!/^\d+[.)]/.test(trimmed)) capturing = false;
     }
     return speakers.slice(0, 30);
 }
 
-function parseTribute(block: string): { title: string; body: string; signOff: string } | null {
-    if (!block.trim()) return null;
+function parseTributes(block: string): Array<{ title: string; body: string; signOff: string }> {
+    if (!block.trim()) return [];
     const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
-    if (lines.length === 0) return null;
+    if (lines.length === 0) return [];
+
+    const fromChunks = block
+        .split(/\n(?=From\s+)/i)
+        .map((chunk) => chunk.trim())
+        .filter(Boolean);
+    if (fromChunks.length > 1 || /^From\s+/i.test(fromChunks[0] || "")) {
+        return fromChunks.slice(0, 6).map((chunk) => {
+            const chunkLines = chunk.split("\n").map((line) => line.trim()).filter(Boolean);
+            const head = chunkLines[0] || "Tribute";
+            const fromMatch = head.match(/^From\s+([^:]+)[:\-]?\s*(.*)$/i);
+            if (fromMatch) {
+                const title = `From ${fromMatch[1].trim()}`;
+                const rest = [fromMatch[2], ...chunkLines.slice(1)].filter(Boolean).join("\n").trim();
+                return { title, body: rest || title, signOff: "" };
+            }
+            return { title: "Tribute", body: chunk, signOff: "" };
+        });
+    }
+
     const title = /^tribute/i.test(lines[0]) ? lines[0] : "Tribute";
-    const bodyLines = /^tribute/i.test(lines[0]) ? lines.slice(1) : lines;
+    const bodyLines = /^tribute/i.test(lines[0]) ? lines.slice(1) : [...lines];
     let signOff = "";
     if (bodyLines.length > 1 && bodyLines[bodyLines.length - 1].length < 80) {
         signOff = bodyLines[bodyLines.length - 1];
         bodyLines.pop();
     }
-    return { title, body: bodyLines.join("\n"), signOff };
+    return [{ title, body: bodyLines.join("\n"), signOff }];
 }
 
 function parseHymns(block: string): Array<{ title: string; lyrics: string }> {
     if (!block.trim()) return [];
-    const chunks = block.split(/\n(?=[A-Z][^\n]{2,60}\n)/).map((chunk) => chunk.trim()).filter(Boolean);
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+
+    const isTitleCaseLine = (line: string) =>
+        line.length <= 80 &&
+        /^[A-Z0-9][\w'’\-]*(?:\s+[A-Z0-9][\w'’\-]*){0,7}$/.test(line) &&
+        !/[.!?]$/.test(line);
+
+    // Title-only list: each line is a short title-cased hymn name.
+    if (lines.length >= 1 && lines.every(isTitleCaseLine)) {
+        return lines.slice(0, 8).map((title) => ({ title, lyrics: "" }));
+    }
+
+    // Blank-line separated hymn blocks, or a single title + lyrics block.
+    const stanzas = block
+        .split(/\n\s*\n/)
+        .map((chunk) => chunk.trim())
+        .filter(Boolean);
     const hymns: Array<{ title: string; lyrics: string }> = [];
-    for (const chunk of chunks.slice(0, 6)) {
-        const lines = chunk.split("\n");
-        const title = lines[0]?.trim() || "Hymn";
-        const lyrics = lines.slice(1).join("\n").trim();
-        hymns.push({ title, lyrics: lyrics || chunk });
+    for (const stanza of stanzas.slice(0, 6)) {
+        const stanzaLines = stanza.split("\n").map((line) => line.trim()).filter(Boolean);
+        const title = stanzaLines[0] || "Hymn";
+        const lyrics = stanzaLines.slice(1).join("\n").trim();
+        hymns.push({ title, lyrics });
     }
     if (hymns.length === 0) hymns.push({ title: "Hymn", lyrics: block.trim() });
     return hymns;
@@ -238,7 +324,7 @@ export function parseProgrammeWriteUp(raw: string): ProgrammeImportDraft {
 
     const serviceRows = parseServiceRows(serviceBlock);
     const speakers = parseSpeakers(serviceBlock);
-    const tribute = parseTribute(tributeBlock);
+    const tributes = parseTributes(tributeBlock);
     const hymns = parseHymns(hymnBlock);
     const eulogySections = parseEulogySections(eulogyBlock);
 
@@ -251,8 +337,8 @@ export function parseProgrammeWriteUp(raw: string): ProgrammeImportDraft {
         Boolean(name || dates.sunrise || dates.sunset),
         Boolean(ackBlock),
         serviceRows.length > 0,
-        Boolean(tribute),
-        hymns.some((hymn) => hymn.lyrics),
+        tributes.length > 0,
+        hymns.some((hymn) => hymn.title || hymn.lyrics),
         eulogySections.some((section) => section.body),
     ].filter(Boolean).length;
 
@@ -284,7 +370,7 @@ export function parseProgrammeWriteUp(raw: string): ProgrammeImportDraft {
             choir: "",
             tributeSpeakers: speakers,
         },
-        tributes: tribute ? [tribute] : [],
+        tributes,
         hymns,
         eulogy: {
             title: "Eulogy",
