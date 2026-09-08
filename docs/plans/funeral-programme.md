@@ -177,7 +177,17 @@ Each template defines:
 
 ---
 
-## 8. MVP scope (v1) — revised
+## Smart import (write-up → editable programme)
+
+Operators can paste or upload a family write-up (`.txt`, `.md`, `.docx`). ProgrammePro drafts fields through a **step-by-step wizard** (cover → acknowledgement → service → tributes → hymns → eulogy → apply).
+
+- **Rules engine** always available (no API key).
+- **Optional AI** when `PROGRAMME_AI_API_KEY` or `OPENAI_API_KEY` is set (OpenAI-compatible Chat Completions).
+- AI/rules only **propose** values. Every step is editable before Apply.
+- Applied content lands in the same `ProgrammeContent` model as manual entry — previewable and (once M3 ships) printable PDF. Nothing stays as a locked AI blob.
+
+API: `POST /api/programme/import` · status: `GET /api/programme/import`
+
 
 ### In scope
 - `/tools/programme` studio (press-dark, shop console)  

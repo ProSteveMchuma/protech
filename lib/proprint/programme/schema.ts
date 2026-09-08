@@ -91,6 +91,63 @@ function id(prefix: string) {
     return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+export function newProgrammeId(prefix: string) {
+    return id(prefix);
+}
+
+export function createBlankProgramme(): ProgrammeContent {
+    return {
+        templateId: "floral-matriarch",
+        sheetCount: 2,
+        identity: {
+            displayFirstName: "",
+            surnameLine: "",
+            coverTitle: "Celebrating the Life",
+            roleLine: "",
+            sunrise: "",
+            sunset: "",
+            attributes: [],
+            dedication: "Rest in Peace",
+            motto: "",
+            venue: "",
+            serviceDate: "",
+            serviceTime: "",
+        },
+        acknowledgement: {
+            title: "Acknowledgement",
+            body: "",
+            footerLine: "A beautiful soul lives on in our hearts",
+        },
+        service: {
+            title: "Funeral Program",
+            rows: [],
+            masterOfCeremonies: "",
+            presidingPastor: "",
+            choir: "",
+            tributeSpeakers: [],
+        },
+        tributes: [],
+        hymns: [],
+        eulogy: {
+            title: "Eulogy",
+            tagline: "A life of love, faith and family",
+            sections: [
+                { id: id("eul"), heading: "Birth", body: "", enabled: true },
+                { id: id("eul"), heading: "Education", body: "", enabled: true },
+                { id: id("eul"), heading: "Career", body: "", enabled: true },
+                { id: id("eul"), heading: "Marriage and Family", body: "", enabled: true },
+                { id: id("eul"), heading: "Demise", body: "", enabled: true },
+            ],
+            closingQuote: "Your legacy lives on in our hearts forever.",
+        },
+        memories: {
+            title: "Memories",
+            subtitle: "Cherished moments through the years",
+            caption: "Different seasons, one beautiful story",
+        },
+    };
+}
+
 export function createDefaultProgramme(): ProgrammeContent {
     return {
         templateId: "floral-matriarch",

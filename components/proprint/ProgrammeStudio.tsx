@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { BookOpen, Plus, Save, ShieldCheck, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Save, ShieldCheck, Trash2, Wand2 } from "lucide-react";
 import {
     createDefaultProgramme,
     programmeDisplayName,
@@ -18,6 +18,7 @@ import {
     subscribeProgrammeSaves,
 } from "@/lib/proprint/programme/saves";
 import { ProgrammeFoldPreview } from "./ProgrammeFoldPreview";
+import { ProgrammeImportWizard } from "./ProgrammeImportWizard";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
@@ -34,6 +35,7 @@ export function ProgrammeStudio() {
     const [activeSaveId, setActiveSaveId] = useState<string | null>(null);
     const [customName, setCustomName] = useState<string | null>(null);
     const [message, setMessage] = useState("");
+    const [wizardOpen, setWizardOpen] = useState(false);
     const saves = useSyncExternalStore(
         subscribeProgrammeSaves,
         getProgrammeSaveSnapshot,
@@ -107,6 +109,14 @@ export function ProgrammeStudio() {
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <button
+                            type="button"
+                            onClick={() => setWizardOpen(true)}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-300/10 px-3 py-2 font-bold text-cyan-100 hover:bg-cyan-300/20"
+                        >
+                            <Wand2 className="size-3.5" />
+                            Smart import
+                        </button>
                         <a
                             href="/feedback?product=programme"
                             className="rounded-full border border-cyan-300/30 px-3 py-2 font-bold text-cyan-200 hover:bg-cyan-300/10"
@@ -137,7 +147,8 @@ export function ProgrammeStudio() {
                     <aside className="console-panel space-y-1">
                         <h2>01 / Content</h2>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                            Fill cover and acknowledgement. Service, tributes, hymns and eulogy editors ship next.
+                            Fill cover and acknowledgement, or use <b className="text-slate-300">Smart import</b> to draft
+                            from a family write-up. Every field stays editable.
                         </p>
 
                         <Field label="Display first name">
@@ -395,6 +406,19 @@ export function ProgrammeStudio() {
                     </aside>
                 </div>
             </div>
+            <ProgrammeImportWizard
+                open={wizardOpen}
+                onClose={() => setWizardOpen(false)}
+                onApply={(next, meta) => {
+                    setContent(next);
+                    setActiveSaveId(null);
+                    setCustomName(null);
+                    setSheetIndex(0);
+                    setMessage(
+                        `Smart import applied (${meta.engine}). Review the fold preview — every field remains editable.`
+                    );
+                }}
+            />
         </div>
     );
 }
