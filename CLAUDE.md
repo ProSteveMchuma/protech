@@ -7,6 +7,7 @@ Shared project context for Claude Code and all agents working on this repo.
 **ProPrint** — print automation software by **Pro Innovation & Technologies** (`proinnovationtech.co.ke`). Built in Nairobi for Kenyan print shops, usable worldwide.
 
 - **Flagship tools (production beta):** **SerialPro** (PDF numbering + imposition) and **QuotePro** (print costing and selling price).
+- **Building:** **ProgrammePro** — A3-fold funeral programme builder (`/tools/programme`).
 - **Roadmap modules (not built):** ImposePro Advanced, ProofPro, JobTrack, PreflightPro.
 - **Conversion today:** founding-beta applications at `/beta`. Paid plans are listed but not charged.
 
@@ -75,6 +76,7 @@ The site is the front door: it explains the product, lets operators try the tool
 | `/` | Product landing |
 | `/tools/serialpro` | PDF numbering and imposition |
 | `/tools/quotepro` | Print quotation calculator |
+| `/tools/programme` | ProgrammePro — A3 funeral programme builder (foundation) |
 | `/beta` | Founding-beta applications |
 | `/feedback` | Product feedback |
 | `/about` | Company / product story |
@@ -115,20 +117,21 @@ For multi-discipline features, the typical chain is: print-ops (specs the operat
 
 Sequenced by operator value:
 
-1. **Local saved jobs** — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
-2. **Firebase Auth workspaces** — shop accounts, cloud save, presets
-3. **ImposePro Advanced** — gang runs / signatures
-4. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
-5. **Analytics + error monitoring**
-6. **Branded invoices** from QuotePro
+1. **ProgrammePro M2–M4** — service/tribute/hymn/eulogy editors, photos, PDF bleed export, remaining templates (see [docs/plans/funeral-programme.md](docs/plans/funeral-programme.md))
+2. **Local saved jobs** — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
+3. **Firebase Auth workspaces** — shop accounts, cloud save, presets
+4. **ImposePro Advanced** — gang runs / signatures
+5. **Paid enforcement** — wire checkout to `PACKAGES` in [lib/config.ts](lib/config.ts), admin-verified M-Pesa, feature gates
+6. **Analytics + error monitoring**
+7. **Branded invoices** from QuotePro
 
 ## What to never do
 
 - Never commit `/data/*.json` (PII) or `.env.local`.
-- Never upload artwork to the server without an explicit product decision. SerialPro processes PDFs in the browser.
+- Never upload artwork to the server without an explicit product decision. SerialPro and ProgrammePro process media in the browser.
 - Never guarantee print-job accuracy, color match, or press output as legal/print advice.
 - Never ship the hardcoded `admin123` pattern again.
-- Never add a service back to the homepage that we do not actively sell. Only SerialPro and QuotePro are live tools.
+- Never add a service back to the homepage that we do not actively sell. Only SerialPro and QuotePro are live Production beta tools; ProgrammePro stays Building until press-tested.
 - Never revive tender / VA / hire / apply / lead-magnet pages.
 
 <!-- BEGIN:nextjs-agent-rules -->

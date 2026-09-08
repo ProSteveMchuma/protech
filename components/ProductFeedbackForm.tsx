@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle2, Send } from "lucide-react";
 
-const schema = z.object({ email: z.string().trim().email("Enter a valid email"), product: z.enum(["SerialPro", "QuotePro"]), experience: z.enum(["blocked", "difficult", "good"]), message: z.string().trim().min(10, "Tell us a little more").max(2000), website: z.string().max(0).optional() });
+const schema = z.object({ email: z.string().trim().email("Enter a valid email"), product: z.enum(["SerialPro", "QuotePro", "ProgrammePro"]), experience: z.enum(["blocked", "difficult", "good"]), message: z.string().trim().min(10, "Tell us a little more").max(2000), website: z.string().max(0).optional() });
 type Values = z.infer<typeof schema>;
 
 export function ProductFeedbackForm({ product }: { product: Values["product"] }) {
@@ -17,7 +17,7 @@ export function ProductFeedbackForm({ product }: { product: Values["product"] })
     const field = "mt-2 w-full rounded-lg border border-white/15 bg-press px-4 py-3 text-sm text-white outline-none focus:border-cyan-300";
     return <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Email<input {...register("email")} type="email" className={field} placeholder="you@printshop.co.ke" />{errors.email && <span className="mt-1 block normal-case text-rose-300">{errors.email.message}</span>}</label>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Product<select {...register("product")} className={field}><option>SerialPro</option><option>QuotePro</option></select></label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Product<select {...register("product")} className={field}><option>SerialPro</option><option>QuotePro</option><option>ProgrammePro</option></select></label>
         <fieldset><legend className="text-xs font-bold uppercase tracking-wider text-slate-400">Your experience</legend><div className="mt-2 grid grid-cols-3 gap-2">{[["blocked","Blocked"],["difficult","Difficult"],["good","Good"]].map(([value,label]) => <label key={value} className="cursor-pointer rounded-lg border border-white/10 p-3 text-center text-xs text-slate-400 has-[:checked]:border-cyan-300 has-[:checked]:text-white"><input {...register("experience")} type="radio" value={value} className="sr-only" />{label}</label>)}</div></fieldset>
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">What happened?<textarea {...register("message")} rows={5} className={field} placeholder="What were you trying to do, and what should we improve?" />{errors.message && <span className="mt-1 block normal-case text-rose-300">{errors.message.message}</span>}</label>
         <input {...register("website")} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />

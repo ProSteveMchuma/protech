@@ -45,6 +45,7 @@ Set `ADMIN_PASSWORD` and a random 32+ character `ADMIN_SESSION_SECRET` before op
 | `/` | Product landing page |
 | `/tools/serialpro` | PDF numbering and imposition |
 | `/tools/quotepro` | Print quotation calculator |
+| `/tools/programme` | ProgrammePro — A3 funeral programme builder |
 | `/beta` | Founding-beta applications |
 | `/feedback` | Product feedback |
 | `/about` | Company / product story |
@@ -63,11 +64,12 @@ npm run build
 
 ## Next milestones
 
-Sequenced by operator value. Not in this codebase yet.
+Sequenced by operator value.
 
-1. Local saved jobs — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
-2. Firebase Authentication and customer workspaces — shop accounts, cloud save, presets
-3. ImposePro Advanced — gang runs / signatures
-4. Paid-plan enforcement — wire checkout to `PACKAGES`, admin-verified M-Pesa, feature gates
-5. Product analytics and error monitoring
-6. Branded invoices and receipts from QuotePro
+1. ProgrammePro M2–M4 — service editors, photos, PDF export, template pack ([docs/plans/funeral-programme.md](docs/plans/funeral-programme.md))
+2. Local saved jobs — SerialPro layouts + QuotePro quotes in `localStorage` (no auth)
+3. Firebase Authentication and customer workspaces — shop accounts, cloud save, presets
+4. ImposePro Advanced — gang runs / signatures
+5. Paid-plan enforcement — wire checkout to `PACKAGES`, admin-verified M-Pesa, feature gates
+6. Product analytics and error monitoring
+7. Branded invoices and receipts from QuotePro
