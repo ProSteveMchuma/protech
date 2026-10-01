@@ -14,7 +14,7 @@ const points = [
   ["Custom apparel", "T-shirts, hoodies, caps and uniforms printed after the order, not pulled from a generic shelf."],
   ["A checked file", "Artwork is reviewed for resolution, bleed and colour before it reaches the press."],
   ["A known turnaround", "Standard jobs in 2–3 business days. Express and Nairobi rush when the date is tight."],
-  ["Delivery with a number on it", "KES 400 in Nairobi, KES 850 outside, free above KES 10,000, across all 47 counties."],
+  ["Delivery with a number on it", "KES 400 in Nairobi, KES 850 outside, free above KES 10,000. Collection is free at Karen Green, Langata Road."],
 ];
 
 export default function AboutPage() {

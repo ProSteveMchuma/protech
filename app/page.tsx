@@ -40,6 +40,7 @@ export default function HomePage() {
         <p className="flex flex-wrap gap-x-6 gap-y-2 border-b border-neutral-200 py-5 text-sm text-neutral-600">
           <span>Paybill <span className="font-mono tabular-nums text-neutral-950">{business.paybill}</span></span>
           <span>Nairobi delivery <span className="font-mono tabular-nums text-neutral-950">{formatKes(400)}</span></span>
+          <span>Collect free at Karen Green, Langata Road</span>
           <a href={whatsappHref("Hello ProPrint, I have a question before I order.")} className="text-neutral-950" target="_blank" rel="noopener noreferrer">WhatsApp {whatsappDisplay()}</a>
         </p>
       </section>

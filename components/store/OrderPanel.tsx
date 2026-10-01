@@ -166,8 +166,11 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
         </select>
       </label>
 
-      <button type="submit" className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-neutral-950 font-semibold text-white">
+      <button type="submit" className="mt-5 hidden min-h-12 w-full items-center justify-center gap-2 rounded-full bg-neutral-950 font-medium text-white md:inline-flex">
         <ShoppingBag className="size-4" /> Add to cart
+      </button>
+      <button type="submit" className="fixed inset-x-4 bottom-20 z-30 h-12 rounded-full bg-neutral-950 text-sm font-medium text-white md:hidden">
+        Add to cart · {formatKes(priced.totalKes)}
       </button>
       <div className="mt-3 flex items-center justify-between gap-3 text-sm">
         <button type="button" className="font-semibold text-neutral-500" onClick={repeatLast}>

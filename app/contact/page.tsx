@@ -23,6 +23,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           <div><dt className="font-semibold">Email</dt><dd><a className="text-[#ff0030]" href={`mailto:${business.supportEmail}`}>{business.supportEmail}</a></dd></div>
           <div><dt className="font-semibold">Paybill</dt><dd className="font-mono tabular-nums">{business.paybill}</dd></div>
           <div><dt className="font-semibold">Desk hours</dt><dd>Monday–Friday 8:00–18:00, Saturday 9:00–16:00 EAT</dd></div>
+          <div><dt className="font-semibold">Office and collection</dt><dd>Karen Green, Langata Road</dd></div>
           <div><dt className="font-semibold">Production</dt><dd>Nairobi, with delivery to all 47 counties</dd></div>
         </dl>
       </div>

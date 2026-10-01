@@ -250,6 +250,11 @@ export function deliveryFee(subtotalKes: number, county: string) {
   return county.trim().toLowerCase() === "nairobi" ? NAIROBI_DELIVERY_KES : OUTSIDE_NAIROBI_DELIVERY_KES;
 }
 
+export function shippingFee(subtotalKes: number, county: string, method: "delivery" | "pickup") {
+  if (method === "pickup") return 0;
+  return deliveryFee(subtotalKes, county);
+}
+
 export function formatKes(amount: number) {
   return `KES ${new Intl.NumberFormat("en-KE").format(amount)}`;
 }

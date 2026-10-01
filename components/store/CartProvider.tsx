@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
-import type { QuoteSpec } from "@/lib/printshop/pricing";
+import { productBySlug } from "@/lib/printshop/catalog";
+import { quoteProduct, type QuoteSpec } from "@/lib/printshop/pricing";
 
 export type CartLine = {
   lineId: string;
@@ -21,6 +22,7 @@ type CartValue = {
   subtotal: number;
   add: (line: Omit<CartLine, "lineId">) => void;
   remove: (lineId: string) => void;
+  setQuantity: (lineId: string, quantity: number) => void;
   clear: () => void;
 };
 
@@ -79,6 +81,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal: lines.reduce((sum, line) => sum + line.totalKes, 0),
       add: (line) => writeCart([{ ...line, lineId: crypto.randomUUID() }, ...readCart()]),
       remove: (lineId) => writeCart(readCart().filter((line) => line.lineId !== lineId)),
+      setQuantity: (lineId, quantity) => {
+        const qty = Math.max(1, Math.min(20000, Math.round(quantity)));
+        writeCart(readCart().map((line) => {
+          if (line.lineId !== lineId) return line;
+          const product = productBySlug(line.slug);
+          if (product && line.spec) {
+            const quoted = quoteProduct(product, { ...line.spec, quantity: qty });
+            if (quoted) {
+              return { ...line, quantity: quoted.quantity, unitKes: quoted.unitKes, totalKes: quoted.totalKes, summary: quoted.summary, spec: { ...line.spec, quantity: quoted.quantity } };
+            }
+          }
+          return { ...line, quantity: qty, totalKes: line.unitKes * qty };
+        }));
+      },
       clear: () => writeCart([]),
     };
   }, [lines]);

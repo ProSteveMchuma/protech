@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { productBySlug } from "@/lib/printshop/catalog";
-import { deliveryFee, quoteProduct, type QuoteSpec, type Turnaround } from "@/lib/printshop/pricing";
+import { quoteProduct, shippingFee, type QuoteSpec, type Turnaround } from "@/lib/printshop/pricing";
 import { savePrintOrder } from "@/lib/print-orders";
 import { sendNotification } from "@/lib/email";
 
@@ -30,6 +30,7 @@ const orderSchema = z.object({
   phone: z.string().regex(/^254\d{9}$/),
   county: z.string().trim().min(2).max(80),
   address: z.string().trim().min(6).max(240),
+  fulfillment: z.enum(["delivery", "pickup"]).default("delivery"),
   artwork: z.string().trim().max(400).optional(),
   notes: z.string().trim().max(2000).optional(),
   mpesaCode: z.string().trim().min(6).max(20),
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     }
 
     const subtotalKes = lines.reduce((sum, line) => sum + line.totalKes, 0);
-    const deliveryKes = deliveryFee(subtotalKes, parsed.data.county);
+    const deliveryKes = shippingFee(subtotalKes, parsed.data.county, parsed.data.fulfillment);
     const totalKes = subtotalKes + deliveryKes;
     const saved = await savePrintOrder({
       customer: {
@@ -89,7 +90,8 @@ export async function POST(req: Request) {
     const rows = lines
       .map((line) => `<tr><td style="padding:8px 0;">${escapeHtml(line.title)} × ${line.quantity}<br><span style="color:#64748b">${escapeHtml(line.summary)}</span></td><td style="padding:8px 0;text-align:right;">KES ${line.totalKes.toLocaleString("en-KE")}</td></tr>`)
       .join("");
-    const html = `<p>Order <strong>${escapeHtml(order.id)}</strong> from ${escapeHtml(parsed.data.name)}.</p><p>${escapeHtml(parsed.data.phone)} · ${escapeHtml(parsed.data.email)}<br>${escapeHtml(parsed.data.address)}, ${escapeHtml(parsed.data.county)}</p><table style="width:100%">${rows}</table><p>Delivery KES ${deliveryKes.toLocaleString("en-KE")}<br><strong>Total KES ${totalKes.toLocaleString("en-KE")}</strong></p><p>M-Pesa ${escapeHtml(order.mpesaCode)}</p><p>Artwork: ${escapeHtml(parsed.data.artwork || "Not linked yet")}</p>`;
+    const handoff = parsed.data.fulfillment === "pickup" ? "Collection" : "Delivery";
+    const html = `<p>Order <strong>${escapeHtml(order.id)}</strong> from ${escapeHtml(parsed.data.name)}.</p><p>${escapeHtml(parsed.data.phone)} · ${escapeHtml(parsed.data.email)}<br>${handoff}: ${escapeHtml(parsed.data.address)}, ${escapeHtml(parsed.data.county)}</p><table style="width:100%">${rows}</table><p>${handoff} KES ${deliveryKes.toLocaleString("en-KE")}<br><strong>Total KES ${totalKes.toLocaleString("en-KE")}</strong></p><p>M-Pesa ${escapeHtml(order.mpesaCode)}</p><p>Artwork: ${escapeHtml(parsed.data.artwork || "Not linked yet")}</p>`;
     await sendNotification({ subject: `[ProPrint] Order ${order.id.slice(0, 8)}`, html, replyTo: parsed.data.email });
     await sendNotification({
       to: parsed.data.email,

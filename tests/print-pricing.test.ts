@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { productBySlug, products } from "../lib/printshop/catalog.ts";
 import { interpretSearch } from "../lib/printshop/search.ts";
-import { defaultSpec, deliveryFee, formatKes, priceModel, quoteProduct, shelfKes } from "../lib/printshop/pricing.ts";
+import { defaultSpec, deliveryFee, formatKes, priceModel, quoteProduct, shelfKes, shippingFee } from "../lib/printshop/pricing.ts";
 
 test("catalog has the full made-to-order range", () => {
   assert.equal(products.length, 84);
@@ -31,6 +31,8 @@ test("rush is a flat fee and delivery stays free above ten thousand", () => {
   assert.equal(deliveryFee(4000, "Nairobi"), 400);
   assert.equal(deliveryFee(4000, "Kisumu"), 850);
   assert.equal(deliveryFee(10000, "Mombasa"), 0);
+  assert.equal(shippingFee(4000, "Nairobi", "pickup"), 0);
+  assert.equal(shippingFee(4000, "Kisumu", "delivery"), 850);
   assert.equal(formatKes(8500), "KES 8,500");
 });
 
