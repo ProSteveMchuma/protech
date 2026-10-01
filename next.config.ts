@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     // This Vercel project returns 402 from /_next/image, so optimized src URLs render as broken images.
     unoptimized: true,
+    remotePatterns: [
+      { protocol: "https", hostname: "storage.googleapis.com", pathname: "/tenderpro-480721.firebasestorage.app/**" },
+    ],
   },
   async redirects() {
     return [
