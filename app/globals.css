@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 
@@ -41,8 +41,17 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes shop-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.shop-marquee { animation: shop-marquee 42s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .shop-marquee { animation: none; }
+}
+
 @layer components {
-  .skip-link { position: fixed; left: 1rem; top: -5rem; z-index: 100; border-radius: .5rem; background: var(--color-accent-300); padding: .75rem 1rem; font-weight: 800; color: #071019; }
+  .skip-link { position: fixed; left: 1rem; top: -5rem; z-index: 100; border-radius: .5rem; background: #ff0030; padding: .75rem 1rem; font-weight: 800; color: white; }
   .skip-link:focus { top: 1rem; }
   .imposition-grid { background-image: linear-gradient(rgba(103,232,249,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.08) 1px,transparent 1px); background-size: 38px 38px; mask-image: linear-gradient(to bottom,black,transparent 90%); }
   .press-window { overflow: hidden; border: 1px solid rgb(255 255 255 / .12); border-radius: 1rem; background: rgb(255 255 255 / .035); box-shadow: 0 32px 90px rgb(0 0 0 / .4); }

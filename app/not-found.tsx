@@ -1,1 +1,17 @@
-import Link from"next/link";export default function NotFound(){return <section className="grid min-h-[70vh] place-items-center bg-[#071019] px-4 pt-20 text-center text-white"><div><p className="font-mono text-cyan-300">404 / Off press</p><h1 className="mt-4 text-5xl font-black">This page is not in the run.</h1><p className="mt-4 text-slate-400">Return to ProPrint or open the production tool.</p><Link href="/" className="mt-8 inline-block rounded-lg bg-cyan-300 px-5 py-3 font-black text-slate-950">Back to ProPrint</Link></div></section>}
+import Link from "next/link";
+
+export default function NotFound() {
+  return (
+    <section className="mx-auto grid min-h-[60vh] max-w-xl place-items-center px-4 py-20 text-center">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#ff0030]">404</p>
+        <h1 className="mt-3 text-4xl font-black tracking-tight">That page is not in the catalogue.</h1>
+        <p className="mt-3 text-neutral-600">Go back to the shop, or tell us what you were trying to print.</p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Link href="/shop" className="inline-flex h-11 items-center rounded-2xl bg-[#ff0030] px-4 font-semibold text-white">Browse products</Link>
+          <Link href="/contact" className="inline-flex h-11 items-center rounded-2xl border border-neutral-200 px-4 font-semibold">Contact</Link>
+        </div>
+      </div>
+    </section>
+  );
+}

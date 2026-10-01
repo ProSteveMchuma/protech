@@ -1,6 +1,40 @@
-import type{Metadata}from"next";import type{ReactNode}from"react";import{Inter,Fraunces,JetBrains_Mono}from"next/font/google";import"./globals.css";import{Navbar}from"@/components/Navbar";import{Footer}from"@/components/Footer";import{ScrollProgress}from"@/components/ScrollProgress";
-const inter=Inter({subsets:["latin"],variable:"--font-inter",display:"swap"});
-const fraunces=Fraunces({subsets:["latin"],variable:"--font-fraunces",display:"swap"});
-const mono=JetBrains_Mono({subsets:["latin"],variable:"--font-jetbrains",display:"swap"});
-export const metadata:Metadata={metadataBase:new URL("https://www.proinnovationtech.co.ke"),title:{default:"ProPrint — Print Automation Software by Pro Innovation",template:"%s | ProPrint"},description:"Automate receipt numbering, print imposition, estimating, proofing and production workflows with ProPrint.",keywords:["printing software Kenya","print automation software","receipt numbering software","NCR numbering software","ticket numbering software","serial numbering PDF","PDF numbering software","cut and stack numbering","print imposition software","print estimating software","printing management software Kenya","print shop software Africa"],openGraph:{type:"website",locale:"en_KE",url:"/",title:"ProPrint — Software that makes printing faster",description:"Modern browser-based automation for print production.",siteName:"ProPrint by Pro Innovation"},twitter:{card:"summary_large_image",title:"ProPrint — Print Automation Software",description:"Software that makes printing faster."}};
-export default function RootLayout({children}:{children:ReactNode}){return <html lang="en" className={`${inter.variable} ${fraunces.variable} ${mono.variable}`}><body className="min-h-screen bg-[#071019] font-sans antialiased"><a href="#main-content" className="skip-link">Skip to content</a><ScrollProgress/><Navbar/><main id="main-content">{children}</main><Footer/></body></html>}
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
+import { AppChrome } from "@/components/store/AppChrome";
+import { ScrollProgress } from "@/components/ScrollProgress";
+
+const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://www.proinnovationtech.co.ke"),
+  title: { default: "ProPrint — Online printing in Kenya", template: "%s | ProPrint" },
+  description: "Order business cards, banners, flyers, t-shirts, mugs and stickers online. Same-day printing in Nairobi and delivery across all 47 counties.",
+  keywords: ["printing services Kenya", "print on demand Kenya", "business cards Nairobi", "banner printing Kenya", "t-shirt printing Nairobi", "same day printing Nairobi"],
+  openGraph: {
+    type: "website",
+    locale: "en_KE",
+    url: "/",
+    title: "ProPrint — Online printing in Kenya",
+    description: "Made-to-order printing for businesses and events, delivered across Kenya.",
+    siteName: "ProPrint",
+  },
+  twitter: { card: "summary_large_image", title: "ProPrint — Online printing in Kenya", description: "Same-day Nairobi printing and nationwide delivery." },
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en" className={`${sans.variable} ${fraunces.variable} ${mono.variable}`}>
+      <body className="min-h-screen bg-white font-sans text-neutral-950 antialiased">
+        <a href="#main-content" className="skip-link">Skip to content</a>
+        <ScrollProgress />
+        <AppChrome>
+          <main id="main-content">{children}</main>
+        </AppChrome>
+      </body>
+    </html>
+  );
+}
