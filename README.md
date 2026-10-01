@@ -25,14 +25,22 @@ Open `http://localhost:3000`. Without Firebase credentials, local development st
 
 ## Firestore setup
 
-Production requires Cloud Firestore so submissions are never written to an ephemeral deployment filesystem.
+Production requires Cloud Firestore. Vercel’s filesystem is ephemeral, so an order saved only to `/data` disappears. The live site returns an error on `/api/print/orders` until these credentials are set.
 
-1. Create a Firebase project and enable Cloud Firestore in Native mode.
-2. On Firebase App Hosting or Cloud Run, use the platform-provided Application Default Credentials.
-3. On another host, create a server service account and set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in the deployment environment.
-4. Never commit a service-account JSON file or private key.
+1. Create a Firebase project for ProPrint and enable Cloud Firestore in Native mode.
+2. Deploy the rules in this repo: `npx firebase-tools deploy --only firestore`. The rules deny all browser access. The server uses the Admin SDK, which bypasses them.
+3. In Firebase, open Project settings → Service accounts → Generate new private key.
+4. On Vercel, set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` for Production. Keep the private key quoted, with newlines escaped as `\n`. Redeploy.
+5. Confirm with `npm run firestore:check`.
 
-The Firebase Admin SDK is server-only. The browser never receives administrator credentials. Leads are stored in the `leads` collection and payment claims in `payments`.
+Never commit a service-account JSON file or private key. The browser never receives administrator credentials.
+
+| Collection | Contents |
+| --- | --- |
+| `printOrders` | Print shop orders, M-Pesa code, line totals, and status history |
+| `leads` | Contact, quote, and other form submissions |
+| `payments` | Older manual payment claims, keyed by M-Pesa code |
+| `_meta/proprint` | Written by `npm run firestore:check` |
 
 ## Operational setup
 

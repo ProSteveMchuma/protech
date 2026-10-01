@@ -1,7 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { FieldValue } from "firebase-admin/firestore";
 import { getFirestoreDatabase } from "./firebase-admin";
+import { toFirestoreData } from "./firestore-value";
 import type { QuoteSpec } from "./printshop/pricing";
 
 export type PrintOrderStatus = "received" | "confirmed" | "printing" | "dispatched" | "cancelled";
@@ -33,6 +35,7 @@ export type PrintOrder = {
   subtotalKes: number;
   deliveryKes: number;
   totalKes: number;
+  statusHistory: { status: PrintOrderStatus; at: string }[];
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -47,22 +50,34 @@ async function ensureStore() {
   }
 }
 
-export async function savePrintOrder(order: Omit<PrintOrder, "id" | "createdAt" | "status">): Promise<PrintOrder | null> {
-  const saved: PrintOrder = { ...order, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "received" };
+export async function savePrintOrder(order: Omit<PrintOrder, "id" | "createdAt" | "status" | "statusHistory">): Promise<{ order: PrintOrder | null; duplicate: boolean }> {
+  const createdAt = new Date().toISOString();
+  const saved = toFirestoreData<PrintOrder>({
+    ...order,
+    mpesaCode: order.mpesaCode.trim().toUpperCase(),
+    id: crypto.randomUUID(),
+    createdAt,
+    status: "received",
+    statusHistory: [{ status: "received", at: createdAt }],
+  });
   const db = getFirestoreDatabase();
   if (db) {
+    const existing = await db.collection("printOrders").where("mpesaCode", "==", saved.mpesaCode).limit(1).get();
+    if (!existing.empty) return { order: existing.docs[0].data() as PrintOrder, duplicate: true };
     await db.collection("printOrders").doc(saved.id).set(saved);
-    return saved;
+    return { order: saved, duplicate: false };
   }
   try {
     await ensureStore();
     const orders = await listPrintOrders();
+    const duplicate = orders.find((item) => item.mpesaCode === saved.mpesaCode);
+    if (duplicate) return { order: duplicate, duplicate: true };
     orders.unshift(saved);
     await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
-    return saved;
+    return { order: saved, duplicate: false };
   } catch (err) {
     console.warn("[print-orders] Persistence skipped:", (err as Error).message);
-    return null;
+    return { order: null, duplicate: false };
   }
 }
 
@@ -98,7 +113,10 @@ export async function updatePrintOrderStatus(id: string, status: PrintOrderStatu
     const ref = db.collection("printOrders").doc(id);
     const snapshot = await ref.get();
     if (!snapshot.exists) return false;
-    await ref.update({ status });
+    await ref.update({
+      status,
+      statusHistory: FieldValue.arrayUnion({ status, at: new Date().toISOString() }),
+    });
     return true;
   }
   try {
@@ -106,6 +124,7 @@ export async function updatePrintOrderStatus(id: string, status: PrintOrderStatu
     const index = orders.findIndex((order) => order.id === id);
     if (index === -1) return false;
     orders[index].status = status;
+    orders[index].statusHistory = [...(orders[index].statusHistory ?? []), { status, at: new Date().toISOString() }];
     await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
     return true;
   } catch {

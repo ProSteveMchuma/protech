@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     const subtotalKes = lines.reduce((sum, line) => sum + line.totalKes, 0);
     const deliveryKes = deliveryFee(subtotalKes, parsed.data.county);
     const totalKes = subtotalKes + deliveryKes;
-    const order = await savePrintOrder({
+    const saved = await savePrintOrder({
       customer: {
         name: parsed.data.name,
         email: parsed.data.email,
@@ -82,6 +82,8 @@ export async function POST(req: Request) {
       deliveryKes,
       totalKes,
     });
+    if (saved.duplicate) return NextResponse.json({ success: false, error: "That M-Pesa code is already on an order" }, { status: 409 });
+    const order = saved.order;
     if (!order) return NextResponse.json({ success: false, error: "The order did not save" }, { status: 500 });
 
     const rows = lines

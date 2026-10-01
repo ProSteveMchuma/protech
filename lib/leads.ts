@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { getFirestoreDatabase } from "./firebase-admin";
+import { toFirestoreData } from "./firestore-value";
 
 export interface Lead {
     id: string;
@@ -27,7 +28,7 @@ export async function saveLead(type: string, data: Record<string, unknown>): Pro
     const db = getFirestoreDatabase();
     if (db) {
         const lead: Lead = { id: crypto.randomUUID(), type, createdAt: new Date().toISOString(), status: "new", data };
-        await db.collection("leads").doc(lead.id).set(lead);
+        await db.collection("leads").doc(lead.id).set(toFirestoreData(lead));
         return lead;
     }
     try {

@@ -35,6 +35,12 @@ export function getFirestoreDatabase(): Firestore | null {
             }
             : { credential: applicationDefault(), projectId: process.env.FIREBASE_PROJECT_ID },
     );
-    cached = getFirestore(app);
+    const database = getFirestore(app);
+    try {
+        database.settings({ ignoreUndefinedProperties: true });
+    } catch (err) {
+        if (!/already been initialized/i.test((err as Error).message)) throw err;
+    }
+    cached = database;
     return cached;
 }

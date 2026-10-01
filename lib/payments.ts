@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { getFirestoreDatabase } from "./firebase-admin";
+import { toFirestoreData } from "./firestore-value";
 
 export type PaymentStatus = "pending" | "verified" | "rejected";
 
@@ -69,7 +70,7 @@ export async function submitPayment(
             if (existing.exists) return { payment: existing.data() as Payment, duplicate: true };
             const now = new Date().toISOString();
             const payment: Payment = { id: crypto.randomUUID(), createdAt: now, updatedAt: now, status: "pending", ...init, mpesaCode: code };
-            transaction.create(ref, payment);
+            transaction.create(ref, toFirestoreData(payment));
             return { payment, duplicate: false };
         });
     }
