@@ -49,7 +49,7 @@ export function StoreHeader() {
         </Link>
       </div>
       <nav className="hidden border-t border-neutral-100 md:block" aria-label="Product categories">
-        <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-6 py-2.5 text-sm font-semibold text-neutral-600">
+        <div className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 px-6 py-3 text-sm font-semibold text-neutral-600">
           <Link href="/shop" className="shrink-0 text-neutral-950">All products</Link>
           {shopGroups.map((group) => (
             <Link key={group.slug} href={`/category/${group.slug}`} className="shrink-0 hover:text-neutral-950">{group.label}</Link>
