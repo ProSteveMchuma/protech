@@ -21,9 +21,10 @@ export async function sendNotification(opts: {
     subject: string;
     html: string;
     replyTo?: string;
+    to?: string;
 }) {
     const transporter = getTransporter();
-    const to = process.env.NOTIFY_EMAIL || process.env.SMTP_USER;
+    const to = opts.to || process.env.NOTIFY_EMAIL || process.env.SMTP_USER;
     if (!transporter || !to) {
         console.warn("[email] SMTP not configured — skipping send. Subject:", opts.subject);
         return { sent: false, reason: "SMTP_NOT_CONFIGURED" };

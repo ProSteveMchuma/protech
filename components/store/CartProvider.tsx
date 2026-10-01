@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import type { QuoteSpec } from "@/lib/printshop/pricing";
 
 export type CartLine = {
   lineId: string;
@@ -8,7 +9,9 @@ export type CartLine = {
   title: string;
   quantity: number;
   unitKes: number;
+  totalKes: number;
   summary: string;
+  spec?: QuoteSpec;
 };
 
 type CartValue = {
@@ -21,6 +24,7 @@ type CartValue = {
   clear: () => void;
 };
 
+const emptyCart: CartLine[] = [];
 const CartContext = createContext<CartValue | null>(null);
 const STORAGE_KEY = "proprint-cart";
 const CHANGE_EVENT = "proprint-cart-change";
@@ -30,7 +34,10 @@ function parseCart(raw: string | null): CartLine[] {
   try {
     const parsed = JSON.parse(raw) as CartLine[];
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((line) => line && typeof line.lineId === "string" && typeof line.unitKes === "number" && line.unitKes > 0 && line.quantity > 0);
+    return parsed.filter((line) => line && typeof line.lineId === "string" && typeof line.unitKes === "number" && line.unitKes > 0 && line.quantity > 0).map((line) => ({
+      ...line,
+      totalKes: typeof line.totalKes === "number" && line.totalKes > 0 ? line.totalKes : line.unitKes * line.quantity,
+    }));
   } catch {
     return [];
   }
@@ -63,13 +70,13 @@ function subscribe(onStoreChange: () => void) {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const lines = useSyncExternalStore(subscribe, readCart, () => []);
+  const lines = useSyncExternalStore(subscribe, readCart, () => emptyCart);
   const value = useMemo<CartValue>(() => {
     return {
       lines,
       ready: true,
       count: lines.length,
-      subtotal: lines.reduce((sum, line) => sum + line.unitKes * line.quantity, 0),
+      subtotal: lines.reduce((sum, line) => sum + line.totalKes, 0),
       add: (line) => writeCart([{ ...line, lineId: crypto.randomUUID() }, ...readCart()]),
       remove: (lineId) => writeCart(readCart().filter((line) => line.lineId !== lineId)),
       clear: () => writeCart([]),

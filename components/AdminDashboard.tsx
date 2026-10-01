@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import type { Lead } from "@/lib/leads";
 import type { Payment, PaymentStatus } from "@/lib/payments";
+import type { PrintOrder, PrintOrderStatus } from "@/lib/print-orders";
 import { Logo } from "./Logo";
 
 interface Props {
     initialLeads: Lead[];
     initialPayments: Payment[];
+    initialOrders: PrintOrder[];
 }
 
 const LEAD_COLOURS: Record<Lead["status"], string> = {
@@ -37,14 +39,15 @@ const PAY_COLOURS: Record<PaymentStatus, string> = {
     rejected: "bg-red-100 text-red-700",
 };
 
-type Tab = "payments" | "leads";
+type Tab = "orders" | "payments" | "leads";
 
-export function AdminDashboard({ initialLeads, initialPayments }: Props) {
-    const [tab, setTab] = useState<Tab>(
-        initialPayments.some((p) => p.status === "pending") ? "payments" : "leads"
-    );
+const orderStatuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "dispatched", "cancelled"];
+
+export function AdminDashboard({ initialLeads, initialPayments, initialOrders }: Props) {
+    const [tab, setTab] = useState<Tab>(initialOrders.some((order) => order.status === "received") ? "orders" : initialPayments.some((p) => p.status === "pending") ? "payments" : "leads");
     const [leads, setLeads] = useState<Lead[]>(initialLeads);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
+    const [orders, setOrders] = useState<PrintOrder[]>(initialOrders);
     const [filter, setFilter] = useState("");
     const [refreshing, setRefreshing] = useState(false);
     const router = useRouter();
@@ -68,14 +71,17 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
     async function refresh() {
         setRefreshing(true);
         try {
-            const [leadsRes, paysRes] = await Promise.all([
+            const [leadsRes, paysRes, ordersRes] = await Promise.all([
                 fetch("/api/admin/leads"),
                 fetch("/api/admin/payments"),
+                fetch("/api/admin/orders"),
             ]);
             const leadsBody = await leadsRes.json();
             const paysBody = await paysRes.json();
+            const ordersBody = await ordersRes.json();
             if (leadsBody.success) setLeads(leadsBody.leads);
             if (paysBody.success) setPayments(paysBody.payments);
+            if (ordersBody.success) setOrders(ordersBody.orders);
         } finally {
             setRefreshing(false);
         }
@@ -84,6 +90,15 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
     async function setLeadStatus(id: string, status: Lead["status"]) {
         setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
         await fetch("/api/admin/leads", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, status }),
+        });
+    }
+
+    async function setOrderStatus(id: string, status: PrintOrderStatus) {
+        setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status } : order)));
+        await fetch("/api/admin/orders", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id, status }),
@@ -163,6 +178,14 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6 border-b border-slate-200">
+                    <TabButton active={tab === "orders"} onClick={() => setTab("orders")}>
+                        <Clock className="size-4" /> Orders
+                        {orders.some((order) => order.status === "received") && (
+                            <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold">
+                                {orders.filter((order) => order.status === "received").length}
+                            </span>
+                        )}
+                    </TabButton>
                     <TabButton active={tab === "payments"} onClick={() => setTab("payments")}>
                         <CreditCard className="size-4" /> Payments
                         {stats.pending > 0 && (
@@ -182,16 +205,14 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
                     <input
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        placeholder={
-                            tab === "payments"
-                                ? "Search by name, email, M-Pesa code..."
-                                : "Search leads..."
-                        }
+                        placeholder={tab === "orders" ? "Search orders..." : tab === "payments" ? "Search by name, email, M-Pesa code..." : "Search leads..."}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
-                {tab === "payments" ? (
+                {tab === "orders" ? (
+                    <OrdersTable orders={orders} filter={filter} onSetStatus={setOrderStatus} />
+                ) : tab === "payments" ? (
                     <PaymentsTable
                         payments={payments}
                         filter={filter}
@@ -201,6 +222,46 @@ export function AdminDashboard({ initialLeads, initialPayments }: Props) {
                     <LeadsTable leads={leads} filter={filter} onSetStatus={setLeadStatus} />
                 )}
             </div>
+        </div>
+    );
+}
+
+function OrdersTable({ orders, filter, onSetStatus }: { orders: PrintOrder[]; filter: string; onSetStatus: (id: string, status: PrintOrderStatus) => void }) {
+    const q = filter.trim().toLowerCase();
+    const rows = orders.filter((order) => !q || JSON.stringify(order).toLowerCase().includes(q));
+    if (rows.length === 0) return <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm">No print orders yet.</p>;
+    return (
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <table className="w-full text-sm">
+                <thead className="text-left text-slate-500">
+                    <tr>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3">Job</th>
+                        <th className="p-3">Total</th>
+                        <th className="p-3">M-Pesa</th>
+                        <th className="p-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((order) => (
+                        <tr key={order.id} className="border-t border-slate-100 align-top">
+                            <td className="p-3">
+                                <p className="font-semibold">{order.customer.name}</p>
+                                <p className="text-slate-500">{order.customer.phone}</p>
+                                <p className="text-slate-500">{order.customer.county}</p>
+                            </td>
+                            <td className="p-3">{order.lines.map((line) => `${line.quantity} × ${line.title}`).join(", ")}</td>
+                            <td className="p-3 font-mono tabular-nums">KES {order.totalKes.toLocaleString()}</td>
+                            <td className="p-3 font-mono">{order.mpesaCode}</td>
+                            <td className="p-3">
+                                <select className="rounded-lg border border-slate-200 px-2 py-2" value={order.status} onChange={(event) => onSetStatus(order.id, event.target.value as PrintOrderStatus)}>
+                                    {orderStatuses.map((status) => <option key={status}>{status}</option>)}
+                                </select>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { isAuthenticated } from "@/lib/auth";
 import { listLeads } from "@/lib/leads";
 import { listPayments } from "@/lib/payments";
+import { listPrintOrders } from "@/lib/print-orders";
 import { AdminLogin } from "@/components/AdminLogin";
 import { AdminDashboard } from "@/components/AdminDashboard";
 
@@ -10,6 +11,6 @@ export default async function AdminPage() {
     const authed = await isAuthenticated();
     if (!authed) return <AdminLogin />;
 
-    const [leads, payments] = await Promise.all([listLeads(), listPayments()]);
-    return <AdminDashboard initialLeads={leads} initialPayments={payments} />;
+    const [leads, payments, orders] = await Promise.all([listLeads(), listPayments(), listPrintOrders()]);
+    return <AdminDashboard initialLeads={leads} initialPayments={payments} initialOrders={orders} />;
 }

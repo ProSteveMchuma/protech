@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ProductCard } from "@/components/store/ProductCard";
 import { filterProducts, products, shopGroups } from "@/lib/printshop/catalog";
+import { interpretSearch } from "@/lib/printshop/search";
 
 export const metadata: Metadata = {
   title: "All printing products",
@@ -17,6 +19,15 @@ const bands = [
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<{ q?: string; group?: string; band?: string }> }) {
   const query = await searchParams;
+  if (query.q) {
+    const hit = interpretSearch(query.q);
+    if (hit) {
+      const params = new URLSearchParams();
+      if (hit.quantity) params.set("qty", String(hit.quantity));
+      if (hit.hint) params.set("hint", hit.hint);
+      redirect(`/product/${hit.slug}${params.size ? `?${params}` : ""}`);
+    }
+  }
   const list = filterProducts({ q: query.q, group: query.group, band: query.band });
   const band = query.band ?? "all";
   const group = query.group ?? "all";

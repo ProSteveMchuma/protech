@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { bundleItems, bundles } from "@/lib/printshop/content";
-import { formatKes, lineTotal, priceModel } from "@/lib/printshop/pricing";
+import { defaultSpec, formatKes, quoteProduct } from "@/lib/printshop/pricing";
 
 export const metadata: Metadata = {
   title: "Business packages",
@@ -10,12 +10,9 @@ export const metadata: Metadata = {
 
 function bundlePrice(slugs: string[]) {
   const total = bundleItems(slugs).reduce((sum, product) => {
-    const model = priceModel(product);
-    if (model === "quote") return sum;
-    if (model === "unit") {
-      return sum + lineTotal({ fromKes: product.fromKes, model, quantity: 100, sides: 1, turnaround: "standard" }).totalKes;
-    }
-    return sum + product.fromKes;
+    const spec = defaultSpec(product);
+    if (!spec) return sum;
+    return sum + (quoteProduct(product, spec)?.totalKes ?? 0);
   }, 0);
   return Math.round(total * 0.9);
 }
@@ -39,7 +36,7 @@ export default function PackagesPage() {
                 ))}
               </ul>
               <p className="mt-5 font-mono text-2xl font-black tabular-nums">{formatKes(bundlePrice(bundle.slugs))}</p>
-              <p className="text-xs text-neutral-500">From price for one of each display item, or 100 pieces where the product is priced per unit.</p>
+              <p className="text-xs text-neutral-500">From price at the standard specification for each item, 10% under buying them separately.</p>
               <Link href={`/contact?product=${bundle.slug}`} className="mt-4 inline-flex h-11 items-center rounded-2xl bg-[#ff0030] px-4 text-sm font-semibold text-white">Request this package</Link>
             </article>
           );

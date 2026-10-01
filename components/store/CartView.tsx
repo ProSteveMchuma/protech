@@ -27,7 +27,7 @@ export function CartView() {
               <p className="text-sm text-neutral-500">{line.summary}</p>
             </div>
             <div className="text-right">
-              <p className="font-mono font-bold tabular-nums">{formatKes(line.unitKes * line.quantity)}</p>
+              <p className="font-mono font-bold tabular-nums">{formatKes(line.totalKes)}</p>
               <button type="button" className="mt-1 text-sm font-semibold text-[#ff0030]" onClick={() => cart.remove(line.lineId)}>Remove</button>
             </div>
           </li>

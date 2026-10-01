@@ -216,9 +216,7 @@ export function describe(product: CatalogProduct) {
   const model = priceModel(product);
   const priceLine =
     model === "quote"
-      ? "This job is quoted from your page count, size and binding."
-      : model === "unit"
-        ? `Listed from ${product.fromKes.toLocaleString("en-KE")} shillings per piece on a short run. The unit price drops as the quantity rises.`
-        : `Listed from ${product.fromKes.toLocaleString("en-KE")} shillings per item. Ordering several pieces reduces the unit price.`;
+      ? "Send the specification for a fixed quote."
+      : `The product page prices the published run for the size, finish and quantity you choose.`;
   return `${product.title} for businesses, events and personal orders in Kenya. ${groupCopy[product.group]} ${priceLine} ${group?.summary ?? ""} Artwork can be ready-made or started from a logo. Nairobi jobs approved before 10:00 can print the same day when the product allows it. Everywhere else, standard delivery is 2–3 business days after production, across all 47 counties.`;
 }
