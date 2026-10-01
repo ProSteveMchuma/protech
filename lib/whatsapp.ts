@@ -15,6 +15,12 @@ export function whatsappDisplay() {
 }
 
 export function whatsappHref(text?: string) {
-  const base = `https://wa.me/${whatsappNumber()}`;
+  return whatsappHrefFor(whatsappNumber(), text);
+}
+
+export function whatsappHrefFor(phone: string, text?: string) {
+  const digits = phone.replace(/\D/g, "");
+  const number = digits.startsWith("254") && digits.length === 12 ? digits : whatsappNumber();
+  const base = `https://wa.me/${number}`;
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }

@@ -36,6 +36,8 @@ export function OrderForm() {
   const [step, setStep] = useState<1 | 2>(1);
   const [done, setDone] = useState("");
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+  const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [county, setCounty] = useState("Nairobi");
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -72,13 +74,21 @@ export function OrderForm() {
         })),
       }),
     });
-    const payload = (await response.json()) as { orderId?: string; totalKes?: number; error?: string };
+    const payload = (await response.json()) as { orderId?: string; artworkToken?: string; totalKes?: number; error?: string };
     if (!response.ok || !payload.orderId) {
       setError(payload.error || "The order did not save. Keep your M-Pesa code and email it to us.");
       return;
     }
+    if (artworkFile && payload.artworkToken) {
+      const body = new FormData();
+      body.set("orderId", payload.orderId);
+      body.set("token", payload.artworkToken);
+      body.set("file", artworkFile);
+      const uploaded = await fetch("/api/print/artwork", { method: "POST", body });
+      if (!uploaded.ok) setWarning("The order is saved. The artwork file did not upload — send it on WhatsApp with your M-Pesa code.");
+    }
     if (typeof payload.totalKes === "number" && Math.abs(payload.totalKes - total) > 1) {
-      setError(`The confirmed total is ${formatKes(payload.totalKes)}. Your reference is saved; we will confirm the M-Pesa amount against it.`);
+      setWarning(`The confirmed total is ${formatKes(payload.totalKes)}. Your reference is saved; we will confirm the M-Pesa amount against it.`);
     }
     cart.clear();
     setDone(payload.orderId);
@@ -90,6 +100,7 @@ export function OrderForm() {
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
         <h2 className="text-2xl font-black">Order received</h2>
         <p className="mt-2 text-sm leading-6 text-emerald-900">We match Paybill {business.paybill} to this order, then check the artwork before printing.</p>
+        {warning && <p className="mt-3 text-sm text-[#ff0030]">{warning}</p>}
         <Link href={`/orders/${done}`} className="mt-5 inline-flex h-11 items-center rounded-2xl bg-neutral-950 px-4 text-sm font-semibold text-white">Track this order</Link>
       </div>
     );
@@ -162,6 +173,7 @@ export function OrderForm() {
             <summary className="cursor-pointer text-sm font-semibold text-neutral-600">Artwork link, if you have one</summary>
             <div className="mt-3 grid gap-3">
               <input className={inputClass} placeholder="Drive, Dropbox, or WeTransfer" {...form.register("artwork")} />
+              <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="text-sm" onChange={(event) => setArtworkFile(event.target.files?.[0] ?? null)} />
               <textarea rows={3} className="rounded-xl border border-neutral-200 px-3 py-3 text-sm" placeholder="Notes for the printer" {...form.register("notes")} />
             </div>
           </details>

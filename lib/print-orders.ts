@@ -1,10 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { FieldValue } from "firebase-admin/firestore";
 import { getFirestoreDatabase } from "./firebase-admin";
 import { toFirestoreData } from "./firestore-value";
+import { statusAfterPayment } from "./order-desk";
 import type { QuoteSpec } from "./printshop/pricing";
+import type { StoredArtwork } from "./order-files";
 
 export type PrintOrderStatus = "received" | "confirmed" | "printing" | "dispatched" | "cancelled";
 
@@ -30,6 +31,10 @@ export type PrintOrder = {
   };
   artwork?: string;
   notes?: string;
+  internalNote?: string;
+  artworkToken?: string;
+  artworkFile?: { name: string; size: number; contentType: string; path: string };
+  payment?: { state: "unreviewed" | "confirmed" | "rejected"; note?: string; at: string };
   mpesaCode: string;
   lines: PrintOrderLine[];
   subtotalKes: number;
@@ -59,6 +64,8 @@ export async function savePrintOrder(order: Omit<PrintOrder, "id" | "createdAt" 
     createdAt,
     status: "received",
     statusHistory: [{ status: "received", at: createdAt }],
+    artworkToken: crypto.randomBytes(24).toString("hex"),
+    payment: { state: "unreviewed", at: createdAt },
   });
   const db = getFirestoreDatabase();
   if (db) {
@@ -81,17 +88,17 @@ export async function savePrintOrder(order: Omit<PrintOrder, "id" | "createdAt" 
   }
 }
 
-export async function listPrintOrders(): Promise<PrintOrder[]> {
+export async function listPrintOrders(limit = 200): Promise<PrintOrder[]> {
   const db = getFirestoreDatabase();
   if (db) {
-    const snapshot = await db.collection("printOrders").orderBy("createdAt", "desc").get();
+    const snapshot = await db.collection("printOrders").orderBy("createdAt", "desc").limit(limit).get();
     return snapshot.docs.map((doc) => doc.data() as PrintOrder);
   }
   try {
     await ensureStore();
     const raw = await fs.readFile(ORDERS_FILE, "utf-8");
     const orders = JSON.parse(raw) as PrintOrder[];
-    return Array.isArray(orders) ? orders : [];
+    return Array.isArray(orders) ? orders.slice(0, limit) : [];
   } catch {
     return [];
   }
@@ -107,27 +114,79 @@ export async function getPrintOrder(id: string): Promise<PrintOrder | null> {
   return orders.find((order) => order.id === id) ?? null;
 }
 
-export async function updatePrintOrderStatus(id: string, status: PrintOrderStatus): Promise<boolean> {
+function tokensMatch(stored: string, provided: string) {
+  const left = Buffer.from(stored);
+  const right = Buffer.from(provided);
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+async function persist(order: PrintOrder) {
   const db = getFirestoreDatabase();
   if (db) {
-    const ref = db.collection("printOrders").doc(id);
-    const snapshot = await ref.get();
-    if (!snapshot.exists) return false;
-    await ref.update({
-      status,
-      statusHistory: FieldValue.arrayUnion({ status, at: new Date().toISOString() }),
-    });
-    return true;
+    await db.collection("printOrders").doc(order.id).set(toFirestoreData(order));
+    return;
   }
-  try {
-    const orders = await listPrintOrders();
-    const index = orders.findIndex((order) => order.id === id);
-    if (index === -1) return false;
-    orders[index].status = status;
-    orders[index].statusHistory = [...(orders[index].statusHistory ?? []), { status, at: new Date().toISOString() }];
-    await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
-    return true;
-  } catch {
-    return false;
-  }
+  await ensureStore();
+  const raw = await fs.readFile(ORDERS_FILE, "utf-8");
+  const orders = JSON.parse(raw) as PrintOrder[];
+  const index = Array.isArray(orders) ? orders.findIndex((item) => item.id === order.id) : -1;
+  const next = Array.isArray(orders) ? orders : [];
+  if (index === -1) next.unshift(order);
+  else next[index] = order;
+  await fs.writeFile(ORDERS_FILE, JSON.stringify(next, null, 2), "utf-8");
+}
+
+export async function updatePrintOrderStatus(id: string, status: PrintOrderStatus): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current || current.status === status) return current;
+  const next = {
+    ...current,
+    status,
+    statusHistory: [...(current.statusHistory ?? []), { status, at: new Date().toISOString() }],
+  };
+  await persist(next);
+  return next;
+}
+
+export async function reviewOrderPayment(id: string, decision: "confirmed" | "rejected", note?: string): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current) return null;
+  const status = statusAfterPayment(current.status, decision);
+  const at = new Date().toISOString();
+  const next: PrintOrder = {
+    ...current,
+    status,
+    payment: { state: decision, note: note?.trim() || undefined, at },
+    statusHistory: status === current.status ? current.statusHistory : [...(current.statusHistory ?? []), { status, at }],
+  };
+  await persist(next);
+  return next;
+}
+
+export async function setOrderInternalNote(id: string, note: string): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current) return null;
+  const next = { ...current, internalNote: note.trim() };
+  await persist(next);
+  return next;
+}
+
+export async function attachOrderArtwork(id: string, file: StoredArtwork, consumeToken: boolean): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current) return null;
+  const next = { ...current, artworkFile: file, artworkToken: consumeToken ? undefined : current.artworkToken };
+  await persist(next);
+  return next;
+}
+
+export async function orderMatchingArtworkToken(id: string, token: string): Promise<PrintOrder | null> {
+  const order = await getPrintOrder(id);
+  if (!order?.artworkToken || !tokensMatch(order.artworkToken, token)) return null;
+  return order;
+}
+
+export function deskOrder(order: PrintOrder): PrintOrder {
+  const copy = { ...order };
+  delete copy.artworkToken;
+  return copy;
 }

@@ -57,7 +57,8 @@ Set `ADMIN_PASSWORD` and a random 32+ character `ADMIN_SESSION_SECRET` before op
 | `/tools/quotepro` | Print quotation calculator |
 | `/beta` | Founding-beta applications |
 | `/feedback` | Product feedback |
-| `/admin` | Lead and payment operations |
+| `/admin` | Order desk, older payments, and leads |
+| `/admin/orders/[id]` | Confirm M-Pesa, artwork, status, and the desk note |
 
 ## Validation
 

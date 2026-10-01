@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPrintOrder, type PrintOrderStatus } from "@/lib/print-orders";
+import { statusLabels } from "@/lib/order-desk";
+import { getPrintOrder } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
 
 export const dynamic = "force-dynamic";
@@ -11,14 +12,6 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const labels: Record<PrintOrderStatus, string> = {
-  received: "Received. We are matching the M-Pesa code.",
-  confirmed: "Payment confirmed. The job is in the queue.",
-  printing: "Printing in Nairobi.",
-  dispatched: "Dispatched for delivery.",
-  cancelled: "Cancelled. We will contact you about the payment.",
-};
-
 export default async function OrderStatusPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await getPrintOrder(id);
@@ -26,7 +19,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ id
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#ff0030]">Order</p>
-      <h1 className="mt-2 text-4xl font-black tracking-tight">{labels[order.status]}</h1>
+      <h1 className="mt-2 text-4xl font-black tracking-tight">{statusLabels[order.status]}</h1>
       <p className="mt-3 font-mono text-sm text-neutral-500">{order.id}</p>
       <ul className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
         {order.lines.map((line) => (
@@ -40,7 +33,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ id
         ))}
       </ul>
       <p className="mt-4 text-right font-mono text-2xl font-black tabular-nums">{formatKes(order.totalKes)}</p>
-      <p className="mt-2 text-sm text-neutral-500">Delivery to {order.customer.address}, {order.customer.county}. Artwork is checked before we print.</p>
+      <p className="mt-2 text-sm text-neutral-500">Delivery to {order.customer.address}, {order.customer.county}. {order.artworkFile ? "Artwork is on the order." : "Artwork is checked before we print."}</p>
       <Link href="/shop" className="mt-8 inline-flex h-11 items-center rounded-2xl bg-[#ff0030] px-4 text-sm font-semibold text-white">Back to the shop</Link>
     </div>
   );

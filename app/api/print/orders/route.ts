@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       html: `<p>Hello ${escapeHtml(parsed.data.name)},</p><p>We received your order and will confirm M-Pesa code <strong>${escapeHtml(order.mpesaCode)}</strong> before printing.</p><p>Total <strong>KES ${totalKes.toLocaleString("en-KE")}</strong>.</p><p>Track it here: https://www.proinnovationtech.co.ke/orders/${order.id}</p>`,
     });
 
-    return NextResponse.json({ success: true, orderId: order.id, totalKes, deliveryKes, subtotalKes });
+    return NextResponse.json({ success: true, orderId: order.id, artworkToken: order.artworkToken, totalKes, deliveryKes, subtotalKes });
   } catch (err) {
     console.error("[print-orders] Error:", err);
     return NextResponse.json({ success: false, error: "Failed to process the order" }, { status: 500 });

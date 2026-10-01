@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
     Briefcase,
@@ -49,6 +50,7 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
     const [orders, setOrders] = useState<PrintOrder[]>(initialOrders);
     const [filter, setFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"all" | PrintOrderStatus>("all");
     const [refreshing, setRefreshing] = useState(false);
     const router = useRouter();
 
@@ -211,7 +213,16 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
                 </div>
 
                 {tab === "orders" ? (
-                    <OrdersTable orders={orders} filter={filter} onSetStatus={setOrderStatus} />
+                    <>
+                        <div className="mb-4 flex flex-wrap gap-2">
+                            {(["all", ...orderStatuses] as const).map((status) => (
+                                <button key={status} type="button" onClick={() => setStatusFilter(status)} className={`rounded-full px-3 py-1.5 text-sm font-semibold ${statusFilter === status ? "bg-neutral-950 text-white" : "bg-white text-slate-600"}`}>
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                        <OrdersTable orders={orders} filter={filter} status={statusFilter} onSetStatus={setOrderStatus} />
+                    </>
                 ) : tab === "payments" ? (
                     <PaymentsTable
                         payments={payments}
@@ -226,9 +237,9 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
     );
 }
 
-function OrdersTable({ orders, filter, onSetStatus }: { orders: PrintOrder[]; filter: string; onSetStatus: (id: string, status: PrintOrderStatus) => void }) {
+function OrdersTable({ orders, filter, status, onSetStatus }: { orders: PrintOrder[]; filter: string; status: "all" | PrintOrderStatus; onSetStatus: (id: string, status: PrintOrderStatus) => void }) {
     const q = filter.trim().toLowerCase();
-    const rows = orders.filter((order) => !q || JSON.stringify(order).toLowerCase().includes(q));
+    const rows = orders.filter((order) => (status === "all" || order.status === status) && (!q || [order.customer.name, order.customer.phone, order.mpesaCode, order.id].join(" ").toLowerCase().includes(q)));
     if (rows.length === 0) return <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm">No print orders yet.</p>;
     return (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
@@ -246,7 +257,7 @@ function OrdersTable({ orders, filter, onSetStatus }: { orders: PrintOrder[]; fi
                     {rows.map((order) => (
                         <tr key={order.id} className="border-t border-slate-100 align-top">
                             <td className="p-3">
-                                <p className="font-semibold">{order.customer.name}</p>
+                                <Link href={`/admin/orders/${order.id}`} className="font-semibold underline">{order.customer.name}</Link>
                                 <p className="text-slate-500">{order.customer.phone}</p>
                                 <p className="text-slate-500">{order.customer.county}</p>
                             </td>
