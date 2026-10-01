@@ -82,6 +82,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
           spec,
         });
         setAdded(true);
+        cart.openDrawer();
       }}
     >
       <p className="font-mono text-3xl tabular-nums text-neutral-950">{formatKes(priced.totalKes)}</p>
@@ -166,10 +167,10 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
         </select>
       </label>
 
-      <button type="submit" className="mt-5 hidden min-h-12 w-full items-center justify-center gap-2 rounded-full bg-neutral-950 font-medium text-white md:inline-flex">
+      <button type="submit" className="mt-5 hidden min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ff0030] font-bold text-white md:inline-flex">
         <ShoppingBag className="size-4" /> Add to cart
       </button>
-      <button type="submit" className="fixed inset-x-4 bottom-20 z-30 h-12 rounded-full bg-neutral-950 text-sm font-medium text-white md:hidden">
+      <button type="submit" className="fixed inset-x-4 bottom-4 z-30 h-12 rounded-full bg-[#ff0030] text-sm font-bold text-white md:hidden">
         Add to cart · {formatKes(priced.totalKes)}
       </button>
       <div className="mt-3 flex items-center justify-between gap-3 text-sm">

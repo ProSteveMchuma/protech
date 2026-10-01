@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { productBySlug } from "@/lib/printshop/catalog";
 import { quoteProduct, type QuoteSpec } from "@/lib/printshop/pricing";
 
@@ -24,6 +24,10 @@ type CartValue = {
   remove: (lineId: string) => void;
   setQuantity: (lineId: string, quantity: number) => void;
   clear: () => void;
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  toggleDrawer: () => void;
 };
 
 const emptyCart: CartLine[] = [];
@@ -73,6 +77,7 @@ function subscribe(onStoreChange: () => void) {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const lines = useSyncExternalStore(subscribe, readCart, () => emptyCart);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const value = useMemo<CartValue>(() => {
     return {
       lines,
@@ -96,8 +101,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }));
       },
       clear: () => writeCart([]),
+      drawerOpen,
+      openDrawer: () => setDrawerOpen(true),
+      closeDrawer: () => setDrawerOpen(false),
+      toggleDrawer: () => setDrawerOpen((open) => !open),
     };
-  }, [lines]);
+  }, [lines, drawerOpen]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

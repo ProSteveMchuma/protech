@@ -1,5 +1,6 @@
-export function Logo({ variant = "lockup", size = 36, tone = "studio" }: { variant?: "mark" | "lockup"; size?: number; tone?: "studio" | "shop" }) {
-  const shop = tone === "shop";
+export function Logo({ variant = "lockup", size = 36, tone = "studio" }: { variant?: "mark" | "lockup"; size?: number; tone?: "studio" | "shop" | "shop-light" }) {
+  const shop = tone === "shop" || tone === "shop-light";
+  const onDark = tone === "shop-light" || tone === "studio";
   const mark = (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
       <rect width="32" height="32" rx="8" fill={shop ? "#ff0030" : "#071019"} />
@@ -13,8 +14,8 @@ export function Logo({ variant = "lockup", size = 36, tone = "studio" }: { varia
     <span className="inline-flex items-center gap-2.5">
       {mark}
       <span className="leading-none">
-        <b className={`block text-base font-black tracking-[-.03em] ${shop ? "text-neutral-950" : "text-white"}`}>ProPrint</b>
-        <span className={`mt-1 block text-[10px] font-semibold uppercase tracking-[.14em] ${shop ? "text-neutral-500" : "text-slate-500"}`}>{shop ? "Nairobi" : "by Pro Innovation"}</span>
+        <b className={`block text-base font-black tracking-[-.03em] ${onDark ? "text-white" : "text-neutral-950"}`}>ProPrint</b>
+        <span className={`mt-1 block text-[10px] font-semibold uppercase tracking-[.14em] ${onDark ? "text-white/70" : "text-neutral-500"}`}>{shop ? "Nairobi" : "by Pro Innovation"}</span>
       </span>
     </span>
   );

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "./CartProvider";
 import { StoreFooter } from "./StoreFooter";
 import { StoreHeader } from "./StoreHeader";
@@ -29,6 +30,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
           {children}
           <StoreFooter />
           <StoreTabBar />
+          <CartDrawer />
           <WhatsAppButton />
         </div>
       )}

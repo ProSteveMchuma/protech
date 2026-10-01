@@ -4,7 +4,7 @@ export function WhatsAppButton() {
   return (
     <a
       href={whatsappHref("Hello ProPrint, I need help with a print order.")}
-      className="fixed bottom-5 right-5 z-50 hidden size-12 place-items-center rounded-full bg-neutral-950 text-white shadow-md md:grid"
+      className="fixed bottom-5 right-5 z-30 hidden size-12 place-items-center rounded-full bg-[#ff0030] text-white shadow-md md:grid"
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`WhatsApp ${whatsappDisplay()}`}

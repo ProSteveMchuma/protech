@@ -35,7 +35,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const related = productsInGroup(product.group).filter((item) => item.slug !== product.slug).slice(0, 4);
   const from = shelfKes(product);
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6 lg:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 lg:py-10">
       <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16">
         <Image src={productImage(product)} alt={product.title} width={1200} height={900} priority className="aspect-[4/3] w-full bg-[#f6f4f1] object-cover lg:sticky lg:top-24" />
         <div>
@@ -61,7 +61,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
       {related.length > 0 && (
         <section className="mt-16">
           <h2 className="font-display text-3xl font-medium">Related</h2>
-          <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {related.map((item) => <ProductCard key={item.slug} product={item} />)}
           </div>
         </section>

@@ -156,7 +156,7 @@ export function OrderForm() {
             : `We deliver to ${address}, ${county}.`}
         </p>
         {warning && <p className="mt-3 text-sm text-[#ff0030]">{warning}</p>}
-        <Link href={`/orders/${done}`} className="mt-6 inline-flex h-12 items-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white">Track this order</Link>
+        <Link href={`/orders/${done}`} className="mt-6 inline-flex h-12 items-center rounded-full bg-[#ff0030] px-5 text-sm font-medium text-white">Track this order</Link>
       </div>
     );
   }
@@ -297,13 +297,13 @@ export function OrderForm() {
               <button type="button" className="h-12 rounded-full border border-neutral-200 px-4 text-sm" onClick={() => setStep((current) => (current === 3 ? 2 : 1))}>Back</button>
             )}
             {step === 1 && (
-              <button type="button" className="h-12 flex-1 rounded-full bg-neutral-950 text-sm font-medium text-white" onClick={continueFromDelivery}>Continue · {formatKes(total)}</button>
+              <button type="button" className="h-12 flex-1 rounded-full bg-[#ff0030] text-sm font-medium text-white" onClick={continueFromDelivery}>Continue · {formatKes(total)}</button>
             )}
             {step === 2 && (
-              <button type="button" className="h-12 flex-1 rounded-full bg-neutral-950 text-sm font-medium text-white" onClick={continueFromPayment}>Review · {formatKes(total)}</button>
+              <button type="button" className="h-12 flex-1 rounded-full bg-[#ff0030] text-sm font-medium text-white" onClick={continueFromPayment}>Review · {formatKes(total)}</button>
             )}
             {step === 3 && (
-              <button type="submit" disabled={form.formState.isSubmitting} className="h-12 flex-1 rounded-full bg-neutral-950 text-sm font-medium text-white disabled:opacity-60">
+              <button type="submit" disabled={form.formState.isSubmitting} className="h-12 flex-1 rounded-full bg-[#ff0030] text-sm font-medium text-white disabled:opacity-60">
                 {form.formState.isSubmitting ? "Submitting…" : "Submit payment for verification"}
               </button>
             )}

@@ -5,8 +5,10 @@ export const metadata: Metadata = { title: "Cart", description: "Review your pri
 
 export default function CartPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 pb-36 sm:px-6 lg:py-14">
-      <CartView />
+    <div className="bg-neutral-50">
+      <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-8 lg:px-12 lg:pb-14">
+        <CartView />
+      </div>
     </div>
   );
 }

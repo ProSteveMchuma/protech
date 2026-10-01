@@ -6,56 +6,51 @@ import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 
 export function StoreFooter() {
   return (
-    <footer className="border-t border-neutral-200 bg-neutral-50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.2fr_2fr]">
-        <div>
-          <Logo tone="shop" size={32} />
-          <p className="mt-4 max-w-xs text-sm leading-6 text-neutral-600">Made-to-order printing in Nairobi. You see the price, pay by M-Pesa, and collect at the office or we deliver across Kenya.</p>
-          <p className="mt-4 text-sm text-neutral-700">
-            <a className="font-semibold text-neutral-950" href={whatsappHref()} target="_blank" rel="noopener noreferrer">WhatsApp {whatsappDisplay()}</a>
-            <br />
-            <a className="font-semibold text-neutral-950" href={`mailto:${business.supportEmail}`}>{business.supportEmail}</a>
-            <br />
-            Paybill <span className="font-mono tabular-nums">{business.paybill}</span>
-            <br />
-            {pickup.address}
-            <br />
-            Monday–Friday 8:00–18:00, Saturday 9:00–16:00
-          </p>
+    <footer className="bg-[#1f2937] text-neutral-300">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-4 lg:px-12">
+        <div className="space-y-5">
+          <Link href="/" aria-label="ProPrint home"><Logo tone="shop-light" size={32} /></Link>
+          <p className="max-w-xs text-sm leading-6 text-neutral-400">Made-to-order printing in Nairobi. The price is on the product. You pay by M-Pesa, then collect at the office or we deliver across Kenya.</p>
+          <a href={whatsappHref()} className="inline-flex text-sm font-bold text-red-300" target="_blank" rel="noopener noreferrer">WhatsApp support: {whatsappDisplay()}</a>
+          <p className="text-sm text-neutral-400">{pickup.address}<br />Monday–Friday 8:00–18:00, Saturday 9:00–16:00</p>
         </div>
-        <div className="grid gap-8 sm:grid-cols-3">
-          <div>
-            <h2 className="text-sm font-bold">Shop</h2>
-            <div className="mt-3 grid gap-2 text-sm text-neutral-600">
-              {shopGroups.map((group) => (
-                <Link key={group.slug} href={`/category/${group.slug}`} className="hover:text-neutral-950">{group.label}</Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="text-sm font-bold">Orders</h2>
-            <div className="mt-3 grid gap-2 text-sm text-neutral-600">
-              <Link href="/shop" className="hover:text-neutral-950">All products</Link>
-              <Link href="/packages" className="hover:text-neutral-950">Packages</Link>
-              <Link href="/cart" className="hover:text-neutral-950">Cart</Link>
-              <Link href="/order" className="hover:text-neutral-950">Checkout</Link>
-              <Link href="/contact" className="hover:text-neutral-950">Ask for a quote</Link>
-            </div>
-          </div>
-          <div>
-            <h2 className="text-sm font-bold">Company</h2>
-            <div className="mt-3 grid gap-2 text-sm text-neutral-600">
-              <Link href="/about" className="hover:text-neutral-950">About</Link>
-              <Link href="/print-on-demand" className="hover:text-neutral-950">How ordering works</Link>
-              <Link href="/legal/privacy" className="hover:text-neutral-950">Privacy</Link>
-              <Link href="/terms" className="hover:text-neutral-950">Print terms</Link>
-            </div>
-          </div>
+        <div>
+          <h2 className="mb-5 text-xs font-bold uppercase tracking-wider text-white">Shop</h2>
+          <ul className="space-y-3 text-sm">
+            {shopGroups.map((group) => (
+              <li key={group.slug}><Link href={`/category/${group.slug}`} className="text-neutral-400 hover:text-white">{group.label}</Link></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2 className="mb-5 text-xs font-bold uppercase tracking-wider text-white">Buying on ProPrint</h2>
+          <ul className="space-y-3 text-sm">
+            <li><Link href="/shop" className="text-neutral-400 hover:text-white">All products</Link></li>
+            <li><Link href="/cart" className="text-neutral-400 hover:text-white">Cart</Link></li>
+            <li><Link href="/order" className="text-neutral-400 hover:text-white">Checkout</Link></li>
+            <li><Link href="/print-on-demand" className="text-neutral-400 hover:text-white">How ordering works</Link></li>
+            <li><Link href="/packages" className="text-neutral-400 hover:text-white">Software packages</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h2 className="mb-5 text-xs font-bold uppercase tracking-wider text-white">Payment</h2>
+          <span className="inline-flex rounded bg-white px-2 py-1 text-[10px] font-bold text-neutral-800">M-PESA PAYBILL</span>
+          <p className="mt-3 font-mono text-sm tabular-nums text-white">{business.paybill}</p>
+          <p className="mt-2 text-sm text-neutral-400">Account is your name. Paste the M-Pesa code at checkout. We confirm it before printing.</p>
+          <h2 className="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-white">Need help?</h2>
+          <a href={`mailto:${business.supportEmail}`} className="block text-sm text-neutral-400 hover:text-white">{business.supportEmail}</a>
+          <Link href="/contact" className="mt-4 inline-flex rounded-lg bg-[#ff0030] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white">Contact support</Link>
         </div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 pb-24 text-xs text-neutral-500 sm:px-6 md:pb-8">
+      <div className="border-t border-neutral-800 px-4 py-8 pb-28 text-center text-xs text-neutral-500 md:pb-8">
         <p>© {new Date().getFullYear()} {business.name}</p>
-        <p>Nairobi production · delivery to all 47 counties</p>
+        <p className="mt-2">
+          <Link href="/legal/privacy" className="hover:text-white">Privacy</Link>
+          <span className="mx-2">·</span>
+          <Link href="/terms" className="hover:text-white">Print terms</Link>
+          <span className="mx-2">·</span>
+          <Link href="/about" className="hover:text-white">About</Link>
+        </p>
       </div>
     </footer>
   );
