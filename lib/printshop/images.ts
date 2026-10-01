@@ -3,7 +3,7 @@ import type { ShopGroupSlug } from "./catalog";
 const bucket = "tenderpro-480721.firebasestorage.app";
 
 function productPhoto(file: string) {
-  return `https://storage.googleapis.com/${bucket}/products/${file}`;
+  return `https://storage.googleapis.com/${bucket}/products/v2/${file}`;
 }
 
 export const groupImage: Record<ShopGroupSlug, string> = {

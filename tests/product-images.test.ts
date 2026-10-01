@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { groupImage, productImage } from "../lib/printshop/images.ts";
 
-const prefix = "https://storage.googleapis.com/tenderpro-480721.firebasestorage.app/products/";
+const prefix = "https://storage.googleapis.com/tenderpro-480721.firebasestorage.app/products/v2/";
 
 test("category photos are public Firebase Storage URLs", () => {
   assert.equal(groupImage["business-cards"], `${prefix}business-cards.jpg`);

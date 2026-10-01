@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ProductCard } from "@/components/store/ProductCard";
 import { filterProducts, products, shopGroups } from "@/lib/printshop/catalog";
 import { interpretSearch } from "@/lib/printshop/search";
+import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "All printing products",
@@ -36,7 +37,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#ff0030]">Shop</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight">All printing products</h1>
-      <p className="mt-3 max-w-2xl text-neutral-600">Browse {products.length} made-to-order products. Same-day printing in Nairobi on selected jobs, and delivery to every county.</p>
+      <p className="mt-3 max-w-2xl text-neutral-600">Browse {products.length} made-to-order products. Same-day printing in Nairobi on selected jobs, and delivery to every county. <a className="font-semibold text-[#128C7E]" href={whatsappHref("Hello ProPrint, help me find a product.")} target="_blank" rel="noopener noreferrer">WhatsApp {whatsappDisplay()}</a></p>
       <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
         <Link href={`/shop?band=${band}`} className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold ${group === "all" ? "bg-neutral-950 text-white" : "bg-neutral-100"}`}>All</Link>
         {shopGroups.map((item) => (

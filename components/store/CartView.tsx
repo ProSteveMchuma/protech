@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatKes } from "@/lib/printshop/pricing";
+import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 import { useCart } from "./CartProvider";
 
 export function CartView() {
@@ -11,7 +12,8 @@ export function CartView() {
     return (
       <div>
         <h1 className="text-4xl font-black tracking-tight">Your cart is empty</h1>
-        <Link href="/shop" className="mt-6 inline-flex h-12 items-center rounded-2xl bg-[#ff0030] px-5 font-semibold text-white">Browse products</Link>
+        <Link href="/shop" className="mt-6 inline-flex h-12 items-center rounded-full bg-[#ff0030] px-5 font-semibold text-white">Browse products</Link>
+        <a href={whatsappHref("Hello ProPrint, I need help choosing a product.")} className="mt-4 block text-sm font-semibold text-[#128C7E]" target="_blank" rel="noopener noreferrer">Or ask on WhatsApp {whatsappDisplay()}</a>
       </div>
     );
   }
@@ -35,7 +37,8 @@ export function CartView() {
       </ul>
       <p className="mt-4 text-right font-mono text-2xl font-black tabular-nums">{formatKes(cart.subtotal)}</p>
       <p className="text-right text-xs text-neutral-500">Delivery is added at checkout. Free above KES 10,000.</p>
-      <Link href="/order" className="mt-6 inline-flex h-12 items-center rounded-2xl bg-[#ff0030] px-5 font-semibold text-white">Continue to payment</Link>
+      <Link href="/order" className="mt-6 inline-flex h-12 items-center rounded-full bg-[#ff0030] px-5 font-semibold text-white">Continue to payment</Link>
+      <a href={whatsappHref("Hello ProPrint, I have a question about the items in my cart.")} className="mt-4 block text-sm font-semibold text-[#128C7E]" target="_blank" rel="noopener noreferrer">Question about this order? WhatsApp {whatsappDisplay()}</a>
     </div>
   );
 }

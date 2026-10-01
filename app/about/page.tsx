@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { business } from "@/lib/config";
+import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "About",
@@ -33,10 +34,10 @@ export default function AboutPage() {
       </div>
       <div className="mt-8 rounded-2xl bg-neutral-950 p-6 text-white">
         <h2 className="text-xl font-black">Talk to the desk</h2>
-        <p className="mt-2 text-sm leading-6 text-white/75">{business.supportEmail}<br />Monday–Friday 8:00–18:00, Saturday 9:00–16:00 EAT<br />Paybill <span className="font-mono tabular-nums">{business.paybill}</span></p>
+        <p className="mt-2 text-sm leading-6 text-white/75">WhatsApp {whatsappDisplay()}<br />{business.supportEmail}<br />Monday–Friday 8:00–18:00, Saturday 9:00–16:00 EAT<br />Paybill <span className="font-mono tabular-nums">{business.paybill}</span></p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/contact" className="inline-flex h-11 items-center rounded-2xl bg-[#ff0030] px-4 text-sm font-semibold">Contact</Link>
-          <Link href="/tools/quotepro" className="inline-flex h-11 items-center rounded-2xl border border-white/20 px-4 text-sm font-semibold">Production tools</Link>
+          <a href={whatsappHref("Hello ProPrint, I want to talk about an order.")} className="inline-flex h-11 items-center rounded-full bg-[#128C7E] px-4 text-sm font-semibold" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <Link href="/shop" className="inline-flex h-11 items-center rounded-full bg-[#ff0030] px-4 text-sm font-semibold">Browse products</Link>
         </div>
       </div>
     </div>

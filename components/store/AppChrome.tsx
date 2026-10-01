@@ -7,6 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { CartProvider } from "./CartProvider";
 import { StoreFooter } from "./StoreFooter";
 import { StoreHeader } from "./StoreHeader";
+import { WhatsAppButton } from "./WhatsAppButton";
 
 const studioPrefixes = ["/tools", "/admin", "/beta", "/feedback", "/apply", "/hire", "/guides", "/services", "/legal", "/checkout"];
 
@@ -26,6 +27,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
           <StoreHeader />
           {children}
           <StoreFooter />
+          <WhatsAppButton />
         </div>
       )}
     </CartProvider>
