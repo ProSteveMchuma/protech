@@ -42,6 +42,8 @@ Never commit a service-account JSON file or private key. The browser never recei
 | `payments` | Older manual payment claims, keyed by M-Pesa code |
 | `_meta/proprint` | Written by `npm run firestore:check` |
 
+Product photos are public objects in the Firebase Storage bucket `tenderpro-480721.firebasestorage.app`, under `products/`. The shop links to those files directly. `npm run images:upload` publishes `public/images/products`. Image optimization stays off because this Vercel project returns 402 from `/_next/image`.
+
 ## Operational setup
 
 Set `ADMIN_PASSWORD` and a random 32+ character `ADMIN_SESSION_SECRET` before opening `/admin`. Configure the SMTP variables to receive beta, feedback, and payment notifications. Optional business configuration includes `MPESA_PAYBILL`, `WHATSAPP_NUMBER`, and `SUPPORT_EMAIL`.

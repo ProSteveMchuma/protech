@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.ts",
-    "firestore:check": "node scripts/check-firestore.mjs"
+    "firestore:check": "node scripts/check-firestore.mjs",
+    "images:upload": "node scripts/upload-product-images.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

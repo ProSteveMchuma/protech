@@ -20,7 +20,7 @@ export default function HomePage() {
           <p className="mt-5 max-w-md text-lg leading-8 text-neutral-600">Cards, flyers, banners, shirts and mugs. The price updates before you pay. We print in Nairobi and deliver across Kenya.</p>
           <Link href="/shop" className="mt-8 inline-flex h-12 items-center rounded-full bg-[#ff0030] px-6 font-semibold text-white">Browse products</Link>
         </div>
-        <Image src="/images/products/business-cards.jpg" alt="A stack of printed business cards" width={1200} height={900} priority className="aspect-[4/3] w-full rounded-3xl object-cover" />
+        <Image src={groupImage["business-cards"]} alt="A stack of printed business cards" width={1200} height={900} priority className="aspect-[4/3] w-full rounded-3xl object-cover" />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
