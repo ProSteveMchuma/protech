@@ -51,7 +51,7 @@ export function StoreFooter() {
           </div>
         </div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 pb-28 text-xs text-neutral-500 sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 pb-20 text-xs text-neutral-500 sm:px-6">
         <p>© {new Date().getFullYear()} {business.name}</p>
         <p>Nairobi production · delivery to all 47 counties</p>
       </div>

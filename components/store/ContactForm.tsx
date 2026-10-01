@@ -69,7 +69,7 @@ export function ContactForm({ defaultSubject }: { defaultSubject: string }) {
         {form.formState.errors.message && <span className="font-normal text-[#ff0030]">{form.formState.errors.message.message}</span>}
       </label>
       {error && <p className="text-sm text-[#ff0030]">{error}</p>}
-      <button type="submit" disabled={form.formState.isSubmitting} className="h-12 rounded-2xl bg-[#ff0030] font-semibold text-white disabled:opacity-60">
+      <button type="submit" disabled={form.formState.isSubmitting} className="h-12 rounded-2xl bg-neutral-950 font-semibold text-white disabled:opacity-60">
         {form.formState.isSubmitting ? "Sending…" : "Send message"}
       </button>
     </form>

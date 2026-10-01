@@ -35,7 +35,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
         <p className="text-sm font-semibold text-neutral-500">Custom quote</p>
         <p className="mt-2 text-sm leading-6 text-neutral-700">Tell us the size, quantity and date. We reply with one fixed price.</p>
-        <Link href={`/contact?product=${product.slug}`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-[#ff0030] px-5 font-semibold text-white">
+        <Link href={`/contact?product=${product.slug}`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-neutral-950 px-5 font-semibold text-white">
           Request a quote
         </Link>
       </div>
@@ -68,7 +68,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
 
   return (
     <form
-      className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
+      className="border border-neutral-200 bg-white p-5"
       onSubmit={(event) => {
         event.preventDefault();
         localStorage.setItem(`proprint-last:${product.slug}`, JSON.stringify(spec));
@@ -84,7 +84,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
         setAdded(true);
       }}
     >
-      <p className="font-mono text-3xl font-black tabular-nums text-neutral-950">{formatKes(priced.totalKes)}</p>
+      <p className="font-mono text-3xl tabular-nums text-neutral-950">{formatKes(priced.totalKes)}</p>
       <p className="mt-1 text-sm text-neutral-500">{priced.summary || "Standard specification"}</p>
 
       {entry.groups && activeGroup && (
@@ -166,7 +166,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
         </select>
       </label>
 
-      <button type="submit" className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#ff0030] font-semibold text-white">
+      <button type="submit" className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-neutral-950 font-semibold text-white">
         <ShoppingBag className="size-4" /> Add to cart
       </button>
       <div className="mt-3 flex items-center justify-between gap-3 text-sm">
@@ -174,7 +174,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
           Use last specification
         </button>
         {added && (
-          <Link href="/cart" className="inline-flex items-center gap-1 font-semibold text-[#ff0030]">
+          <Link href="/cart" className="inline-flex items-center gap-1 font-semibold text-neutral-950">
             <Check className="size-4" /> View cart
           </Link>
         )}
@@ -235,7 +235,7 @@ function GroupControl({
               key={group.label}
               type="button"
               onClick={() => onChange(group.label)}
-              className={`min-h-11 rounded-xl border px-3 text-left text-sm font-semibold ${group.label === groupLabel ? "border-[#ff0030] bg-[#fff1f3] text-[#ff0030]" : "border-neutral-200"}`}
+              className={`min-h-11 rounded-xl border px-3 text-left text-sm font-semibold ${group.label === groupLabel ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-200"}`}
             >
               {group.label}
             </button>
@@ -284,7 +284,7 @@ function QuantityControl({
               key={value}
               type="button"
               onClick={() => onChange(value)}
-              className={`min-h-11 rounded-xl border text-sm font-semibold tabular-nums ${quantity === value ? "border-[#ff0030] bg-[#fff1f3] text-[#ff0030]" : "border-neutral-200"}`}
+              className={`min-h-11 rounded-xl border text-sm font-semibold tabular-nums ${quantity === value ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-200"}`}
             >
               {value.toLocaleString("en-KE")}
             </button>
@@ -405,7 +405,7 @@ function BookControl({
                 key={value}
                 type="button"
                 onClick={() => onChange({ color: value })}
-                className={`min-h-11 rounded-xl border text-sm font-semibold ${(spec.color ?? "color") === value ? "border-[#ff0030] bg-[#fff1f3] text-[#ff0030]" : "border-neutral-200"}`}
+                className={`min-h-11 rounded-xl border text-sm font-semibold ${(spec.color ?? "color") === value ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-200"}`}
               >
                 {value === "color" ? "Colour" : "Black and white"}
               </button>

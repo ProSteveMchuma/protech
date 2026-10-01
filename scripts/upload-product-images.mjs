@@ -23,7 +23,7 @@ const files = (await readdir(directory)).filter((name) => name.endsWith(".jpg"))
 const bucket = getStorage().bucket();
 
 for (const name of files) {
-  const destination = `products/v2/${name}`;
+  const destination = `products/v3/${name}`;
   const file = bucket.file(destination);
   await file.save(await readFile(path.join(directory, name)), {
     resumable: false,

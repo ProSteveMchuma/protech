@@ -142,7 +142,7 @@ export function OrderForm() {
           </label>
           <button
             type="button"
-            className="h-12 rounded-2xl bg-[#ff0030] font-semibold text-white"
+            className="h-12 rounded-2xl bg-neutral-950 font-semibold text-white"
             onClick={async () => {
               const valid = await form.trigger(["name", "email", "phone"]);
               const phone = normalizePhone(form.getValues("phone"));
@@ -183,7 +183,7 @@ export function OrderForm() {
           </p>
           <div className="grid grid-cols-[auto_1fr] gap-2">
             <button type="button" className="h-12 rounded-2xl border border-neutral-200 px-4 text-sm font-semibold" onClick={() => setStep(1)}>Back</button>
-            <button type="submit" disabled={form.formState.isSubmitting} className="h-12 rounded-2xl bg-[#ff0030] font-semibold text-white disabled:opacity-60">
+            <button type="submit" disabled={form.formState.isSubmitting} className="h-12 rounded-2xl bg-neutral-950 font-semibold text-white disabled:opacity-60">
               {form.formState.isSubmitting ? "Submitting…" : "Submit order"}
             </button>
           </div>

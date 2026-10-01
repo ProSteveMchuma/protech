@@ -36,32 +36,32 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const from = shelfKes(product);
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-12">
-        <Image src={productImage(product)} alt={product.title} width={1200} height={900} priority className="aspect-[4/3] w-full rounded-3xl bg-neutral-100 object-cover lg:sticky lg:top-36" />
+      <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16">
+        <Image src={productImage(product)} alt={product.title} width={1200} height={900} priority className="aspect-[4/3] w-full bg-[#f6f4f1] object-cover lg:sticky lg:top-24" />
         <div>
           <p className="text-sm text-neutral-500">
-            <Link href="/shop">Shop</Link>
+            <Link href="/shop">Catalogue</Link>
             {group && <> / <Link href={`/category/${group.slug}`}>{group.label}</Link></>}
           </p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight">{product.title}</h1>
-          <p className="mt-2 font-mono text-lg font-bold tabular-nums">{from ? `From ${formatKes(from)}` : "Quoted per specification"}</p>
+          <h1 className="mt-3 font-display text-4xl font-medium tracking-tight sm:text-5xl">{product.title}</h1>
+          <p className="mt-3 font-mono text-lg tabular-nums text-neutral-950">{from ? `From ${formatKes(from)}` : "Quoted per specification"}</p>
           <p className="mt-2 text-sm text-neutral-600">Nairobi delivery {formatKes(400)}. Other counties {formatKes(850)}. Free over {formatKes(10000)}. Artwork is a PDF or PNG after you pay.</p>
           <div className="mt-6">
             <OrderPanel product={product} initialQuantity={Number.isFinite(quantity) && quantity > 0 ? quantity : undefined} hint={query.hint} />
           </div>
-          <a href={whatsappHref(`Hello ProPrint, I want to order ${product.title}.`)} className="mt-4 inline-flex h-11 items-center text-sm font-semibold text-[#128C7E]" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappHref(`Hello ProPrint, I want to order ${product.title}.`)} className="mt-4 inline-flex h-11 items-center text-sm text-neutral-600" target="_blank" rel="noopener noreferrer">
             Ask on WhatsApp {whatsappDisplay()}
           </a>
         </div>
       </div>
       <section className="mt-12 max-w-3xl">
-        <h2 className="text-xl font-black">Details</h2>
+        <h2 className="font-display text-2xl font-medium">Details</h2>
         <p className="mt-3 leading-7 text-neutral-600">{describe(product)}</p>
       </section>
       {related.length > 0 && (
         <section className="mt-16">
-          <h2 className="text-2xl font-black">Related products</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="font-display text-3xl font-medium">Related</h2>
+          <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
             {related.map((item) => <ProductCard key={item.slug} product={item} />)}
           </div>
         </section>
