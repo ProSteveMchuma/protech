@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { productBySlug, products } from "../lib/printshop/catalog.ts";
 import { interpretSearch } from "../lib/printshop/search.ts";
-import { defaultSpec, deliveryFee, formatKes, priceModel, quoteProduct } from "../lib/printshop/pricing.ts";
+import { defaultSpec, deliveryFee, formatKes, priceModel, quoteProduct, shelfKes } from "../lib/printshop/pricing.ts";
 
 test("catalog has the full made-to-order range", () => {
   assert.equal(products.length, 84);
@@ -46,6 +46,9 @@ test("banners, shirts and books price from their own rules", () => {
   assert.equal(quoteProduct(banner, { ...bannerSpec, width: 2, height: 1, quantity: 1 })?.totalKes, 2400);
   assert.equal(quoteProduct(shirt, { ...shirtSpec, group: "Round Neck", quantity: 10 })?.totalKes, 9500);
   assert.equal(quoteProduct(book, { ...bookSpec, size: "A5 Size", quantity: 1, pages: 100, color: "color" })?.totalKes, 470);
+  const spot = productBySlug("spot-uv-business-cards");
+  assert.ok(spot);
+  assert.equal(shelfKes(spot), 55);
   assert.equal(priceModel(book), "unit");
 });
 

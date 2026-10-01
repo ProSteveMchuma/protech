@@ -236,6 +236,8 @@ export function groupFacetKeys(groups: PriceGroup[]) {
 }
 
 export function shelfKes(product: Pick<CatalogProduct, "slug" | "fromKes">) {
+  const entry = priceBooks[product.slug];
+  if (entry?.variations?.length) return Math.min(...entry.variations.map((item) => item.price));
   if (product.fromKes > 0) return product.fromKes;
   const spec = defaultSpec(product);
   if (!spec) return null;
