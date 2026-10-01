@@ -15,7 +15,8 @@ initializeApp({
   projectId,
 });
 
-const db = getFirestore();
+const databaseId = process.env.FIRESTORE_DATABASE_ID || "(default)";
+const db = databaseId === "(default)" ? getFirestore() : getFirestore(databaseId);
 db.settings({ ignoreUndefinedProperties: true });
 
 await db.collection("_meta").doc("proprint").set(

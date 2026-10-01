@@ -30,7 +30,7 @@ Production requires Cloud Firestore. Vercel’s filesystem is ephemeral, so an o
 1. Create a Firebase project for ProPrint and enable Cloud Firestore in Native mode.
 2. Deploy the rules in this repo: `npx firebase-tools deploy --only firestore`. The rules deny all browser access. The server uses the Admin SDK, which bypasses them.
 3. In Firebase, open Project settings → Service accounts → Generate new private key.
-4. On Vercel, set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` for Production. Keep the private key quoted, with newlines escaped as `\n`. Redeploy.
+4. On Vercel, set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, and `FIRESTORE_DATABASE_ID=tenderpro` for Production. Keep the private key quoted, with newlines escaped as `\n`. Redeploy. The Firestore database in this project is named `tenderpro`, in `us-central1`.
 5. Confirm with `npm run firestore:check`.
 
 Never commit a service-account JSON file or private key. The browser never receives administrator credentials.

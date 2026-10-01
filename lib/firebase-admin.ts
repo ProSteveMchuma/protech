@@ -35,7 +35,8 @@ export function getFirestoreDatabase(): Firestore | null {
             }
             : { credential: applicationDefault(), projectId: process.env.FIREBASE_PROJECT_ID },
     );
-    const database = getFirestore(app);
+    const databaseId = process.env.FIRESTORE_DATABASE_ID || "(default)";
+    const database = databaseId === "(default)" ? getFirestore(app) : getFirestore(app, databaseId);
     try {
         database.settings({ ignoreUndefinedProperties: true });
     } catch (err) {
