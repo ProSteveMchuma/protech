@@ -68,7 +68,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       lines,
       ready: true,
-      count: lines.reduce((sum, line) => sum + line.quantity, 0),
+      count: lines.length,
       subtotal: lines.reduce((sum, line) => sum + line.unitKes * line.quantity, 0),
       add: (line) => writeCart([{ ...line, lineId: crypto.randomUUID() }, ...readCart()]),
       remove: (lineId) => writeCart(readCart().filter((line) => line.lineId !== lineId)),
