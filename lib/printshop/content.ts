@@ -1,5 +1,5 @@
 import { groupBySlug, productBySlug, type CatalogProduct, type ShopGroupSlug } from "./catalog";
-import { priceModel } from "./pricing";
+import { allowsRush, priceModel } from "./pricing";
 
 export const deliveryTowns = [
   "Nairobi",
@@ -77,7 +77,7 @@ export const faqs = [
   },
   {
     q: "How fast is turnaround?",
-    a: "Standard production is 3 business days. Express is 2 business days. Rush is 24 hours and is available in Nairobi. Same-day printing is open for selected digital jobs when artwork is approved before 10:00.",
+    a: "Standard production is 3 business days. Express is 2 business days. Rush is 24 hours on selected digital paper jobs in Nairobi. Banners, vinyl, fabric and merchandise do not offer rush.",
   },
   {
     q: "Do you deliver outside Nairobi?",
@@ -151,7 +151,7 @@ export const specBlocks: { group: ShopGroupSlug; title: string; body: string; li
   {
     group: "packaging-photo",
     title: "Packaging, photos and design",
-    body: "Kraft bags, jute bags, cartons, mounted photos, frames and canvas. Document and photo prints are same-day candidates in Nairobi when the file is ready before 10:00. Design help is a separate line if you need artwork built.",
+    body: "Kraft bags, jute bags, cartons, mounted photos, frames and canvas. Document and photo prints are quoted from the file. Design help is a separate line if you need artwork built.",
     links: ["branded-kraft-bags", "photo-printing-services", "graphic-design-service"],
   },
   {
@@ -218,5 +218,8 @@ export function describe(product: CatalogProduct) {
     model === "quote"
       ? "Send the specification for a fixed quote."
       : `The product page prices the published run for the size, finish and quantity you choose.`;
-  return `${product.title} for businesses, events and personal orders in Kenya. ${groupCopy[product.group]} ${priceLine} ${group?.summary ?? ""} Artwork can be ready-made or started from a logo. Nairobi jobs approved before 10:00 can print the same day when the product allows it. Everywhere else, standard delivery is 2–3 business days after production, across all 47 counties.`;
+  const turnaroundLine = allowsRush(product.slug, {})
+    ? "Same-day Nairobi printing is possible when the file is accepted before 10:00."
+    : "Standard production is about 3 business days.";
+  return `${product.title} for businesses, events and personal orders in Kenya. ${groupCopy[product.group]} ${priceLine} ${group?.summary ?? ""} Artwork can be ready-made or started from a logo. ${turnaroundLine} Standard delivery is 2–3 business days after production, across all 47 counties.`;
 }
