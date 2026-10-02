@@ -66,6 +66,9 @@ export function AdminLogin() {
                         Unlock dashboard
                     </Button>
                 </form>
+                <a href="/auth/login?callbackUrl=/admin" className="mt-6 block text-center text-sm font-semibold text-brand-700">
+                    Sign in with your email
+                </a>
             </div>
         </div>
     );

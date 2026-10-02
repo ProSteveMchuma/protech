@@ -90,6 +90,8 @@ test("underspecified print jobs require a custom quote", () => {
       quoteProduct(product, { slug, quantity: 1, turnaround: "standard", options: {}, attrs: {} }),
       null,
     );
+    assert.equal(shelfOffer(product), null);
+    assert.equal(shelfKes(product), null);
   }
 });
 

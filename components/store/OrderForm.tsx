@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -54,6 +54,25 @@ export function OrderForm() {
   const email = form.watch("email");
   const address = form.watch("address");
   const mpesaCode = form.watch("mpesaCode");
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/auth/session")
+      .then((response) => response.json())
+      .then((payload: { user?: { name?: string; email?: string; phone?: string } }) => {
+        if (cancelled || !payload.user) return;
+        const current = form.getValues();
+        if (!current.name && payload.user.name && payload.user.name !== "User") form.setValue("name", payload.user.name);
+        if (!current.email && payload.user.email) form.setValue("email", payload.user.email);
+        if (!current.phone && payload.user.phone?.startsWith("254") && payload.user.phone.length === 12) {
+          form.setValue("phone", `0${payload.user.phone.slice(3)}`);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [form]);
 
   function phoneError() {
     if (!/^254\d{9}$/.test(normalizePhone(form.getValues("phone")))) {

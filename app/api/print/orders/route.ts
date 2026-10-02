@@ -5,6 +5,7 @@ import { productBySlug } from "@/lib/printshop/catalog";
 import { quoteProduct, shippingFee, type QuoteSpec, type Turnaround } from "@/lib/printshop/pricing";
 import { savePrintOrder } from "@/lib/print-orders";
 import { sendNotification } from "@/lib/email";
+import { currentShopUser } from "@/lib/shop-session";
 
 const turnaround = z.enum(["standard", "express", "rush"]);
 
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
       });
     }
 
+    const shopUser = await currentShopUser();
     const subtotalKes = lines.reduce((sum, line) => sum + line.totalKes, 0);
     const deliveryKes = shippingFee(subtotalKes, parsed.data.county, parsed.data.fulfillment);
     const totalKes = subtotalKes + deliveryKes;
@@ -103,6 +105,7 @@ export async function POST(req: Request) {
       subtotalKes,
       deliveryKes,
       totalKes,
+      userId: shopUser?.uid,
     });
     if (saved.duplicate) return NextResponse.json({ success: false, error: "That M-Pesa code is already on an order" }, { status: 409 });
     const order = saved.order;

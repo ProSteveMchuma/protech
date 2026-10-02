@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
     Briefcase,
     Users,
@@ -52,7 +51,6 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
     const [filter, setFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | PrintOrderStatus>("all");
     const [refreshing, setRefreshing] = useState(false);
-    const router = useRouter();
 
     const stats = useMemo(() => {
         const pending = payments.filter((p) => p.status === "pending").length;
@@ -119,8 +117,7 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
     }
 
     async function logout() {
-        await fetch("/api/admin/logout", { method: "POST" });
-        router.refresh();
+        window.location.href = "/auth/sign-out";
     }
 
     return (

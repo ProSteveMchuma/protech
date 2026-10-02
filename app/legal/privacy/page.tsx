@@ -14,7 +14,7 @@ export default function PrivacyPage() {
           ProPrint is the print desk of Pro Innovation & Technologies. This page covers the information we receive when you use the shop at proinnovationtech.co.ke.
         </p>
         <p>
-          When you place an order or request a quote, we keep the contact details you submit — typically your name, phone number, email, and delivery or collection notes — so we can confirm the job, take payment, and deliver or hold it for pickup at Karen Green, Langata Road.
+          When you place an order or request a quote, we keep the contact details you submit — typically your name, phone number, email, and delivery or collection notes — so we can confirm the job, take payment, and deliver or hold it for pickup at Karen Green, Langata Road. If you sign in, that same name, email, and phone stay on your account so the jobs belong to you. Sign-in is an email link. We do not ask for a password.
         </p>
         <p>
           If you pay by M-Pesa, we store the transaction code you send us so we can match it to Paybill 767363 and mark the order as paid. We use that code only to confirm the payment.

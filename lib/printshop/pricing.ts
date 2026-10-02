@@ -345,6 +345,7 @@ export function groupFacetKeys(groups: PriceGroup[]) {
 
 export function shelfOffer(product: Pick<CatalogProduct, "slug" | "fromKes">) {
   const entry = priceBooks[product.slug];
+  if (entry?.quote) return null;
   if (entry?.groups?.length) {
     let best: { quantity: number; totalKes: number } | null = null;
     for (const group of entry.groups) {

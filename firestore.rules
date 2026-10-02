@@ -1,8 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Orders, leads, and payments are written by the server Admin SDK.
-    // The Admin SDK bypasses these rules. Browsers have no Firebase config.
+    // Orders, accounts, and payments are written by the server Admin SDK.
+    // The Admin SDK bypasses these rules. Browsers cannot read or write.
     match /{document=**} {
       allow read, write: if false;
     }

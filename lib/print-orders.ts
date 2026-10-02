@@ -6,6 +6,7 @@ import { toFirestoreData } from "./firestore-value";
 import { statusAfterPayment, statusChangeAllowed, type FileState } from "./order-desk";
 import type { PrintJob, QuoteSpec } from "./printshop/pricing";
 import type { StoredArtwork } from "./order-files";
+import { orderBelongsToAccount, type ShopAccount } from "./shop-account";
 
 export type PrintOrderStatus = "received" | "confirmed" | "printing" | "ready" | "dispatched" | "cancelled";
 
@@ -46,6 +47,7 @@ export type PrintOrder = {
   deliveryKes: number;
   totalKes: number;
   statusHistory: { status: PrintOrderStatus; at: string }[];
+  userId?: string;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -107,6 +109,23 @@ export async function listPrintOrders(limit = 200): Promise<PrintOrder[]> {
   } catch {
     return [];
   }
+}
+
+export async function listAccountOrders(account: ShopAccount): Promise<PrintOrder[]> {
+  const orders = await listPrintOrders(200);
+  return orders.filter((order) => orderBelongsToAccount(order, account));
+}
+
+export async function claimPrintOrders(account: ShopAccount): Promise<number> {
+  const orders = await listPrintOrders(200);
+  let claimed = 0;
+  for (const order of orders) {
+    if (order.userId) continue;
+    if (!orderBelongsToAccount(order, account)) continue;
+    await persist({ ...order, userId: account.uid });
+    claimed += 1;
+  }
+  return claimed;
 }
 
 export async function getPrintOrder(id: string): Promise<PrintOrder | null> {

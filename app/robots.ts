@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin/", "/api/", "/dashboard/", "/services/", "/hire", "/apply", "/guides/", "/beta", "/tools/"],
+      disallow: ["/admin/", "/api/", "/dashboard/", "/account", "/auth/", "/services/", "/hire", "/apply", "/guides/", "/beta", "/tools/"],
     },
     sitemap: "https://www.proinnovationtech.co.ke/sitemap.xml",
   };
