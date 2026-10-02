@@ -15,6 +15,12 @@ export function lineFileState(line: { fileState?: string }): FileState {
   return "missing";
 }
 
+export function customerMayReplaceArtwork(fileState: FileState | string | undefined, status: DeskStatus | string) {
+  if (status === "cancelled") return false;
+  const state = lineFileState({ fileState });
+  return state === "missing" || state === "rejected";
+}
+
 export function printingBlockReason(order: { payment?: { state?: string }; lines: { fileState?: string }[] }) {
   if (order.payment?.state !== "confirmed") return "Confirm the M-Pesa code before printing.";
   if (order.lines.some((line) => lineFileState(line) !== "accepted")) return "Accept the artwork on every line before printing.";

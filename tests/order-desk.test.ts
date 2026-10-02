@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { artworkContentType, artworkExtension, loginBlocked, printingBlockReason, recordLoginFailure, resetLoginAttempts, statusAfterPayment, statusChangeAllowed } from "../lib/order-desk.ts";
+import { artworkContentType, artworkExtension, customerMayReplaceArtwork, loginBlocked, printingBlockReason, recordLoginFailure, resetLoginAttempts, statusAfterPayment, statusChangeAllowed } from "../lib/order-desk.ts";
 import { whatsappHrefFor } from "../lib/whatsapp.ts";
 
 test("confirming a new order moves it to confirmed", () => {
@@ -36,4 +36,13 @@ test("eight failed sign-ins block the next one", () => {
 
 test("a customer WhatsApp link uses their number", () => {
   assert.equal(whatsappHrefFor("254719584549", "Hello"), "https://wa.me/254719584549?text=Hello");
+});
+
+test("a customer may replace missing or rejected artwork on a live order", () => {
+  assert.equal(customerMayReplaceArtwork("missing", "received"), true);
+  assert.equal(customerMayReplaceArtwork("rejected", "confirmed"), true);
+  assert.equal(customerMayReplaceArtwork("received", "confirmed"), false);
+  assert.equal(customerMayReplaceArtwork("accepted", "printing"), false);
+  assert.equal(customerMayReplaceArtwork("missing", "cancelled"), false);
+  assert.equal(customerMayReplaceArtwork("rejected", "cancelled"), false);
 });
