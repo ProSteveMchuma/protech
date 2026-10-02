@@ -23,6 +23,7 @@ export const metadata = {
     title: "10 reasons Kenyan SMEs get disqualified from tenders",
     description:
         "Free guide: the ten most common ways Kenyan SMEs lose government tenders before evaluation even starts — expired KRA TCC, missing AGPO, BOQ math errors, late submission — and how to avoid every one. Written by the Pro Remote Tasks tender desk, anchored in PPADA 2015.",
+    robots: { index: false, follow: false },
     alternates: { canonical: "/guides/tender-disqualifications" },
     openGraph: {
         title: "10 reasons Kenyan SMEs get disqualified from tenders",

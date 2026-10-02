@@ -9,26 +9,44 @@ const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta",
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
 
+const shopDescription = "Made-to-order printing, Nairobi production, delivery across Kenya.";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.proinnovationtech.co.ke"),
   title: { default: "ProPrint — Online printing in Kenya", template: "%s | ProPrint" },
-  description: "Order business cards, banners, flyers, t-shirts, mugs and stickers online. Same-day printing in Nairobi and delivery across all 47 counties.",
-  keywords: ["printing services Kenya", "print on demand Kenya", "business cards Nairobi", "banner printing Kenya", "t-shirt printing Nairobi", "same day printing Nairobi"],
+  description: shopDescription,
+  keywords: ["printing services Kenya", "print on demand Kenya", "business cards Nairobi", "banner printing Kenya", "t-shirt printing Nairobi"],
   openGraph: {
     type: "website",
     locale: "en_KE",
     url: "/",
     title: "ProPrint — Online printing in Kenya",
-    description: "Made-to-order printing for businesses and events, delivered across Kenya.",
+    description: shopDescription,
     siteName: "ProPrint",
   },
-  twitter: { card: "summary_large_image", title: "ProPrint — Online printing in Kenya", description: "Same-day Nairobi printing and nationwide delivery." },
+  twitter: { card: "summary_large_image", title: "ProPrint — Online printing in Kenya", description: shopDescription },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "ProPrint",
+  url: "https://www.proinnovationtech.co.ke",
+  email: "proinnovationtech@gmail.com",
+  telephone: "+254719584549",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Karen Green, Langata Road",
+    addressLocality: "Nairobi",
+    addressCountry: "KE",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${fraunces.variable} ${mono.variable}`}>
       <body className="min-h-screen bg-white font-sans text-neutral-950 antialiased">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <a href="#main-content" className="skip-link">Skip to content</a>
         <ScrollProgress />
         <AppChrome>

@@ -6,6 +6,7 @@ export const metadata = {
     title: "Join the Talent Pool",
     description:
         "Apply to join Pro Remote Tasks' vetted network of remote Kenyan professionals. Premium clients. Guaranteed pay.",
+    robots: { index: false, follow: false },
 };
 
 const benefits = [
