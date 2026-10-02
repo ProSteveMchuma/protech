@@ -36,8 +36,20 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const from = shelfKes(product);
   const offer = shelfOffer(product);
   const priceLine = offer && offer.quantity > 1 ? `${offer.quantity.toLocaleString("en-KE")} from ${formatKes(offer.totalKes)}` : from ? `From ${formatKes(from)}` : "Quoted per specification";
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: describe(product),
+    image: productImage(product),
+    url: `https://www.proinnovationtech.co.ke/product/${product.slug}`,
+    ...(typeof from === "number" && from > 0
+      ? { offers: { "@type": "Offer", price: from, priceCurrency: "KES" } }
+      : {}),
+  };
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 lg:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16">
         <Image src={productImage(product)} alt={product.title} width={1200} height={900} priority className="aspect-[4/3] w-full bg-[#f6f4f1] object-cover lg:sticky lg:top-24" />
         <div>

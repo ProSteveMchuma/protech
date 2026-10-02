@@ -31,6 +31,7 @@ export const metadata = {
     title: "Tender Management for Kenyan SMEs",
     description:
         "Pro Remote Tasks finds, prepares, and submits Kenyan government and corporate tenders for you. PPADA-compliant bids, stamped on-time submissions, and post-loss debriefs. Pricing from KES 15,000/mo.",
+    robots: { index: false, follow: false },
 };
 
 const PRICING_TIERS = TENDER_TIERS.map((t) => ({

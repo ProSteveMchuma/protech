@@ -7,6 +7,7 @@ export const metadata = {
     title: "Get a free proposal",
     description:
         "Tell us what you need. We'll reply with a tailored proposal within 24 hours — tender management or vetted Kenyan VAs.",
+    robots: { index: false, follow: false },
 };
 
 export default function HirePage() {

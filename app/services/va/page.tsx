@@ -25,6 +25,7 @@ export const metadata = {
     title: "Hire a Managed Virtual Assistant in Kenya",
     description:
         "Reclaim your inbox with a vetted Kenyan VA — managed by Pro Remote Tasks, not freelance. Monthly retainer from KES 25,000. Replacement guaranteed in week one.",
+    robots: { index: false, follow: false },
 };
 
 const PRICING_TIERS = [

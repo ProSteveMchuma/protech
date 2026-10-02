@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Check, Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { BetaSignupForm } from "@/components/BetaSignupForm";
 
-export const metadata: Metadata = { title: "Founding Beta", description: "Apply for founding access to ProPrint's SerialPro and QuotePro production tools." };
+export const metadata: Metadata = { title: "Founding Beta", description: "Apply for founding access to ProPrint's SerialPro and QuotePro production tools.", robots: { index: false, follow: false } };
 const benefits = [{ icon: ShieldCheck, title: "Local processing", copy: "Artwork stays in your browser." }, { icon: Clock3, title: "Direct onboarding", copy: "We learn your current workflow." }, { icon: MessageSquareText, title: "Founder access", copy: "Feedback reaches the product team." }];
 
 export default function BetaPage() {
