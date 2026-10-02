@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
 function failure(err: unknown) {
-  const message = err instanceof Error ? err.message : "Could not open the account.";
-  console.error("[shop-session]", message);
-  return NextResponse.json({ success: false, error: message.slice(0, 240) }, { status: 500 });
+  console.error("[shop-session]", err instanceof Error ? err.message : err);
+  return NextResponse.json({ success: false, error: "Could not sign in." }, { status: 500 });
 }
 
 export async function GET() {

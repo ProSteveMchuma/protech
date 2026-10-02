@@ -1,6 +1,5 @@
 import "server-only";
 import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 let cached: Firestore | null | undefined;
@@ -45,10 +44,4 @@ export function getFirestoreDatabase(): Firestore | null {
     }
     cached = database;
     return cached;
-}
-
-export function getAdminAuth(): Auth | null {
-    if (!getFirestoreDatabase()) return null;
-    const app = getApps()[0];
-    return app ? getAuth(app) : null;
 }
