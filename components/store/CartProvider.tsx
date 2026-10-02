@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { productBySlug } from "@/lib/printshop/catalog";
-import { quoteProduct, type QuoteSpec } from "@/lib/printshop/pricing";
+import { publishedRunQuantities, quoteProduct, stepRunQuantity, type QuoteSpec } from "@/lib/printshop/pricing";
 
 export type CartLine = {
   lineId: string;
@@ -23,6 +23,7 @@ type CartValue = {
   add: (line: Omit<CartLine, "lineId">) => void;
   remove: (lineId: string) => void;
   setQuantity: (lineId: string, quantity: number) => void;
+  nudge: (lineId: string, direction: 1 | -1) => void;
   clear: () => void;
   drawerOpen: boolean;
   openDrawer: () => void;
@@ -66,6 +67,25 @@ function writeCart(lines: CartLine[]) {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+function requote(line: CartLine, quantity: number): CartLine {
+  const qty = Math.max(1, Math.min(20000, Math.round(quantity)));
+  const product = productBySlug(line.slug);
+  if (product && line.spec) {
+    const quoted = quoteProduct(product, { ...line.spec, quantity: qty });
+    if (quoted) {
+      return {
+        ...line,
+        quantity: quoted.quantity,
+        unitKes: quoted.unitKes,
+        totalKes: quoted.totalKes,
+        summary: quoted.summary,
+        spec: { ...line.spec, quantity: quoted.quantity, turnaround: quoted.job.turnaround },
+      };
+    }
+  }
+  return { ...line, quantity: qty, totalKes: line.unitKes * qty };
+}
+
 function subscribe(onStoreChange: () => void) {
   window.addEventListener(CHANGE_EVENT, onStoreChange);
   window.addEventListener("storage", onStoreChange);
@@ -87,17 +107,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       add: (line) => writeCart([{ ...line, lineId: crypto.randomUUID() }, ...readCart()]),
       remove: (lineId) => writeCart(readCart().filter((line) => line.lineId !== lineId)),
       setQuantity: (lineId, quantity) => {
-        const qty = Math.max(1, Math.min(20000, Math.round(quantity)));
+        writeCart(readCart().map((line) => requote(line, Math.max(1, Math.min(20000, Math.round(quantity))))));
+      },
+      nudge: (lineId, direction) => {
         writeCart(readCart().map((line) => {
           if (line.lineId !== lineId) return line;
-          const product = productBySlug(line.slug);
-          if (product && line.spec) {
-            const quoted = quoteProduct(product, { ...line.spec, quantity: qty });
-            if (quoted) {
-              return { ...line, quantity: quoted.quantity, unitKes: quoted.unitKes, totalKes: quoted.totalKes, summary: quoted.summary, spec: { ...line.spec, quantity: quoted.quantity } };
-            }
-          }
-          return { ...line, quantity: qty, totalKes: line.unitKes * qty };
+          const runs = publishedRunQuantities(line.slug, line.spec?.group);
+          const quantity = runs ? stepRunQuantity(runs, line.quantity, direction) : line.quantity + direction;
+          return requote(line, quantity);
         }));
       },
       clear: () => writeCart([]),

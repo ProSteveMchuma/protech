@@ -1,7 +1,8 @@
 // Published run prices and variation prices. Totals in tier groups are line totals.
 export type PriceTier = { qty: number; total: number };
 export type PriceGroup = { label: string; tiers: PriceTier[] };
-export type PriceChoice = { label: string; add: number };
+export type FinishingPer = "piece" | "job";
+export type PriceChoice = { label: string; add: number; per: FinishingPer };
 export type PriceOption = { name: string; choices: PriceChoice[] };
 export type SizePrice = { unit: string; rate: number; minW: number; maxW: number; minH: number; maxH: number };
 export type BookRate = { name: string; bw: number; color: number };
@@ -82,23 +83,28 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Gloss",
-            "add": 2
+            "add": 2,
+            "per": "piece"
           },
           {
             "label": "Matt",
-            "add": 2
+            "add": 2,
+            "per": "piece"
           },
           {
             "label": "Velvet",
-            "add": 15
+            "add": 15,
+            "per": "piece"
           },
           {
             "label": "Frost",
-            "add": 15
+            "add": 15,
+            "per": "piece"
           },
           {
             "label": "No Lamination",
-            "add": 0
+            "add": 0,
+            "per": "piece"
           }
         ]
       }
@@ -697,15 +703,18 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Add Eyelets/Grommets",
-            "add": 100
+            "add": 100,
+            "per": "job"
           },
           {
             "label": "Pole Pockets",
-            "add": 600
+            "add": 600,
+            "per": "job"
           },
           {
             "label": "Welded Hem",
-            "add": 300
+            "add": 300,
+            "per": "job"
           }
         ]
       }
@@ -946,19 +955,23 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Artpaper 130gsm",
-            "add": 0
+            "add": 0,
+            "per": "piece"
           },
           {
             "label": "Artpaper 150gsm",
-            "add": 2
+            "add": 2,
+            "per": "piece"
           },
           {
             "label": "Artpaper 170 Gsm",
-            "add": 4
+            "add": 4,
+            "per": "piece"
           },
           {
             "label": "Artpaper 200gsm",
-            "add": 6
+            "add": 6,
+            "per": "piece"
           }
         ]
       }
@@ -1127,7 +1140,8 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Die Cutting",
-            "add": 450
+            "add": 450,
+            "per": "job"
           }
         ]
       }
@@ -1158,11 +1172,13 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Tic-tac Paper(Normal)",
-            "add": 0
+            "add": 0,
+            "per": "piece"
           },
           {
             "label": "Clear Sticker",
-            "add": 10
+            "add": 10,
+            "per": "piece"
           }
         ]
       },
@@ -1171,11 +1187,13 @@ export const priceBooks: Record<string, PriceEntry> = {
         "choices": [
           {
             "label": "Rectangular/Square",
-            "add": 0
+            "add": 0,
+            "per": "piece"
           },
           {
             "label": "Die-Cutting (Circular, any other shape)",
-            "add": 2
+            "add": 2,
+            "per": "piece"
           }
         ]
       }

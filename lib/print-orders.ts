@@ -3,19 +3,23 @@ import path from "path";
 import crypto from "crypto";
 import { getFirestoreDatabase } from "./firebase-admin";
 import { toFirestoreData } from "./firestore-value";
-import { statusAfterPayment } from "./order-desk";
-import type { QuoteSpec } from "./printshop/pricing";
+import { statusAfterPayment, statusChangeAllowed, type FileState } from "./order-desk";
+import type { PrintJob, QuoteSpec } from "./printshop/pricing";
 import type { StoredArtwork } from "./order-files";
 
-export type PrintOrderStatus = "received" | "confirmed" | "printing" | "dispatched" | "cancelled";
+export type PrintOrderStatus = "received" | "confirmed" | "printing" | "ready" | "dispatched" | "cancelled";
 
 export type PrintOrderLine = {
+  lineId: string;
   slug: string;
   title: string;
   quantity: number;
   totalKes: number;
   summary: string;
   spec: QuoteSpec;
+  job?: PrintJob;
+  fileState?: FileState;
+  artworkFile?: StoredArtwork;
 };
 
 export type PrintOrder = {
@@ -29,6 +33,7 @@ export type PrintOrder = {
     county: string;
     address: string;
   };
+  fulfillment?: "delivery" | "pickup";
   artwork?: string;
   notes?: string;
   internalNote?: string;
@@ -136,16 +141,19 @@ async function persist(order: PrintOrder) {
   await fs.writeFile(ORDERS_FILE, JSON.stringify(next, null, 2), "utf-8");
 }
 
-export async function updatePrintOrderStatus(id: string, status: PrintOrderStatus): Promise<PrintOrder | null> {
+export async function updatePrintOrderStatus(id: string, status: PrintOrderStatus): Promise<{ order: PrintOrder | null; error?: string }> {
   const current = await getPrintOrder(id);
-  if (!current || current.status === status) return current;
+  if (!current) return { order: null, error: "Order not found" };
+  if (current.status === status) return { order: current };
+  const error = statusChangeAllowed(current, status);
+  if (error) return { order: current, error };
   const next = {
     ...current,
     status,
     statusHistory: [...(current.statusHistory ?? []), { status, at: new Date().toISOString() }],
   };
   await persist(next);
-  return next;
+  return { order: next };
 }
 
 export async function reviewOrderPayment(id: string, decision: "confirmed" | "rejected", note?: string): Promise<PrintOrder | null> {
@@ -167,6 +175,28 @@ export async function setOrderInternalNote(id: string, note: string): Promise<Pr
   const current = await getPrintOrder(id);
   if (!current) return null;
   const next = { ...current, internalNote: note.trim() };
+  await persist(next);
+  return next;
+}
+
+export async function reviewLineFile(id: string, lineId: string, fileState: "accepted" | "rejected"): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current) return null;
+  if (!current.lines.some((line) => line.lineId === lineId)) return null;
+  const next = { ...current, lines: current.lines.map((line) => (line.lineId === lineId ? { ...line, fileState } : line)) };
+  await persist(next);
+  return next;
+}
+
+export async function attachLineArtwork(id: string, lineId: string, file: StoredArtwork): Promise<PrintOrder | null> {
+  const current = await getPrintOrder(id);
+  if (!current) return null;
+  const line = current.lines.find((item) => item.lineId === lineId);
+  if (!line || line.fileState === "accepted") return null;
+  const next = {
+    ...current,
+    lines: current.lines.map((item) => (item.lineId === lineId ? { ...item, artworkFile: file, fileState: "received" as const } : item)),
+  };
   await persist(next);
   return next;
 }

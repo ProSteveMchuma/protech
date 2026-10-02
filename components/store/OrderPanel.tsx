@@ -6,6 +6,7 @@ import { Check, ShoppingBag } from "lucide-react";
 import type { CatalogProduct } from "@/lib/printshop/catalog";
 import type { PriceGroup } from "@/lib/printshop/pricebook";
 import {
+  allowsRush,
   applySearchHint,
   defaultSpec,
   formatKes,
@@ -28,7 +29,8 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
   const [added, setAdded] = useState(false);
   const [repeatNote, setRepeatNote] = useState("");
 
-  const priced = useMemo(() => (spec ? quoteProduct(product, spec) : null), [product, spec]);
+  const turnaround: Turnaround = spec && spec.turnaround === "rush" && !allowsRush(product.slug, spec) ? "standard" : spec?.turnaround ?? "standard";
+  const priced = useMemo(() => (spec ? quoteProduct(product, { ...spec, turnaround }) : null), [product, spec, turnaround]);
 
   if (!entry || !spec || !priced) {
     return (
@@ -79,7 +81,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
           unitKes: priced.unitKes,
           totalKes: priced.totalKes,
           summary: priced.summary,
-          spec,
+          spec: { ...spec, quantity: priced.quantity, turnaround: priced.job.turnaround },
         });
         setAdded(true);
         cart.openDrawer();
@@ -148,7 +150,7 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
             {option.choices.map((choice) => (
               <option key={choice.label} value={choice.label}>
                 {choice.label}
-                {choice.add > 0 ? ` · +${choice.add <= 40 ? `${choice.add}/pc` : formatKes(choice.add)}` : ""}
+                {choice.add > 0 ? ` · +${choice.per === "piece" ? `${choice.add}/pc` : formatKes(choice.add)}` : ""}
               </option>
             ))}
           </select>
@@ -157,8 +159,8 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
 
       <label className="mt-4 block text-sm font-semibold">
         Turnaround
-        <select className={fieldClass} value={spec.turnaround} onChange={(event) => patch({ turnaround: event.target.value as Turnaround })}>
-          {turnaroundChoices.map((choice) => (
+        <select className={fieldClass} value={turnaround} onChange={(event) => patch({ turnaround: event.target.value as Turnaround })}>
+          {turnaroundChoices.filter((choice) => choice.id !== "rush" || allowsRush(product.slug, spec)).map((choice) => (
             <option key={choice.id} value={choice.id}>
               {choice.label}
               {choice.addKes ? ` · +${formatKes(choice.addKes)}` : ""}

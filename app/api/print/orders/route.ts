@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { productBySlug } from "@/lib/printshop/catalog";
@@ -35,8 +36,17 @@ const orderSchema = z.object({
   notes: z.string().trim().max(2000).optional(),
   mpesaCode: z.string().trim().min(6).max(20),
   website: z.string().max(200).optional(),
-  lines: z.array(z.object({ slug: z.string(), quantity: z.number().int().positive(), spec: specSchema })).min(1).max(30),
+  lines: z.array(z.object({
+    lineId: z.string().trim().min(8).max(80).optional(),
+    slug: z.string(),
+    quantity: z.number().int().positive(),
+    spec: specSchema,
+  })).min(1).max(30),
 });
+
+function keepLineId(value: string | undefined) {
+  return value && /^[a-zA-Z0-9-]{8,80}$/.test(value) ? value : crypto.randomUUID();
+}
 
 function escapeHtml(input: string) {
   return input.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
@@ -61,7 +71,17 @@ export async function POST(req: Request) {
       const spec: QuoteSpec = { ...line.spec, slug: product.slug, quantity: line.quantity, turnaround: line.spec.turnaround as Turnaround };
       const quoted = quoteProduct(product, spec);
       if (!quoted) return NextResponse.json({ success: false, error: `${product.title} needs a custom quote` }, { status: 400 });
-      lines.push({ slug: product.slug, title: product.title, quantity: quoted.quantity, totalKes: quoted.totalKes, summary: quoted.summary, spec });
+      lines.push({
+        lineId: keepLineId(line.lineId),
+        slug: product.slug,
+        title: product.title,
+        quantity: quoted.quantity,
+        totalKes: quoted.totalKes,
+        summary: quoted.summary,
+        spec: { ...spec, quantity: quoted.quantity, turnaround: quoted.job.turnaround },
+        job: quoted.job,
+        fileState: "missing" as const,
+      });
     }
 
     const subtotalKes = lines.reduce((sum, line) => sum + line.totalKes, 0);
@@ -75,6 +95,7 @@ export async function POST(req: Request) {
         county: parsed.data.county,
         address: parsed.data.address,
       },
+      fulfillment: parsed.data.fulfillment,
       artwork: parsed.data.artwork,
       notes: parsed.data.notes,
       mpesaCode: parsed.data.mpesaCode.toUpperCase(),

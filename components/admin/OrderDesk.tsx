@@ -7,7 +7,8 @@ import type { PrintOrder, PrintOrderStatus } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
 import { whatsappHrefFor } from "@/lib/whatsapp";
 
-const statuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "dispatched", "cancelled"];
+const statuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "ready", "dispatched", "cancelled"];
+const fileLabels = { missing: "No file yet", received: "Received, not accepted", accepted: "Accepted", rejected: "Sent back" };
 
 export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
   const [order, setOrder] = useState(initialOrder);
@@ -37,19 +38,20 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
     }
   }
 
-  async function upload(file: File) {
+  async function upload(lineId: string, file: File) {
     setBusy(true);
     setMessage("");
     try {
       const body = new FormData();
       body.set("file", file);
+      body.set("lineId", lineId);
       const response = await fetch(`/api/admin/orders/${order.id}/artwork`, { method: "POST", body });
-      const payload = (await response.json()) as { artworkFile?: PrintOrder["artworkFile"]; error?: string };
-      if (!response.ok || !payload.artworkFile) {
+      const payload = (await response.json()) as { order?: PrintOrder; error?: string };
+      if (!response.ok || !payload.order) {
         setMessage(payload.error || "The file did not save.");
         return;
       }
-      setOrder((current) => ({ ...current, artworkFile: payload.artworkFile }));
+      setOrder(payload.order);
       setMessage("Artwork saved.");
     } finally {
       setBusy(false);
@@ -69,16 +71,27 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
 
       <ul className="mt-6 divide-y divide-neutral-200 border-y border-neutral-200">
         {order.lines.map((line) => (
-          <li key={`${line.slug}-${line.summary}`} className="flex items-start justify-between gap-4 py-4">
+          <li key={line.lineId || `${line.slug}-${line.summary}`} className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <p className="font-bold">{line.title}</p>
               <p className="text-sm text-neutral-500">{line.quantity.toLocaleString("en-KE")} · {line.summary}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">{fileLabels[line.fileState ?? "missing"]}</p>
+              {line.artworkFile ? (
+                <a className="text-sm font-semibold" href={`/api/admin/orders/${order.id}/artwork?line=${line.lineId}`}>{line.artworkFile.name}</a>
+              ) : null}
+              {line.lineId ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(line.lineId, file); }} />
+                  <button type="button" disabled={busy} className="h-9 rounded-full bg-neutral-950 px-3 text-xs font-semibold text-white" onClick={() => patch({ lineId: line.lineId, fileState: "accepted" })}>Accept file</button>
+                  <button type="button" disabled={busy} className="h-9 rounded-full border border-neutral-300 px-3 text-xs font-semibold" onClick={() => patch({ lineId: line.lineId, fileState: "rejected" })}>Send back</button>
+                </div>
+              ) : null}
             </div>
             <p className="font-mono font-bold tabular-nums">{formatKes(line.totalKes)}</p>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-right text-sm text-neutral-500">Delivery {formatKes(order.deliveryKes)}</p>
+      <p className="mt-3 text-right text-sm text-neutral-500">{order.fulfillment === "pickup" ? "Collection" : "Delivery"} {formatKes(order.deliveryKes)}</p>
       <p className="text-right font-mono text-2xl font-black tabular-nums">{formatKes(order.totalKes)}</p>
 
       <section className="mt-8 grid gap-3 rounded-2xl border border-neutral-200 p-4">
@@ -104,13 +117,12 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
 
       <section className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 p-4">
         <h2 className="font-bold">Artwork</h2>
-        {order.artwork && <p className="text-sm break-all">{order.artwork}</p>}
+        {order.artwork && <p className="text-sm break-all">Link: {order.artwork}</p>}
         {order.artworkFile ? (
           <a className="text-sm font-semibold" href={`/api/admin/orders/${order.id}/artwork`}>{order.artworkFile.name} · {Math.ceil(order.artworkFile.size / 1024)} KB</a>
         ) : (
-          <p className="text-sm text-neutral-500">No file uploaded yet.</p>
+          <p className="text-sm text-neutral-500">Files are attached to each line. Accept a file before the job can be marked printing.</p>
         )}
-        <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); }} />
         {order.notes && <p className="text-sm text-neutral-600">Customer note: {order.notes}</p>}
       </section>
 

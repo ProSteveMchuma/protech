@@ -42,7 +42,7 @@ export function OrderForm() {
   const [done, setDone] = useState("");
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
-  const [artworkFile, setArtworkFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<Record<string, File>>({});
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", email: "", phone: "", address: "", artwork: "", notes: "", mpesaCode: "", website: "" },
@@ -118,6 +118,7 @@ export function OrderForm() {
         notes: values.notes,
         mpesaCode: code.toUpperCase(),
         lines: cart.lines.map((line) => ({
+          lineId: line.lineId,
           slug: line.slug,
           quantity: line.quantity,
           spec: line.spec ?? { slug: line.slug, quantity: line.quantity, turnaround: "standard" },
@@ -129,13 +130,18 @@ export function OrderForm() {
       setError(payload.error || "The order did not save. Keep your M-Pesa code and send it on WhatsApp.");
       return;
     }
-    if (artworkFile && payload.artworkToken) {
-      const body = new FormData();
-      body.set("orderId", payload.orderId);
-      body.set("token", payload.artworkToken);
-      body.set("file", artworkFile);
-      const uploaded = await fetch("/api/print/artwork", { method: "POST", body });
-      if (!uploaded.ok) setWarning("The order is saved. The artwork file did not upload — send it on WhatsApp with your M-Pesa code.");
+    if (payload.artworkToken) {
+      for (const line of cart.lines) {
+        const file = files[line.lineId];
+        if (!file) continue;
+        const body = new FormData();
+        body.set("orderId", payload.orderId);
+        body.set("token", payload.artworkToken);
+        body.set("lineId", line.lineId);
+        body.set("file", file);
+        const uploaded = await fetch("/api/print/artwork", { method: "POST", body });
+        if (!uploaded.ok) setWarning("The order is saved. One artwork file did not upload — send it on WhatsApp with your M-Pesa code.");
+      }
     }
     if (typeof payload.totalKes === "number" && Math.abs(payload.totalKes - total) > 1) {
       setWarning(`The confirmed total is ${formatKes(payload.totalKes)}. We will match the M-Pesa amount against it.`);
@@ -273,20 +279,31 @@ export function OrderForm() {
               </div>
             </dl>
             <div className="mt-6 grid gap-3">
-              <Field label="Artwork link, if you already have one">
+              {cart.lines.map((line) => (
+                <label key={line.lineId} className="grid gap-1 text-sm font-medium">
+                  Artwork for {line.title}
+                  <span className="text-xs font-normal text-neutral-500">{line.summary}</span>
+                  <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="text-sm" onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    setFiles((current) => {
+                      const next = { ...current };
+                      if (file) next[line.lineId] = file;
+                      else delete next[line.lineId];
+                      return next;
+                    });
+                  }} />
+                </label>
+              ))}
+              <Field label="Artwork link, if the files are already online">
                 <input className={inputClass} placeholder="Drive, Dropbox or WeTransfer" {...form.register("artwork")} />
               </Field>
-              <label className="grid gap-1 text-sm font-medium">
-                Artwork file
-                <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="text-sm" onChange={(event) => setArtworkFile(event.target.files?.[0] ?? null)} />
-              </label>
               <Field label="Notes for the printer">
                 <textarea rows={3} className="rounded-xl border border-neutral-200 px-3 py-3 text-base" placeholder="Deadline, finish, or anything we should know" {...form.register("notes")} />
               </Field>
             </div>
             {error && <p className="mt-4 text-sm text-[#ff0030]">{error}</p>}
             <p className="mt-4 text-xs leading-5 text-neutral-500">
-              We print after the payment matches. By submitting you agree to the <Link href="/terms" className="text-neutral-950 underline">print terms</Link>.
+              We print after the payment matches and the artwork for each item is accepted. By submitting you agree to the <Link href="/terms" className="text-neutral-950 underline">print terms</Link>.
             </p>
           </section>
         )}

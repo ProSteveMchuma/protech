@@ -42,7 +42,7 @@ const PAY_COLOURS: Record<PaymentStatus, string> = {
 
 type Tab = "orders" | "payments" | "leads";
 
-const orderStatuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "dispatched", "cancelled"];
+const orderStatuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "ready", "dispatched", "cancelled"];
 
 export function AdminDashboard({ initialLeads, initialPayments, initialOrders }: Props) {
     const [tab, setTab] = useState<Tab>(initialOrders.some((order) => order.status === "received") ? "orders" : initialPayments.some((p) => p.status === "pending") ? "payments" : "leads");

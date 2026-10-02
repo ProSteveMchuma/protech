@@ -1,12 +1,37 @@
-export type DeskStatus = "received" | "confirmed" | "printing" | "dispatched" | "cancelled";
+export type DeskStatus = "received" | "confirmed" | "printing" | "ready" | "dispatched" | "cancelled";
+export type FileState = "missing" | "received" | "accepted" | "rejected";
 
 export const statusLabels: Record<DeskStatus, string> = {
   received: "Received. We are matching the M-Pesa code.",
-  confirmed: "Payment confirmed. The job is in the queue.",
+  confirmed: "Payment confirmed. We check the artwork before printing.",
   printing: "Printing in Nairobi.",
+  ready: "Ready to collect at Karen Green, Langata Road.",
   dispatched: "Dispatched for delivery.",
   cancelled: "Cancelled. We will contact you about the payment.",
 };
+
+export function lineFileState(line: { fileState?: string }): FileState {
+  if (line.fileState === "received" || line.fileState === "accepted" || line.fileState === "rejected") return line.fileState;
+  return "missing";
+}
+
+export function printingBlockReason(order: { payment?: { state?: string }; lines: { fileState?: string }[] }) {
+  if (order.payment?.state !== "confirmed") return "Confirm the M-Pesa code before printing.";
+  if (order.lines.some((line) => lineFileState(line) !== "accepted")) return "Accept the artwork on every line before printing.";
+  return null;
+}
+
+export function statusChangeAllowed(
+  order: { status: DeskStatus; fulfillment?: "delivery" | "pickup"; payment?: { state?: string }; lines: { fileState?: string }[] },
+  next: DeskStatus,
+) {
+  if (next === order.status) return null;
+  if (next === "printing") return printingBlockReason(order);
+  if (next === "dispatched" && order.fulfillment === "pickup") return "This order is for collection. Mark it ready.";
+  if (next === "ready" && order.fulfillment === "delivery") return "This order is for delivery. Mark it dispatched.";
+  if ((next === "ready" || next === "dispatched") && order.status !== "printing") return "Print the job before it leaves the press.";
+  return null;
+}
 
 export function statusAfterPayment(status: DeskStatus, decision: "confirmed" | "rejected"): DeskStatus {
   if (decision === "confirmed" && status === "received") return "confirmed";

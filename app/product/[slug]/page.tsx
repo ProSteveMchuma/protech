@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { groupBySlug, productBySlug, products, productsInGroup } from "@/lib/printshop/catalog";
 import { describe } from "@/lib/printshop/content";
 import { productImage } from "@/lib/printshop/images";
-import { formatKes, shelfKes } from "@/lib/printshop/pricing";
+import { formatKes, shelfKes, shelfOffer } from "@/lib/printshop/pricing";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 import { OrderPanel } from "@/components/store/OrderPanel";
 
@@ -34,6 +34,8 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const group = groupBySlug(product.group);
   const related = productsInGroup(product.group).filter((item) => item.slug !== product.slug).slice(0, 4);
   const from = shelfKes(product);
+  const offer = shelfOffer(product);
+  const priceLine = offer && offer.quantity > 1 ? `${offer.quantity.toLocaleString("en-KE")} from ${formatKes(offer.totalKes)}` : from ? `From ${formatKes(from)}` : "Quoted per specification";
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 lg:py-10">
       <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16">
@@ -44,7 +46,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
             {group && <> / <Link href={`/category/${group.slug}`}>{group.label}</Link></>}
           </p>
           <h1 className="mt-3 font-display text-4xl font-medium tracking-tight sm:text-5xl">{product.title}</h1>
-          <p className="mt-3 font-mono text-lg tabular-nums text-neutral-950">{from ? `From ${formatKes(from)}` : "Quoted per specification"}</p>
+          <p className="mt-3 font-mono text-lg tabular-nums text-neutral-950">{priceLine}</p>
           <p className="mt-2 text-sm text-neutral-600">Nairobi delivery {formatKes(400)}. Other counties {formatKes(850)}. Free over {formatKes(10000)}. Or collect free at Karen Green, Langata Road.</p>
           <div className="mt-6">
             <OrderPanel product={product} initialQuantity={Number.isFinite(quantity) && quantity > 0 ? quantity : undefined} hint={query.hint} />

@@ -82,9 +82,9 @@ export function CartDrawer() {
                     {line.summary && <p className="mb-1 line-clamp-2 text-xs text-neutral-500">{line.summary}</p>}
                     <p className="mb-2 text-sm font-bold text-[#ff0030]">{formatKes(line.totalKes)}</p>
                     <div className="flex w-28 items-center rounded-lg border border-neutral-200">
-                      <button type="button" aria-label="Decrease quantity" className="grid h-11 w-10 place-items-center text-lg text-neutral-500" onClick={() => cart.setQuantity(line.lineId, line.quantity - 1)}>−</button>
+                      <button type="button" aria-label="Decrease quantity" className="grid h-11 w-10 place-items-center text-lg text-neutral-500" onClick={() => cart.nudge(line.lineId, -1)}>−</button>
                       <span className="flex-1 text-center font-mono text-sm tabular-nums">{line.quantity}</span>
-                      <button type="button" aria-label="Increase quantity" className="grid h-11 w-10 place-items-center text-lg text-neutral-500" onClick={() => cart.setQuantity(line.lineId, line.quantity + 1)}>+</button>
+                      <button type="button" aria-label="Increase quantity" className="grid h-11 w-10 place-items-center text-lg text-neutral-500" onClick={() => cart.nudge(line.lineId, 1)}>+</button>
                     </div>
                   </div>
                 </div>

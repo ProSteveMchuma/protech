@@ -23,12 +23,13 @@ function storageBucket() {
   return getStorage(app).bucket(bucketName);
 }
 
-export async function saveArtworkFile(orderId: string, file: { bytes: Buffer; contentType: string; originalName: string }): Promise<StoredArtwork> {
+export async function saveArtworkFile(orderId: string, file: { bytes: Buffer; contentType: string; originalName: string }, lineId?: string): Promise<StoredArtwork> {
   const extension = artworkExtension(file.contentType);
   if (!extension) throw new Error("Use a PDF, PNG, JPG, or WebP file.");
   if (file.bytes.length === 0 || file.bytes.length > MAX_ARTWORK_BYTES) throw new Error("Artwork must be under 15 MB.");
   const safeName = file.originalName.replace(/[^\w.\- ]+/g, "").slice(0, 80) || `artwork.${extension}`;
-  const objectPath = `orders/${orderId}/artwork.${extension}`;
+  const safeLine = lineId && /^[a-zA-Z0-9-]{8,80}$/.test(lineId) ? lineId : "";
+  const objectPath = safeLine ? `orders/${orderId}/${safeLine}/artwork.${extension}` : `orders/${orderId}/artwork.${extension}`;
   const bucket = storageBucket();
   if (bucket) {
     await bucket.file(objectPath).save(file.bytes, {
@@ -36,10 +37,9 @@ export async function saveArtworkFile(orderId: string, file: { bytes: Buffer; co
       metadata: { contentType: file.contentType, cacheControl: "private, max-age=0" },
     });
   } else {
-    const directory = path.join(localRoot, orderId);
-    await fs.mkdir(directory, { recursive: true });
-    await fs.writeFile(path.join(directory, `artwork.${extension}`), file.bytes);
-    await fs.writeFile(path.join(directory, "meta.json"), JSON.stringify({ contentType: file.contentType, name: safeName }), "utf-8");
+    const full = path.join(localRoot, objectPath.replace(/^orders\//, ""));
+    await fs.mkdir(path.dirname(full), { recursive: true });
+    await fs.writeFile(full, file.bytes);
   }
   return { name: safeName, size: file.bytes.length, contentType: file.contentType, path: objectPath };
 }
@@ -51,7 +51,7 @@ export async function readArtworkFile(stored: StoredArtwork): Promise<Buffer | n
     return bytes;
   }
   try {
-    return await fs.readFile(path.join(process.cwd(), "data", "artwork", path.basename(path.dirname(stored.path)), path.basename(stored.path)));
+    return await fs.readFile(path.join(localRoot, stored.path.replace(/^orders\//, "")));
   } catch {
     return null;
   }
