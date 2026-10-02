@@ -49,9 +49,14 @@ export function verifySessionToken(token: string | undefined): boolean {
 export async function isAuthenticated(): Promise<boolean> {
     const store = await cookies();
     if (verifySessionToken(store.get(COOKIE_NAME)?.value)) return true;
-    const { currentShopUser } = await import("./shop-session");
-    const shop = await currentShopUser();
-    return shop?.role === "admin";
+    try {
+        const { currentShopUser } = await import("./shop-session");
+        const shop = await currentShopUser();
+        return shop?.role === "admin";
+    } catch (err) {
+        console.error("[admin] shop session", err instanceof Error ? err.message : err);
+        return false;
+    }
 }
 
 export const ADMIN_COOKIE = COOKIE_NAME;

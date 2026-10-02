@@ -5,7 +5,6 @@ import { AccountProfile } from "@/components/store/AccountProfile";
 import { lineFileState, statusLabels } from "@/lib/order-desk";
 import { listAccountOrders } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
-import { currentShopUser } from "@/lib/shop-session";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -16,7 +15,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const user = await currentShopUser();
+  let user = null;
+  try {
+    const { currentShopUser } = await import("@/lib/shop-session");
+    user = await currentShopUser();
+  } catch (err) {
+    console.error("[account]", err instanceof Error ? err.message : err);
+  }
   if (!user) redirect("/auth/login?callbackUrl=/account");
   const orders = await listAccountOrders(user);
   const greeting = user.name && user.name !== "User" ? user.name.split(" ")[0] : "there";

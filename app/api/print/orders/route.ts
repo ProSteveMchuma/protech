@@ -5,7 +5,6 @@ import { productBySlug } from "@/lib/printshop/catalog";
 import { quoteProduct, shippingFee, type QuoteSpec, type Turnaround } from "@/lib/printshop/pricing";
 import { savePrintOrder } from "@/lib/print-orders";
 import { sendNotification } from "@/lib/email";
-import { currentShopUser } from "@/lib/shop-session";
 
 const turnaround = z.enum(["standard", "express", "rush"]);
 
@@ -85,7 +84,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const shopUser = await currentShopUser();
+    const shopUser = await import("@/lib/shop-session").then((mod) => mod.currentShopUser()).catch(() => null);
     const subtotalKes = lines.reduce((sum, line) => sum + line.totalKes, 0);
     const deliveryKes = shippingFee(subtotalKes, parsed.data.county, parsed.data.fulfillment);
     const totalKes = subtotalKes + deliveryKes;
