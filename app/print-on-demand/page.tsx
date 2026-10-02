@@ -18,7 +18,7 @@ const audiences = [
 const reasons = [
   ["Cost", "You pay for the pieces you order. There is no bulk buy sitting in a store room."],
   ["Flexibility", "Change the artwork between orders. Each run can carry a different offer or event date."],
-  ["Speed", "Selected Nairobi jobs approved before 10:00 can print the same day. Standard work is 2–3 business days."],
+  ["Speed", "Standard production is 2–3 business days. Rush is only on selected digital paper jobs."],
   ["Customisation", "Names, photos, logos and short quotes can sit on apparel, drinkware and paper."],
 ];
 
