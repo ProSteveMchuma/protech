@@ -71,6 +71,28 @@ test("search opens a product with the quantity", () => {
   assert.equal(interpretSearch("polo shirts 10")?.quantity, 10);
 });
 
+test("underspecified print jobs require a custom quote", () => {
+  const slugs = [
+    "bookmarks-printing",
+    "reflective-sticker-printing",
+    "brochure-printing",
+    "2026-calendar-printing",
+    "document-printing",
+    "tent-cards-printing",
+    "photo-printing-services",
+  ];
+  for (const slug of slugs) {
+    const product = productBySlug(slug);
+    assert.ok(product);
+    assert.equal(priceModel(product), "quote");
+    assert.equal(defaultSpec(product), null);
+    assert.equal(
+      quoteProduct(product, { slug, quantity: 1, turnaround: "standard", options: {}, attrs: {} }),
+      null,
+    );
+  }
+});
+
 test("package products exist in the catalogue", () => {
   const slugs = [
     "flyers-printing",

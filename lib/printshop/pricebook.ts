@@ -351,7 +351,8 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 19
+    "unitKes": 19,
+    "quote": true
   },
   "branded-t-shirt": {
     "minQty": 1,
@@ -1151,7 +1152,8 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 2500
+    "unitKes": 2500,
+    "quote": true
   },
   "adhesive-label-stickers-printing": {
     "minQty": 300,
@@ -1327,7 +1329,8 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 60
+    "unitKes": 60,
+    "quote": true
   },
   "receipt-books-printing": {
     "minQty": 4,
@@ -1507,7 +1510,8 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 60
+    "unitKes": 60,
+    "quote": true
   },
   "tear-drop-banner-printing": {
     "minQty": 1,
@@ -2502,7 +2506,8 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 50
+    "unitKes": 50,
+    "quote": true
   },
   "media-wall-banner": {
     "minQty": 1,
@@ -2704,13 +2709,15 @@ export const priceBooks: Record<string, PriceEntry> = {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 85
+    "unitKes": 85,
+    "quote": true
   },
   "photo-printing-services": {
     "minQty": 1,
     "maxQty": 500,
     "step": 1,
-    "unitKes": 25
+    "unitKes": 25,
+    "quote": true
   },
   "door-plates": {
     "minQty": 1,
