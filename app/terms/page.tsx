@@ -4,6 +4,7 @@ import { business } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Print terms",
   description: "How ProPrint orders, payments, artwork and delivery work.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

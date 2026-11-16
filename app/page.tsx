@@ -39,14 +39,14 @@ export default function HomePage() {
     <div>
       <section className="bg-white py-3 sm:py-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12">
-          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#ff0030]">ProPrint · Nairobi press</p>
+          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#ff0030]">ProPrint · Online printing in Nairobi</p>
           <div className="relative h-[min(70vw,360px)] min-h-[280px] overflow-hidden rounded-2xl shadow-2xl sm:h-[400px] sm:rounded-[2rem] md:h-[480px] md:rounded-[3rem]">
-            <Image src={groupImage["business-cards"]} alt="A stack of printed business cards" fill priority sizes="100vw" className="object-cover" />
+            <Image src={groupImage["business-cards"]} alt="Business cards printed by ProPrint in Nairobi" fill priority sizes="100vw" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" />
             <div className="absolute inset-0 flex max-w-2xl flex-col justify-center px-5 pb-8 text-white sm:px-10 md:px-16">
               <span className="mb-4 w-fit rounded-lg bg-[#ff0030] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em]">Nairobi press</span>
               <h1 className="font-display text-4xl font-medium leading-[0.95] tracking-tight sm:text-6xl">Print, made to order.</h1>
-              <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-white/80 sm:text-lg">Cards, banners, apparel and packaging. The price is on the product. You pay by M-Pesa.</p>
+              <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-white/80 sm:text-lg">Business cards, banners, T-shirts and packaging, printed in Nairobi and delivered across Kenya. The price is on the product. You pay by M-Pesa.</p>
               <Link href="/shop" className="mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-2xl bg-white px-8 text-xs font-black uppercase tracking-widest text-neutral-950">
                 Shop now <span aria-hidden="true">→</span>
               </Link>

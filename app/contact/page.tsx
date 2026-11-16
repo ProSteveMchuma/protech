@@ -5,8 +5,9 @@ import { productBySlug } from "@/lib/printshop/catalog";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Request a printing quote for business cards, banners, apparel, mugs and event sets. Nairobi production, delivery across Kenya.",
+  title: "Contact Us and Request a Printing Quote",
+  description: "Request a printing quote for business cards, banners, apparel, mugs and event sets. WhatsApp, email or visit us at Karen Green, Langata Road, Nairobi.",
+  alternates: { canonical: "/contact" },
 };
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {

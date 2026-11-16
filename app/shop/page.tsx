@@ -7,8 +7,9 @@ import { filterProducts, products } from "@/lib/printshop/catalog";
 import { interpretSearch } from "@/lib/printshop/search";
 
 export const metadata: Metadata = {
-  title: "All printing products",
+  title: "Printing Products and Prices in Nairobi",
   description: "Business cards, flyers, banners, apparel, mugs, stickers and signage. Filter by category and price, then order online for Nairobi and all 47 counties.",
+  alternates: { canonical: "/shop" },
 };
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<{ q?: string; group?: string; band?: string }> }) {
@@ -28,7 +29,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8 lg:px-12">
-      <h1 className="font-display text-4xl font-medium tracking-tight sm:text-5xl">Catalogue</h1>
+      <h1 className="font-display text-4xl font-medium tracking-tight sm:text-5xl">All Printing Products</h1>
       <p className="mt-4 max-w-xl text-neutral-600">{products.length} made-to-order products. The price is on each product, before you pay.</p>
       <ShopFilters group={group} band={band} q={query.q} />
       {query.q && <p className="mt-6 text-sm text-neutral-600">Results for “{query.q}”</p>}

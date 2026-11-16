@@ -5,6 +5,8 @@ import "./globals.css";
 import { AppChrome } from "@/components/store/AppChrome";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { groupImage } from "@/lib/printshop/images";
+import { JsonLd } from "@/components/JsonLd";
+import { localBusinessJsonLd, SITE_URL, websiteJsonLd } from "@/lib/seo";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
@@ -12,43 +14,31 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", 
 
 const shopDescription = "Order business cards, flyers, banners, branded apparel and packaging online. Printed in Nairobi, paid by M-Pesa, delivered across Kenya or collected at Karen.";
 
+const homeTitle = "ProPrint — Online Printing in Nairobi, Kenya";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.proinnovationtech.co.ke"),
-  title: { default: "ProPrint — Online printing in Kenya", template: "%s | ProPrint" },
+  metadataBase: new URL(SITE_URL),
+  title: { default: homeTitle, template: "%s | ProPrint" },
   description: shopDescription,
-  keywords: ["printing services Kenya", "print on demand Kenya", "business cards Nairobi", "banner printing Kenya", "t-shirt printing Nairobi"],
+  applicationName: "ProPrint",
   openGraph: {
     type: "website",
     locale: "en_KE",
     url: "/",
-    title: "ProPrint — Online printing in Kenya",
+    title: homeTitle,
     description: shopDescription,
     siteName: "ProPrint",
     images: [{ url: groupImage["business-cards"], alt: "Printed business cards from ProPrint" }],
   },
-  twitter: { card: "summary_large_image", title: "ProPrint — Online printing in Kenya", description: shopDescription, images: [groupImage["business-cards"]] },
-};
-
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "ProPrint",
-  url: "https://www.proinnovationtech.co.ke",
-  email: "proinnovationtech@gmail.com",
-  telephone: "+254719584549",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Karen Green, Langata Road",
-    addressLocality: "Nairobi",
-    addressCountry: "KE",
-  },
+  twitter: { card: "summary_large_image", title: homeTitle, description: shopDescription, images: [groupImage["business-cards"]] },
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${fraunces.variable} ${mono.variable}`}>
+    <html lang="en-KE" className={`${sans.variable} ${fraunces.variable} ${mono.variable}`}>
       <body className="min-h-screen bg-white font-sans text-neutral-950 antialiased">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+        <JsonLd data={[localBusinessJsonLd, websiteJsonLd]} />
         <a href="#main-content" className="skip-link">Skip to content</a>
         <ScrollProgress />
         <AppChrome>

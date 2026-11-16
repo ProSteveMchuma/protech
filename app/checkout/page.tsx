@@ -7,6 +7,7 @@ import { business } from "@/lib/config";
 export const metadata = {
     title: "M-Pesa Checkout",
     description: "Pay your package via M-Pesa Paybill. Verified within 4 hours.",
+    robots: { index: false, follow: false },
 };
 
 export default function CheckoutPage() {

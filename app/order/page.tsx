@@ -4,6 +4,7 @@ import { OrderForm } from "@/components/store/OrderForm";
 export const metadata: Metadata = {
   title: "Checkout",
   description: "Choose delivery or collection at Karen Green, Langata Road, then pay by M-Pesa Paybill.",
+  robots: { index: false, follow: true },
 };
 
 export default function OrderPage() {

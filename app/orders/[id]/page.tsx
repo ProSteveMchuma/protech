@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Order status",
-  robots: { index: false },
+  robots: { index: false, follow: false },
 };
 
 const fileCopy = {

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { deliveryTowns } from "@/lib/printshop/content";
-import { formatKes } from "@/lib/printshop/pricing";
+import { JsonLd } from "@/components/JsonLd";
+import { FREE_DELIVERY_FROM_KES, formatKes, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES } from "@/lib/printshop/pricing";
+import { breadcrumbJsonLd, faqJsonLd, shopFaqs } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Print on demand in Kenya",
-  description: "Print t-shirts, mugs, notebooks, flyers, posters, banners and business cards after the order is placed. No stock to hold. Nairobi production and delivery to all 47 counties.",
+  title: "How Ordering Works: Print on Demand in Kenya",
+  description: "Print T-shirts, mugs, flyers, banners and business cards after you order, with no stock to hold. Made in Nairobi, delivered to all 47 counties.",
+  alternates: { canonical: "/print-on-demand" },
 };
 
 const audiences = [
@@ -18,7 +21,7 @@ const audiences = [
 const reasons = [
   ["Cost", "You pay for the pieces you order. There is no bulk buy sitting in a store room."],
   ["Flexibility", "Change the artwork between orders. Each run can carry a different offer or event date."],
-  ["Speed", "Standard production is 2–3 business days. Rush is only on selected digital paper jobs."],
+  ["Speed", "Standard production is 3 business days. Rush is only on selected digital paper jobs."],
   ["Customisation", "Names, photos, logos and short quotes can sit on apparel, drinkware and paper."],
 ];
 
@@ -32,8 +35,10 @@ const offer = [
 ];
 
 export default function PrintOnDemandPage() {
+  const questions = shopFaqs();
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <JsonLd data={[faqJsonLd(questions), breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "How ordering works", path: "/print-on-demand" }])]} />
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#ff0030]">Print on demand</p>
       <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Print on demand in Kenya</h1>
       <p className="mt-4 text-lg leading-8 text-neutral-700">Print on demand means the product is printed after the order exists. You skip the upfront stock, you waste less, and you can still put a professional mark on paper, fabric and drinkware.</p>
@@ -79,11 +84,24 @@ export default function PrintOnDemandPage() {
       </ol>
 
       <h2 id="delivery" className="mt-10 text-2xl font-black">Delivery</h2>
-      <p className="mt-3 leading-7 text-neutral-700">Fast delivery inside Nairobi is {formatKes(400)}. Outside Nairobi is {formatKes(850)}. Orders above {formatKes(10000)} are delivered free. Towns we ship to every week include:</p>
+      <p className="mt-3 leading-7 text-neutral-700">Fast delivery inside Nairobi is {formatKes(NAIROBI_DELIVERY_KES)}. Outside Nairobi is {formatKes(OUTSIDE_NAIROBI_DELIVERY_KES)}. Orders above {formatKes(FREE_DELIVERY_FROM_KES)} are delivered free. Towns we ship to every week include:</p>
       <ul className="mt-4 flex flex-wrap gap-2">
         {deliveryTowns.map((town) => <li key={town} className="rounded-full bg-neutral-100 px-3 py-1 text-sm font-semibold">{town}</li>)}
       </ul>
       <p className="mt-4 leading-7 text-neutral-700">The same service reaches the rest of the 47 counties. Individuals, SMEs and corporate buyers use the same order path.</p>
+
+      <h2 id="faq" className="mt-10 text-2xl font-black">Questions</h2>
+      <div className="mt-4 divide-y divide-neutral-200 rounded-2xl border border-neutral-200">
+        {questions.map((item) => (
+          <details key={item.q} className="group p-4">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 font-bold">
+              {item.q}
+              <span aria-hidden="true" className="text-[#ff0030] transition group-open:rotate-45">+</span>
+            </summary>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">{item.a}</p>
+          </details>
+        ))}
+      </div>
 
       <div className="mt-10 rounded-2xl bg-[#ff0030] p-6 text-white">
         <h2 className="text-2xl font-black">Start the first order</h2>

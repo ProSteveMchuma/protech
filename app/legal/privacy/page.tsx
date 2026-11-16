@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy",
   description: "How ProPrint uses the details and artwork you send with a print order.",
+  alternates: { canonical: "/legal/privacy" },
 };
 
 export default function PrivacyPage() {
