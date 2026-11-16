@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     Briefcase,
     Users,
@@ -44,6 +45,7 @@ type Tab = "orders" | "payments" | "leads";
 const orderStatuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "ready", "dispatched", "cancelled"];
 
 export function AdminDashboard({ initialLeads, initialPayments, initialOrders }: Props) {
+    const router = useRouter();
     const [tab, setTab] = useState<Tab>(initialOrders.some((order) => order.status === "received") ? "orders" : initialPayments.some((p) => p.status === "pending") ? "payments" : "leads");
     const [leads, setLeads] = useState<Lead[]>(initialLeads);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
@@ -117,7 +119,7 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
     }
 
     async function logout() {
-        window.location.href = "/auth/sign-out";
+        router.push("/auth/sign-out");
     }
 
     return (

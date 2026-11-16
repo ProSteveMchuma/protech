@@ -1,9 +1,15 @@
 import type { ShopGroupSlug } from "./catalog";
 
-const bucket = "tenderpro-480721.firebasestorage.app";
+// Photos live in Cloud Storage; next.config.ts rewrites /media/* to the bucket so pages and
+// shared links use the shop's own domain.
+export const MEDIA_ORIGIN = "https://www.proinnovationtech.co.ke";
 
 function productPhoto(file: string) {
-  return `https://storage.googleapis.com/${bucket}/products/v3/${file}`;
+  return `/media/products/v3/${file}`;
+}
+
+export function absoluteImage(path: string) {
+  return path.startsWith("http") ? path : `${MEDIA_ORIGIN}${path}`;
 }
 
 export const groupImage: Record<ShopGroupSlug, string> = {

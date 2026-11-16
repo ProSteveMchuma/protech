@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/store/ProductCard";
 import { groupBySlug, productsInGroup, shopGroups } from "@/lib/printshop/catalog";
+import { groupImage } from "@/lib/printshop/images";
 
 export function generateStaticParams() {
   return shopGroups.map((group) => ({ slug: group.slug }));
@@ -12,7 +13,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const group = groupBySlug(slug);
   if (!group) return { title: "Category" };
-  return { title: `${group.label} printing in Kenya`, description: group.summary };
+  return {
+    title: `${group.label} printing in Kenya`,
+    description: group.summary,
+    alternates: { canonical: `/category/${group.slug}` },
+    openGraph: { title: `${group.label} printing in Kenya | ProPrint`, url: `/category/${group.slug}`, images: [{ url: groupImage[group.slug], alt: group.label }] },
+  };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -11,7 +11,7 @@ import { StoreHeader } from "./StoreHeader";
 import { StoreTabBar } from "./StoreTabBar";
 import { WhatsAppButton } from "./WhatsAppButton";
 
-const studioPrefixes = ["/tools", "/admin", "/beta", "/feedback", "/apply", "/hire", "/guides", "/services", "/legal", "/checkout"];
+const studioPrefixes = ["/tools", "/admin", "/beta", "/feedback", "/legal", "/checkout"];
 
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
