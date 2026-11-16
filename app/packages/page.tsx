@@ -4,8 +4,9 @@ import { bundleItems, bundles } from "@/lib/printshop/content";
 import { defaultSpec, formatKes, quoteProduct } from "@/lib/printshop/pricing";
 
 export const metadata: Metadata = {
-  title: "Business packages",
+  title: "Business Printing Packages and Bundles",
   description: "Printing bundles for Kenyan businesses: stationery, startup kits, branding and event sets. Bundle pricing is 10% under the separate shelf prices.",
+  alternates: { canonical: "/packages" },
 };
 
 function bundlePrice(slugs: string[]) {

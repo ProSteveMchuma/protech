@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProductFeedbackForm } from "@/components/ProductFeedbackForm";
 
-export const metadata: Metadata = { title: "Product feedback", description: "Share feedback about SerialPro or QuotePro with the ProPrint product team." };
+export const metadata: Metadata = { title: "Product feedback", description: "Share feedback about SerialPro or QuotePro with the ProPrint product team.", robots: { index: false, follow: false } };
 
 export default async function FeedbackPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
     const query = await searchParams;

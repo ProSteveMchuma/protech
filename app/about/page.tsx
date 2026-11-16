@@ -4,8 +4,9 @@ import { business } from "@/lib/config";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Us: A Nairobi Print Shop",
   description: "ProPrint is the online print desk of Pro Innovation. Made-to-order business cards, banners, apparel and gifts, produced in Nairobi and delivered across Kenya.",
+  alternates: { canonical: "/about" },
 };
 
 const points = [
