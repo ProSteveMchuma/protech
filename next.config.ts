@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
 
+const PHOTO_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || "tenderpro-480721.firebasestorage.app";
+
 const nextConfig: NextConfig = {
   images: {
     // This Vercel project returns 402 from /_next/image, so optimized src URLs render as broken images.
     unoptimized: true,
-    remotePatterns: [
-      { protocol: "https", hostname: "storage.googleapis.com", pathname: "/tenderpro-480721.firebasestorage.app/**" },
-    ],
+  },
+  async rewrites() {
+    return [{ source: "/media/:path*", destination: `https://storage.googleapis.com/${PHOTO_BUCKET}/:path*` }];
+  },
+  async headers() {
+    return [{ source: "/media/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400" }] }];
   },
   async redirects() {
     return [

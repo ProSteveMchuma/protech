@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { products } from "../lib/printshop/catalog.ts";
-import { groupImage, productImage } from "../lib/printshop/images.ts";
+import { absoluteImage, groupImage, productImage } from "../lib/printshop/images.ts";
 
-const prefix = "https://storage.googleapis.com/tenderpro-480721.firebasestorage.app/products/v3/";
+const prefix = "/media/products/v3/";
 
-test("category photos are public Firebase Storage URLs", () => {
+test("category photos are served from the shop's /media path", () => {
   assert.equal(groupImage["business-cards"], `${prefix}business-cards.jpg`);
   assert.equal(groupImage.apparel, `${prefix}tshirt.jpg`);
 });
@@ -28,4 +28,8 @@ test("similar names do not share the wrong object", () => {
   assert.notEqual(image("architectural-blueprints"), image("posters-printing"));
   assert.equal(image("round-neck-plain-t-shirt"), `${prefix}plain-tshirt.jpg`);
   assert.notEqual(image("round-neck-plain-t-shirt"), image("branded-t-shirt"));
+});
+
+test("structured data gets absolute image URLs on the shop domain", () => {
+  assert.equal(absoluteImage(`${prefix}mug.jpg`), `https://www.proinnovationtech.co.ke${prefix}mug.jpg`);
 });

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { business, pickup } from "@/lib/config";
@@ -49,11 +49,7 @@ export function OrderForm() {
   });
   const fee = shippingFee(cart.subtotal, method === "pickup" ? pickup.county : county, method);
   const total = cart.subtotal + fee;
-  const name = form.watch("name");
-  const phone = form.watch("phone");
-  const email = form.watch("email");
-  const address = form.watch("address");
-  const mpesaCode = form.watch("mpesaCode");
+  const [name, phone, email, address, mpesaCode] = useWatch({ control: form.control, name: ["name", "phone", "email", "address", "mpesaCode"] });
 
   useEffect(() => {
     let cancelled = false;

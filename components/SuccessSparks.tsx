@@ -2,7 +2,7 @@
 
 /**
  * SuccessSparks — a tasteful 6-8 dot radial burst, 600ms, brand colours.
- * Used after `/hire` and `/checkout` succeed. NOT confetti — we are not
+ * Used after a form or `/checkout` succeeds. NOT confetti — we are not
  * a party.
  *
  * Renders absolutely positioned at the centre of its container, so the

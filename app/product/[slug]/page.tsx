@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/store/ProductCard";
 import { groupBySlug, productBySlug, products, productsInGroup } from "@/lib/printshop/catalog";
 import { describe } from "@/lib/printshop/content";
-import { productImage } from "@/lib/printshop/images";
+import { absoluteImage, productImage } from "@/lib/printshop/images";
 import { FREE_DELIVERY_FROM_KES, formatKes, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES, shelfKes, shelfOffer, shelfPriceLabel } from "@/lib/printshop/pricing";
 import { pickup } from "@/lib/config";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
@@ -45,7 +45,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     "@type": "Product",
     name: product.title,
     description: describe(product),
-    image: productImage(product),
+    image: absoluteImage(productImage(product)),
     url: `https://www.proinnovationtech.co.ke/product/${product.slug}`,
     ...(typeof from === "number" && from > 0
       ? { offers: { "@type": "Offer", price: from, priceCurrency: "KES" } }

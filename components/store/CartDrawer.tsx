@@ -12,10 +12,11 @@ export function CartDrawer() {
   const cart = useCart();
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const { drawerOpen, closeDrawer } = cart;
   useEffect(() => {
-    if (!cart.drawerOpen) return;
+    if (!drawerOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") cart.closeDrawer();
+      if (event.key === "Escape") closeDrawer();
     };
     document.addEventListener("keydown", onKey);
     const previous = document.body.style.overflow;
@@ -24,7 +25,7 @@ export function CartDrawer() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
     };
-  }, [cart.drawerOpen, cart.closeDrawer]);
+  }, [drawerOpen, closeDrawer]);
 
   if (!cart.drawerOpen) return null;
 
