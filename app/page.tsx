@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/store/ProductCard";
 import { business, pickup } from "@/lib/config";
 import { productBySlug, shopGroups } from "@/lib/printshop/catalog";
 import { groupImage } from "@/lib/printshop/images";
-import { formatKes, FREE_DELIVERY_FROM_KES } from "@/lib/printshop/pricing";
+import { formatKes, FREE_DELIVERY_FROM_KES, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES, turnaroundChoices } from "@/lib/printshop/pricing";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const featuredSlugs = [
   "business-cards-printing",
@@ -22,6 +25,8 @@ const featured = featuredSlugs.flatMap((slug) => {
   const product = productBySlug(slug);
   return product ? [product] : [];
 });
+
+const standardTurnaround = turnaroundChoices[0].label.replace(/^Standard · /, "");
 
 const tiles = [
   { href: "/category/business-cards", label: "Business cards", hint: "Thick art card, short runs" },
@@ -64,9 +69,11 @@ export default function HomePage() {
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-neutral-500">
-            Paybill <span className="font-mono tabular-nums text-neutral-950">{business.paybill}</span>
+            <span className="whitespace-nowrap">Standard turnaround {standardTurnaround}</span>
             <span className="mx-2">·</span>
-            Free delivery over {formatKes(FREE_DELIVERY_FROM_KES)}
+            <span className="whitespace-nowrap">Paybill <span className="font-mono tabular-nums text-neutral-950">{business.paybill}</span></span>
+            <span className="mx-2">·</span>
+            Delivery {formatKes(NAIROBI_DELIVERY_KES)} Nairobi, {formatKes(OUTSIDE_NAIROBI_DELIVERY_KES)} other counties, free over {formatKes(FREE_DELIVERY_FROM_KES)}
             <span className="mx-2">·</span>
             Collect at {pickup.address}
           </p>

@@ -29,7 +29,7 @@ export function StoreFooter() {
             <li><Link href="/cart" className="text-neutral-400 hover:text-white">Cart</Link></li>
             <li><Link href="/order" className="text-neutral-400 hover:text-white">Checkout</Link></li>
             <li><Link href="/print-on-demand" className="text-neutral-400 hover:text-white">How ordering works</Link></li>
-            <li><Link href="/packages" className="text-neutral-400 hover:text-white">Software packages</Link></li>
+            <li><Link href="/packages" className="text-neutral-400 hover:text-white">Business packages</Link></li>
           </ul>
         </div>
         <div>

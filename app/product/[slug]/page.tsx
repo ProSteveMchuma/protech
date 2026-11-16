@@ -6,7 +6,8 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { groupBySlug, productBySlug, products, productsInGroup } from "@/lib/printshop/catalog";
 import { describe } from "@/lib/printshop/content";
 import { productImage } from "@/lib/printshop/images";
-import { formatKes, shelfKes, shelfOffer } from "@/lib/printshop/pricing";
+import { FREE_DELIVERY_FROM_KES, formatKes, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES, shelfKes, shelfOffer, shelfPriceLabel } from "@/lib/printshop/pricing";
+import { pickup } from "@/lib/config";
 import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 import { OrderPanel } from "@/components/store/OrderPanel";
 
@@ -22,6 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${product.title} in Kenya`,
     description: from ? `${product.title} from ${formatKes(from)}. Order online for Nairobi and nationwide delivery.` : `${product.title}. Request a quote for production and delivery across Kenya.`,
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: { title: `${product.title} | ProPrint`, url: `/product/${product.slug}`, images: [{ url: productImage(product), alt: product.title }] },
   };
 }
 
@@ -35,7 +38,8 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const related = productsInGroup(product.group).filter((item) => item.slug !== product.slug).slice(0, 4);
   const from = shelfKes(product);
   const offer = shelfOffer(product);
-  const priceLine = offer && offer.quantity > 1 ? `${offer.quantity.toLocaleString("en-KE")} from ${formatKes(offer.totalKes)}` : from ? `From ${formatKes(from)}` : "Quoted per specification";
+  const shelfLabel = shelfPriceLabel(product);
+  const priceLine = offer ? `${shelfLabel.price} ${shelfLabel.detail}` : "Quoted per specification";
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -59,7 +63,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           </p>
           <h1 className="mt-3 font-display text-4xl font-medium tracking-tight sm:text-5xl">{product.title}</h1>
           <p className="mt-3 font-mono text-lg tabular-nums text-neutral-950">{priceLine}</p>
-          <p className="mt-2 text-sm text-neutral-600">Nairobi delivery {formatKes(400)}. Other counties {formatKes(850)}. Free over {formatKes(10000)}. Or collect free at Karen Green, Langata Road.</p>
+          <p className="mt-2 text-sm text-neutral-600">Nairobi delivery {formatKes(NAIROBI_DELIVERY_KES)}. Other counties {formatKes(OUTSIDE_NAIROBI_DELIVERY_KES)}. Free over {formatKes(FREE_DELIVERY_FROM_KES)}. Or collect free at {pickup.address}.</p>
           <div className="mt-6">
             <OrderPanel product={product} initialQuantity={Number.isFinite(quantity) && quantity > 0 ? quantity : undefined} hint={query.hint} />
           </div>

@@ -365,6 +365,15 @@ export function shelfOffer(product: Pick<CatalogProduct, "slug" | "fromKes">) {
   return product.fromKes > 0 ? { quantity: 1, totalKes: product.fromKes } : null;
 }
 
+export function shelfPriceLabel(product: Pick<CatalogProduct, "slug" | "fromKes">) {
+  const offer = shelfOffer(product);
+  if (!offer) return { price: "Quoted", detail: "Priced per specification" };
+  return {
+    price: `From ${formatKes(offer.totalKes)}`,
+    detail: offer.quantity > 1 ? `for ${offer.quantity.toLocaleString("en-KE")} pcs` : "each",
+  };
+}
+
 export function shelfKes(product: Pick<CatalogProduct, "slug" | "fromKes">) {
   return shelfOffer(product)?.totalKes ?? null;
 }

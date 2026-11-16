@@ -26,7 +26,7 @@ export const shopGroups: { slug: ShopGroupSlug; label: string; nav: string; summ
   { slug: "mugs-promo", label: "Mugs & Promo", nav: "Promo", summary: "Mugs, bottles, pens, caps, notebooks and gift items." },
   { slug: "stickers-signage", label: "Stickers & Signage", nav: "Stickers", summary: "Labels, vehicle decals, floor stickers and rigid signs." },
   { slug: "stationery", label: "Stationery & Booklets", nav: "Stationery", summary: "Letterheads, receipt books, envelopes, menus and booklets." },
-  { slug: "packaging-photo", label: "Packaging, Photo & Design", nav: "Photos", summary: "Bags, boxes, photo prints, documents and design support." },
+  { slug: "packaging-photo", label: "Packaging, Photo & Design", nav: "Packaging & Photo", summary: "Bags, boxes, photo prints, documents and design support." },
 ];
 
 export const products: CatalogProduct[] = [
