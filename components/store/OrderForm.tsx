@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { business, pickup } from "@/lib/config";
 import { counties } from "@/lib/printshop/content";
-import { formatKes, shippingFee } from "@/lib/printshop/pricing";
+import { FREE_DELIVERY_FROM_KES, formatKes, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES, shippingFee } from "@/lib/printshop/pricing";
 import { useCart } from "./CartProvider";
 
 const schema = z.object({
@@ -216,7 +216,7 @@ export function OrderForm() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button type="button" onClick={() => setMethod("delivery")} className={`border p-4 text-left ${method === "delivery" ? "border-neutral-950" : "border-neutral-200"}`}>
                 <p className="font-medium">Deliver to me</p>
-                <p className="mt-1 text-sm leading-6 text-neutral-600">Nairobi {formatKes(400)}. Other counties {formatKes(850)}. Free over {formatKes(10000)}.</p>
+                <p className="mt-1 text-sm leading-6 text-neutral-600">Nairobi {formatKes(NAIROBI_DELIVERY_KES)}. Other counties {formatKes(OUTSIDE_NAIROBI_DELIVERY_KES)}. Free over {formatKes(FREE_DELIVERY_FROM_KES)}.</p>
               </button>
               <button type="button" onClick={() => setMethod("pickup")} className={`border p-4 text-left ${method === "pickup" ? "border-neutral-950" : "border-neutral-200"}`}>
                 <p className="font-medium">Collect / Pickup</p>
