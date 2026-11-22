@@ -5,6 +5,7 @@ import { productBySlug } from "@/lib/printshop/catalog";
 import { quoteProduct, shippingFee, type QuoteSpec, type Turnaround } from "@/lib/printshop/pricing";
 import { savePrintOrder } from "@/lib/print-orders";
 import { sendNotification } from "@/lib/email";
+import { business } from "@/lib/config";
 
 const turnaround = z.enum(["standard", "express", "rush"]);
 
@@ -34,7 +35,8 @@ const orderSchema = z.object({
   fulfillment: z.enum(["delivery", "pickup"]).default("delivery"),
   artwork: z.string().trim().max(400).optional(),
   notes: z.string().trim().max(2000).optional(),
-  mpesaCode: z.string().trim().min(6).max(20),
+  // Empty means "pay after we confirm the artwork and price".
+  mpesaCode: z.union([z.literal(""), z.string().trim().min(6).max(20)]).default(""),
   website: z.string().max(200).optional(),
   lines: z.array(z.object({
     lineId: z.string().trim().min(8).max(80).optional(),
@@ -114,12 +116,12 @@ export async function POST(req: Request) {
       .map((line) => `<tr><td style="padding:8px 0;">${escapeHtml(line.title)} × ${line.quantity}<br><span style="color:#64748b">${escapeHtml(line.summary)}</span></td><td style="padding:8px 0;text-align:right;">KES ${line.totalKes.toLocaleString("en-KE")}</td></tr>`)
       .join("");
     const handoff = parsed.data.fulfillment === "pickup" ? "Collection" : "Delivery";
-    const html = `<p>Order <strong>${escapeHtml(order.id)}</strong> from ${escapeHtml(parsed.data.name)}.</p><p>${escapeHtml(parsed.data.phone)} · ${escapeHtml(parsed.data.email)}<br>${handoff}: ${escapeHtml(parsed.data.address)}, ${escapeHtml(parsed.data.county)}</p><table style="width:100%">${rows}</table><p>${handoff} KES ${deliveryKes.toLocaleString("en-KE")}<br><strong>Total KES ${totalKes.toLocaleString("en-KE")}</strong></p><p>M-Pesa ${escapeHtml(order.mpesaCode)}</p><p>Artwork: ${escapeHtml(parsed.data.artwork || "Not linked yet")}</p>`;
-    await sendNotification({ subject: `[ProPrint] Order ${order.id.slice(0, 8)}`, html, replyTo: parsed.data.email });
+    const html = `<p>Order <strong>${escapeHtml(order.id)}</strong> from ${escapeHtml(parsed.data.name)}.</p><p>${escapeHtml(parsed.data.phone)} · ${escapeHtml(parsed.data.email)}<br>${handoff}: ${escapeHtml(parsed.data.address)}, ${escapeHtml(parsed.data.county)}</p><table style="width:100%">${rows}</table><p>${handoff} KES ${deliveryKes.toLocaleString("en-KE")}<br><strong>Total KES ${totalKes.toLocaleString("en-KE")}</strong></p><p>${order.mpesaCode ? `M-Pesa ${escapeHtml(order.mpesaCode)}` : "<strong>Pay after confirmation.</strong> Call or WhatsApp the customer to confirm artwork and price."}</p><p>Artwork: ${escapeHtml(parsed.data.artwork || "Not linked yet")}</p>`;
+    await sendNotification({ subject: `[ProPrint] ${order.mpesaCode ? "Order" : "Order (pay after confirmation)"} ${order.id.slice(0, 8)}`, html, replyTo: parsed.data.email });
     await sendNotification({
       to: parsed.data.email,
       subject: `[ProPrint] We received your print order`,
-      html: `<p>Hello ${escapeHtml(parsed.data.name)},</p><p>We received your order and will confirm M-Pesa code <strong>${escapeHtml(order.mpesaCode)}</strong> before printing.</p><p>Total <strong>KES ${totalKes.toLocaleString("en-KE")}</strong>.</p><p>Track it here: https://www.proinnovationtech.co.ke/orders/${order.id}</p>`,
+      html: `<p>Hello ${escapeHtml(parsed.data.name)},</p>${order.mpesaCode ? `<p>We received your order and will confirm M-Pesa code <strong>${escapeHtml(order.mpesaCode)}</strong> before printing.</p>` : `<p>We received your order. We will call or WhatsApp you to confirm the artwork and price. Then pay by M-Pesa Paybill ${escapeHtml(business.paybill)}, account: your name.</p>`}<p>Total <strong>KES ${totalKes.toLocaleString("en-KE")}</strong>.</p><p>Track it here: https://www.proinnovationtech.co.ke/orders/${order.id}</p>`,
     });
 
     return NextResponse.json({ success: true, orderId: order.id, artworkToken: order.artworkToken, totalKes, deliveryKes, subtotalKes });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
+import { callDisplay, callHref, whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
 import { useCart } from "./CartProvider";
 
 export function hidesStoreTabBar(pathname: string) {
@@ -23,7 +23,7 @@ export function StoreTabBar() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neutral-100 bg-white/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-5px_20px_rgba(0,0,0,0.04)] backdrop-blur-md md:hidden" aria-label="Shop">
-      <ul className="grid h-16 grid-cols-4">
+      <ul className="grid h-16 grid-cols-5">
         {items.map((item) => (
           <li key={item.href}>
             <Link href={item.href} className={`flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${item.active ? "text-[#ff0030]" : "text-neutral-500"}`}>
@@ -40,7 +40,14 @@ export function StoreTabBar() {
           </li>
         ))}
         <li>
-          <a href={whatsappHref("Hello ProPrint, I need help with an order.")} className="flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-500" target="_blank" rel="noopener noreferrer">
+          <a href={callHref()} className="flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-500">
+            <PhoneIcon />
+            Call
+            <span className="sr-only">{callDisplay()}</span>
+          </a>
+        </li>
+        <li>
+          <a href={whatsappHref("Hello ProPrint, I need help with an order.")} className="flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-[#128C7E]" target="_blank" rel="noopener noreferrer">
             <WhatsAppIcon />
             WhatsApp
             <span className="sr-only">{whatsappDisplay()}</span>
@@ -81,6 +88,14 @@ function WhatsAppIcon() {
   return (
     <svg className="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M20.5 3.5A11 11 0 0 0 2.1 17.2L1 23l6-1.6A11 11 0 0 0 20.5 3.5Zm-8.5 17a9.1 9.1 0 0 1-4.6-1.3l-.3-.2-3.6.9.9-3.5-.2-.3A9.1 9.1 0 1 1 12 20.5Z" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z" />
     </svg>
   );
 }

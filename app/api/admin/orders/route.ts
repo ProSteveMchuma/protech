@@ -19,7 +19,7 @@ const patchSchema = z.union([
   z.object({ id: z.string().min(1), status: z.enum(statuses) }),
   z.object({
     id: z.string().min(1),
-    payment: z.object({ state: z.enum(["confirmed", "rejected"]), note: z.string().max(500).optional() }),
+    payment: z.object({ state: z.enum(["confirmed", "rejected"]), note: z.string().max(500).optional(), mpesaCode: z.string().trim().max(20).optional() }),
   }),
   z.object({ id: z.string().min(1), internalNote: z.string().max(2000) }),
   z.object({ id: z.string().min(1), lineId: z.string().min(8).max(80), fileState: z.enum(["accepted", "rejected"]) }),
@@ -45,7 +45,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true, order: deskOrder(result.order) });
   }
   const order = "payment" in parsed.data
-    ? await reviewOrderPayment(parsed.data.id, parsed.data.payment.state, parsed.data.payment.note)
+    ? await reviewOrderPayment(parsed.data.id, parsed.data.payment.state, parsed.data.payment.note, parsed.data.payment.mpesaCode)
     : "fileState" in parsed.data
       ? await reviewLineFile(parsed.data.id, parsed.data.lineId, parsed.data.fileState)
       : await setOrderInternalNote(parsed.data.id, parsed.data.internalNote);

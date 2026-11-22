@@ -10,7 +10,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbJsonLd, productJsonLd, productSeoDescription, productSeoTitle } from "@/lib/seo";
 import { FREE_DELIVERY_FROM_KES, formatKes, NAIROBI_DELIVERY_KES, OUTSIDE_NAIROBI_DELIVERY_KES, shelfOffer, shelfPriceLabel } from "@/lib/printshop/pricing";
 import { pickup } from "@/lib/config";
-import { whatsappDisplay, whatsappHref } from "@/lib/whatsapp";
+import { callDisplay, callHref } from "@/lib/whatsapp";
 import { OrderPanel } from "@/components/store/OrderPanel";
 
 export function generateStaticParams() {
@@ -69,8 +69,8 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           <div className="mt-6">
             <OrderPanel product={product} initialQuantity={Number.isFinite(quantity) && quantity > 0 ? quantity : undefined} hint={query.hint} />
           </div>
-          <a href={whatsappHref(`Hello ProPrint, I want to order ${product.title}.`)} className="mt-4 inline-flex h-11 items-center text-sm text-neutral-600" target="_blank" rel="noopener noreferrer">
-            Ask on WhatsApp {whatsappDisplay()}
+          <a href={callHref()} className="mt-4 inline-flex h-11 items-center gap-2 text-sm text-neutral-600">
+            Prefer to talk? Call <span className="font-mono font-semibold tabular-nums text-neutral-950">{callDisplay()}</span>
           </a>
         </div>
       </div>

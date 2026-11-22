@@ -27,6 +27,8 @@ The tender-management and virtual-assistant services this repo once sold were re
 - Product photos: [lib/printshop/images.ts](lib/printshop/images.ts). Files are in the Firebase Storage bucket under `products/v3/`; pages use `/media/...`, which [next.config.ts](next.config.ts) rewrites to the bucket. Use `absoluteImage()` where a full URL is required (JSON-LD).
 - Business details (name, Paybill, WhatsApp, email, pickup address): [lib/config.ts](lib/config.ts). Never hardcode them in pages.
 - Shop chrome: [components/store/](components/store/). `AppChrome` picks shop vs studio chrome by path.
+- Contact taps: every `tel:` and `wa.me` link is counted by [components/ContactClickTracker.tsx](components/ContactClickTracker.tsx) (Vercel Analytics custom event plus a row in the Firestore `contactClicks` collection, shown on `/admin`). Add `data-track="..."` to a link to label it. Use `callHref()` and `whatsappHref()` from [lib/whatsapp.ts](lib/whatsapp.ts).
+- Orders may arrive without an M-Pesa code ("pay after confirmation"); the desk records the code when the customer pays. Use `statusLabel(order)` rather than `statusLabels[...]`.
 
 ## Brand and design
 

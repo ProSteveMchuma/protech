@@ -10,6 +10,12 @@ export const statusLabels: Record<DeskStatus, string> = {
   cancelled: "Cancelled. We will contact you about the payment.",
 };
 
+// Orders placed with "pay after confirmation" arrive without an M-Pesa code.
+export function statusLabel(order: { status: DeskStatus; mpesaCode?: string }) {
+  if (order.status === "received" && !order.mpesaCode) return "Received. We will call or WhatsApp you to confirm the artwork and price, then you pay by M-Pesa.";
+  return statusLabels[order.status];
+}
+
 export function lineFileState(line: { fileState?: string }): FileState {
   if (line.fileState === "received" || line.fileState === "accepted" || line.fileState === "rejected") return line.fileState;
   return "missing";
@@ -22,7 +28,7 @@ export function customerMayReplaceArtwork(fileState: FileState | string | undefi
 }
 
 export function printingBlockReason(order: { payment?: { state?: string }; lines: { fileState?: string }[] }) {
-  if (order.payment?.state !== "confirmed") return "Confirm the M-Pesa code before printing.";
+  if (order.payment?.state !== "confirmed") return "Confirm the M-Pesa payment before printing.";
   if (order.lines.some((line) => lineFileState(line) !== "accepted")) return "Accept the artwork on every line before printing.";
   return null;
 }

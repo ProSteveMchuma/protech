@@ -17,6 +17,7 @@ import {
   type QuoteSpec,
   type Turnaround,
 } from "@/lib/printshop/pricing";
+import { whatsappHref, whatsappOrderMessage } from "@/lib/whatsapp";
 import { useCart } from "./CartProvider";
 
 const fieldClass = "mt-2 h-11 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold";
@@ -37,9 +38,20 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
         <p className="text-sm font-semibold text-neutral-500">Custom quote</p>
         <p className="mt-2 text-sm leading-6 text-neutral-700">Tell us the size, quantity and date. We reply with one fixed price.</p>
-        <Link href={`/contact?product=${product.slug}`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-neutral-950 px-5 font-semibold text-white">
-          Request a quote
-        </Link>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a
+            href={whatsappHref(whatsappOrderMessage({ title: product.title, url: productUrl(product.slug) }) + "\nSize, quantity and date: ")}
+            data-track="Quote on WhatsApp"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[#128C7E] px-5 font-semibold text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <WhatsAppGlyph /> Get a quote on WhatsApp
+          </a>
+          <Link href={`/contact?product=${product.slug}`} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-neutral-300 px-5 font-semibold text-neutral-950">
+            Use the form
+          </Link>
+        </div>
       </div>
     );
   }
@@ -66,6 +78,16 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
   }
 
   const facets = entry.groups ? groupFacetKeys(entry.groups) : null;
+  const orderOnWhatsapp = whatsappHref(
+    whatsappOrderMessage({
+      title: product.title,
+      summary: priced.summary,
+      quantity: priced.quantity,
+      turnaround: turnaroundChoices.find((choice) => choice.id === turnaround)?.label,
+      totalKes: priced.totalKes,
+      url: productUrl(product.slug),
+    }),
+  );
   const activeGroup = entry.groups?.find((group) => group.label === spec.group) ?? entry.groups?.[0];
 
   return (
@@ -169,12 +191,23 @@ export function OrderPanel({ product, initialQuantity, hint }: { product: Catalo
         </select>
       </label>
 
-      <button type="submit" className="mt-5 hidden min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ff0030] font-bold text-white md:inline-flex">
-        <ShoppingBag className="size-4" /> Add to cart
-      </button>
-      <button type="submit" className="fixed inset-x-4 bottom-4 z-30 h-12 rounded-full bg-[#ff0030] text-sm font-bold text-white md:hidden">
-        Add to cart · {formatKes(priced.totalKes)}
-      </button>
+      <div className="mt-5 hidden gap-3 md:grid md:grid-cols-2">
+        <a href={orderOnWhatsapp} data-track="Order on WhatsApp" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#128C7E] font-bold text-white" target="_blank" rel="noopener noreferrer">
+          <WhatsAppGlyph /> Order on WhatsApp
+        </a>
+        <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#ff0030] font-bold text-white">
+          <ShoppingBag className="size-4" /> Add to cart
+        </button>
+      </div>
+      <p className="mt-3 hidden text-center text-xs text-neutral-500 md:block">No payment needed to ask. We confirm the artwork and price first.</p>
+      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t border-neutral-100 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+        <a href={orderOnWhatsapp} data-track="Order on WhatsApp" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#128C7E] text-sm font-bold text-white" target="_blank" rel="noopener noreferrer">
+          <WhatsAppGlyph /> WhatsApp
+        </a>
+        <button type="submit" className="h-12 rounded-full bg-[#ff0030] text-sm font-bold text-white">
+          Cart · {formatKes(priced.totalKes)}
+        </button>
+      </div>
       <div className="mt-3 flex items-center justify-between gap-3 text-sm">
         <button type="button" className="font-semibold text-neutral-500" onClick={repeatLast}>
           Use last specification
@@ -461,5 +494,17 @@ function BookControl({
         </div>
       </details>
     </div>
+  );
+}
+
+function productUrl(slug: string) {
+  return `https://www.proinnovationtech.co.ke/product/${slug}`;
+}
+
+function WhatsAppGlyph() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.5 3.5A11 11 0 0 0 2.1 17.2L1 23l6-1.6A11 11 0 0 0 20.5 3.5Zm-8.5 17a9.1 9.1 0 0 1-4.6-1.3l-.3-.2-3.6.9.9-3.5-.2-.3A9.1 9.1 0 1 1 12 20.5Zm5-6.8c-.3-.1-1.6-.8-1.8-.9s-.4-.1-.6.1-.7.9-.8 1-.3.2-.6.1a7.4 7.4 0 0 1-2.2-1.4 8.2 8.2 0 0 1-1.5-1.9c-.2-.3 0-.4.1-.6l.4-.5.2-.3a.5.5 0 0 0 0-.5c0-.1-.6-1.4-.8-1.9s-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 12 12 0 0 0 4.5 4 15 15 0 0 0 1.5.6 3.6 3.6 0 0 0 1.7.1 2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z" />
+    </svg>
   );
 }
