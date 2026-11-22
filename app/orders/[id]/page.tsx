@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArtworkResubmit } from "@/components/store/ArtworkResubmit";
-import { customerMayReplaceArtwork, lineFileState, statusLabels } from "@/lib/order-desk";
+import { customerMayReplaceArtwork, lineFileState, statusLabel } from "@/lib/order-desk";
 import { getPrintOrder } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
 
@@ -27,7 +27,7 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ id
   return (
     <div className="mx-auto max-w-2xl bg-white px-4 py-12 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#ff0030]">Order</p>
-      <h1 className="mt-2 text-4xl font-black tracking-tight">{statusLabels[order.status]}</h1>
+      <h1 className="mt-2 text-4xl font-black tracking-tight">{statusLabel(order)}</h1>
       <p className="mt-3 font-mono text-sm text-neutral-500">{order.id}</p>
       <ul className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
         {order.lines.map((line) => {

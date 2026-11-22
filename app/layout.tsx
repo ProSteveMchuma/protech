@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AppChrome } from "@/components/store/AppChrome";
+import { Analytics } from "@vercel/analytics/next";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { ContactClickTracker } from "@/components/ContactClickTracker";
 import { groupImage } from "@/lib/printshop/images";
 import { JsonLd } from "@/components/JsonLd";
 import { localBusinessJsonLd, SITE_URL, websiteJsonLd } from "@/lib/seo";
@@ -44,6 +46,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AppChrome>
           <main id="main-content">{children}</main>
         </AppChrome>
+        <Analytics />
+        <ContactClickTracker />
       </body>
     </html>
   );

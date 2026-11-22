@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { statusLabels } from "@/lib/order-desk";
+import { statusLabel } from "@/lib/order-desk";
 import type { PrintOrder, PrintOrderStatus } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
 import { whatsappHrefFor } from "@/lib/whatsapp";
@@ -14,6 +14,7 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
   const [order, setOrder] = useState(initialOrder);
   const [note, setNote] = useState(initialOrder.internalNote ?? "");
   const [paymentNote, setPaymentNote] = useState(initialOrder.payment?.note ?? "");
+  const [laterCode, setLaterCode] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -59,7 +60,7 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
   }
 
   const track = `https://www.proinnovationtech.co.ke/orders/${order.id}`;
-  const whatsapp = whatsappHrefFor(order.customer.phone, `Hello ${order.customer.name}, your ProPrint order is ${order.status}. ${statusLabels[order.status]} Track it here: ${track}`);
+  const whatsapp = whatsappHrefFor(order.customer.phone, `Hello ${order.customer.name}, your ProPrint order is ${order.status}. ${statusLabel(order)} Track it here: ${track}`);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -95,11 +96,18 @@ export function OrderDesk({ initialOrder }: { initialOrder: PrintOrder }) {
       <p className="text-right font-mono text-2xl font-black tabular-nums">{formatKes(order.totalKes)}</p>
 
       <section className="mt-8 grid gap-3 rounded-2xl border border-neutral-200 p-4">
-        <h2 className="font-bold">M-Pesa {order.mpesaCode}</h2>
-        <p className="text-sm text-neutral-600">Payment is {order.payment?.state ?? "unreviewed"}.</p>
+        <h2 className="font-bold">{order.mpesaCode ? `M-Pesa ${order.mpesaCode}` : "Pay after confirmation"}</h2>
+        <p className="text-sm text-neutral-600">
+          {order.mpesaCode
+            ? `Payment is ${order.payment?.state ?? "unreviewed"}.`
+            : "No payment yet. Confirm the artwork and price with the customer, then enter their M-Pesa code when they pay."}
+        </p>
+        {!order.mpesaCode && (
+          <input value={laterCode} onChange={(event) => setLaterCode(event.target.value)} maxLength={20} placeholder="M-Pesa code, e.g. SL12AB34CD" className="h-11 rounded-xl border border-neutral-200 px-3 font-mono text-sm uppercase" />
+        )}
         <textarea value={paymentNote} onChange={(event) => setPaymentNote(event.target.value)} rows={2} maxLength={500} placeholder="What you saw on the Paybill statement" className="rounded-xl border border-neutral-200 px-3 py-2 text-sm" />
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={() => patch({ payment: { state: "confirmed", note: paymentNote } })} className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white">Confirm payment</button>
+          <button type="button" disabled={busy} onClick={() => patch({ payment: { state: "confirmed", note: paymentNote, ...(laterCode.trim() ? { mpesaCode: laterCode.trim() } : {}) } })} className="h-11 rounded-full bg-neutral-950 px-4 text-sm font-semibold text-white">Confirm payment</button>
           <button type="button" disabled={busy} onClick={() => patch({ payment: { state: "rejected", note: paymentNote } })} className="h-11 rounded-full border border-neutral-300 px-4 text-sm font-semibold">Reject code</button>
         </div>
       </section>

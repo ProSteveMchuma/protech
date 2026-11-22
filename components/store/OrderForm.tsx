@@ -43,6 +43,7 @@ export function OrderForm() {
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
   const [files, setFiles] = useState<Record<string, File>>({});
+  const [payLater, setPayLater] = useState(false);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", email: "", phone: "", address: "", artwork: "", notes: "", mpesaCode: "", website: "" },
@@ -90,7 +91,7 @@ export function OrderForm() {
 
   function continueFromPayment() {
     const code = (form.getValues("mpesaCode") ?? "").trim();
-    if (code.length < 6) {
+    if (!payLater && code.length < 6) {
       form.setError("mpesaCode", { message: "Enter the M-Pesa confirmation code" });
       return;
     }
@@ -106,8 +107,8 @@ export function OrderForm() {
       setStep(1);
       return;
     }
-    const code = (values.mpesaCode ?? "").trim();
-    if (code.length < 6) {
+    const code = payLater ? "" : (values.mpesaCode ?? "").trim();
+    if (!payLater && code.length < 6) {
       form.setError("mpesaCode", { message: "Enter the M-Pesa confirmation code" });
       setStep(2);
       return;
@@ -142,7 +143,7 @@ export function OrderForm() {
     });
     const payload = (await response.json()) as { orderId?: string; artworkToken?: string; totalKes?: number; error?: string };
     if (!response.ok || !payload.orderId) {
-      setError(payload.error || "The order did not save. Keep your M-Pesa code and send it on WhatsApp.");
+      setError(payload.error || (payLater ? "The order did not save. Please send it to us on WhatsApp." : "The order did not save. Keep your M-Pesa code and send it on WhatsApp."));
       return;
     }
     if (payload.artworkToken) {
@@ -170,7 +171,11 @@ export function OrderForm() {
     return (
       <div className="mt-8 max-w-xl border border-neutral-200 p-6">
         <h2 className="font-display text-3xl font-medium">Order received</h2>
-        <p className="mt-3 text-sm leading-6 text-neutral-700">We match Paybill {business.paybill} to this order, then check the artwork before printing.</p>
+        <p className="mt-3 text-sm leading-6 text-neutral-700">
+          {payLater
+            ? `We will call or WhatsApp you shortly to confirm the artwork and price. Then pay by M-Pesa Paybill ${business.paybill}.`
+            : `We match Paybill ${business.paybill} to this order, then check the artwork before printing.`}
+        </p>
         <p className="mt-2 text-sm leading-6 text-neutral-700">
           {method === "pickup"
             ? `Collect at ${pickup.address} once the job is printed. We will message you when it is ready.`
@@ -256,9 +261,17 @@ export function OrderForm() {
 
         {step === 2 && (
           <section className="mt-8">
-            <h2 className="font-display text-2xl font-medium">Pay with M-Pesa Paybill</h2>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">This is a manual payment. We do not send a prompt to your phone. Pay the amount below, then paste the confirmation code.</p>
-            <ol className="mt-6 grid gap-3 text-sm leading-6">
+            <h2 className="font-display text-2xl font-medium">Payment</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="When to pay">
+              <PayChoice active={!payLater} onSelect={() => setPayLater(false)} title="Pay now" body="Pay by M-Pesa Paybill and paste the code. We start as soon as it matches." />
+              <PayChoice active={payLater} onSelect={() => { setPayLater(true); form.clearErrors("mpesaCode"); }} title="Pay after we confirm" body="Send the order now. We call or WhatsApp to confirm the artwork and price, then you pay." />
+            </div>
+            {payLater ? (
+              <p className="mt-6 rounded-xl bg-neutral-50 p-4 text-sm leading-6 text-neutral-700">Nothing to pay yet. We will contact you on <span className="font-medium text-neutral-950">{phone.trim() || "the number you gave"}</span> during working hours, usually within the hour.</p>
+            ) : (
+            <>
+            <p className="mt-6 text-sm leading-6 text-neutral-600">This is a manual payment. We do not send a prompt to your phone. Pay the amount below, then paste the confirmation code.</p>
+            <ol className="mt-4 grid gap-3 text-sm leading-6">
               <li>1. Open M-Pesa on your phone.</li>
               <li>2. Choose Lipa na M-Pesa.</li>
               <li>3. Choose Pay Bill.</li>
@@ -273,6 +286,8 @@ export function OrderForm() {
                 <input className={`${inputClass} font-mono uppercase`} autoCapitalize="characters" placeholder="SL12AB34CD" {...form.register("mpesaCode")} />
               </Field>
             </div>
+            </>
+            )}
           </section>
         )}
 
@@ -290,7 +305,11 @@ export function OrderForm() {
               </div>
               <div>
                 <dt className="text-neutral-500">Payment</dt>
-                <dd className="mt-1">Paybill <span className="font-mono tabular-nums">{business.paybill}</span>, account {name}. Code <span className="font-mono uppercase">{mpesaCode}</span>.</dd>
+                <dd className="mt-1">
+                  {payLater
+                    ? "Pay after we confirm the artwork and price."
+                    : <>Paybill <span className="font-mono tabular-nums">{business.paybill}</span>, account {name}. Code <span className="font-mono uppercase">{mpesaCode}</span>.</>}
+                </dd>
               </div>
             </dl>
             <div className="mt-6 grid gap-3">
@@ -318,7 +337,7 @@ export function OrderForm() {
             </div>
             {error && <p className="mt-4 text-sm text-[#ff0030]">{error}</p>}
             <p className="mt-4 text-xs leading-5 text-neutral-500">
-              We print after the payment matches and the artwork for each item is accepted. By submitting you agree to the <Link href="/terms" className="text-neutral-950 underline">print terms</Link>.
+              We print after the payment is confirmed and the artwork for each item is accepted. By submitting you agree to the <Link href="/terms" className="text-neutral-950 underline">print terms</Link>.
             </p>
           </section>
         )}
@@ -336,7 +355,7 @@ export function OrderForm() {
             )}
             {step === 3 && (
               <button type="submit" disabled={form.formState.isSubmitting} className="h-12 flex-1 rounded-full bg-[#ff0030] text-sm font-medium text-white disabled:opacity-60">
-                {form.formState.isSubmitting ? "Submitting…" : "Submit payment for verification"}
+                {form.formState.isSubmitting ? "Submitting…" : payLater ? "Send order" : "Submit payment for verification"}
               </button>
             )}
           </div>
@@ -372,5 +391,20 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       {children}
       {error && <span className="font-normal text-[#ff0030]">{error}</span>}
     </label>
+  );
+}
+
+function PayChoice({ active, onSelect, title, body }: { active: boolean; onSelect: () => void; title: string; body: string }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onSelect}
+      className={`rounded-2xl border p-4 text-left transition ${active ? "border-[#ff0030] bg-[#fff5f6]" : "border-neutral-200 hover:border-neutral-300"}`}
+    >
+      <span className="block font-bold text-neutral-950">{title}</span>
+      <span className="mt-1 block text-sm leading-5 text-neutral-600">{body}</span>
+    </button>
   );
 }

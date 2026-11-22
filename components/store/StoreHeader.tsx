@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { pickup } from "@/lib/config";
 import { formatKes, FREE_DELIVERY_FROM_KES } from "@/lib/printshop/pricing";
+import { callDisplay, callHref } from "@/lib/whatsapp";
 import { useCart } from "./CartProvider";
 
 const helpLinks = [
@@ -73,6 +74,10 @@ export function StoreHeader() {
               </div>
             )}
           </div>
+          <a href={callHref()} aria-label={`Call ${callDisplay()}`} className="flex h-11 items-center gap-2 rounded-full bg-[#ff0030] px-3 text-sm font-black text-white sm:px-4">
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z" /></svg>
+            <span className="hidden font-mono tabular-nums sm:inline">{callDisplay()}</span>
+          </a>
           <Link href="/account" aria-label="Account" className="grid size-11 place-items-center rounded-full bg-neutral-50 text-neutral-700">
             <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           </Link>

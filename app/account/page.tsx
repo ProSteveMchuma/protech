@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountProfile } from "@/components/store/AccountProfile";
-import { lineFileState, statusLabels } from "@/lib/order-desk";
+import { lineFileState, statusLabel } from "@/lib/order-desk";
 import { listAccountOrders } from "@/lib/print-orders";
 import { formatKes } from "@/lib/printshop/pricing";
 
@@ -48,7 +48,7 @@ export default async function AccountPage() {
               <li key={order.id} className="py-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <Link href={`/orders/${order.id}`} className="font-bold">{statusLabels[order.status]}</Link>
+                    <Link href={`/orders/${order.id}`} className="font-bold">{statusLabel(order)}</Link>
                     <p className="mt-1 text-sm text-neutral-500">{new Date(order.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })} · {order.lines.map((line) => line.title).join(", ")}</p>
                     <p className="mt-1 text-sm text-neutral-500">{order.lines.map((line) => lineFileState(line)).every((state) => state === "accepted") ? "Artwork accepted." : "Artwork still needs a file or a check."}</p>
                   </div>

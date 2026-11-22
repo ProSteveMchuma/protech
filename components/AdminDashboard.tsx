@@ -20,11 +20,14 @@ import type { Lead } from "@/lib/leads";
 import type { Payment, PaymentStatus } from "@/lib/payments";
 import type { PrintOrder, PrintOrderStatus } from "@/lib/print-orders";
 import { Logo } from "./Logo";
+import { ContactClicksPanel } from "./admin/ContactClicksPanel";
+import type { ContactClickSummary } from "@/lib/contact-clicks-summary";
 
 interface Props {
     initialLeads: Lead[];
     initialPayments: Payment[];
     initialOrders: PrintOrder[];
+    clickSummary: ContactClickSummary;
 }
 
 const LEAD_COLOURS: Record<Lead["status"], string> = {
@@ -44,7 +47,7 @@ type Tab = "orders" | "payments" | "leads";
 
 const orderStatuses: PrintOrderStatus[] = ["received", "confirmed", "printing", "ready", "dispatched", "cancelled"];
 
-export function AdminDashboard({ initialLeads, initialPayments, initialOrders }: Props) {
+export function AdminDashboard({ initialLeads, initialPayments, initialOrders, clickSummary }: Props) {
     const router = useRouter();
     const [tab, setTab] = useState<Tab>(initialOrders.some((order) => order.status === "received") ? "orders" : initialPayments.some((p) => p.status === "pending") ? "payments" : "leads");
     const [leads, setLeads] = useState<Lead[]>(initialLeads);
@@ -176,6 +179,8 @@ export function AdminDashboard({ initialLeads, initialPayments, initialOrders }:
                         }
                     />
                 </div>
+
+                <ContactClicksPanel summary={clickSummary} />
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6 border-b border-slate-200">

@@ -76,15 +76,17 @@ export async function savePrintOrder(order: Omit<PrintOrder, "id" | "createdAt" 
   });
   const db = getFirestoreDatabase();
   if (db) {
-    const existing = await db.collection("printOrders").where("mpesaCode", "==", saved.mpesaCode).limit(1).get();
-    if (!existing.empty) return { order: existing.docs[0].data() as PrintOrder, duplicate: true };
+    if (saved.mpesaCode) {
+      const existing = await db.collection("printOrders").where("mpesaCode", "==", saved.mpesaCode).limit(1).get();
+      if (!existing.empty) return { order: existing.docs[0].data() as PrintOrder, duplicate: true };
+    }
     await db.collection("printOrders").doc(saved.id).set(saved);
     return { order: saved, duplicate: false };
   }
   try {
     await ensureStore();
     const orders = await listPrintOrders();
-    const duplicate = orders.find((item) => item.mpesaCode === saved.mpesaCode);
+    const duplicate = saved.mpesaCode ? orders.find((item) => item.mpesaCode === saved.mpesaCode) : undefined;
     if (duplicate) return { order: duplicate, duplicate: true };
     orders.unshift(saved);
     await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
@@ -175,7 +177,7 @@ export async function updatePrintOrderStatus(id: string, status: PrintOrderStatu
   return { order: next };
 }
 
-export async function reviewOrderPayment(id: string, decision: "confirmed" | "rejected", note?: string): Promise<PrintOrder | null> {
+export async function reviewOrderPayment(id: string, decision: "confirmed" | "rejected", note?: string, mpesaCode?: string): Promise<PrintOrder | null> {
   const current = await getPrintOrder(id);
   if (!current) return null;
   const status = statusAfterPayment(current.status, decision);
@@ -183,6 +185,7 @@ export async function reviewOrderPayment(id: string, decision: "confirmed" | "re
   const next: PrintOrder = {
     ...current,
     status,
+    mpesaCode: mpesaCode?.trim() ? mpesaCode.trim().toUpperCase() : current.mpesaCode,
     payment: { state: decision, note: note?.trim() || undefined, at },
     statusHistory: status === current.status ? current.statusHistory : [...(current.statusHistory ?? []), { status, at }],
   };
